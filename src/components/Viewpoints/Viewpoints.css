@@ -1,0 +1,273 @@
+.viewpoints-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #2D002E;
+  padding: 100px 24px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.viewpoints-header {
+  text-align: center;
+  max-width: 1000px;
+  width: 100%;
+  margin-bottom: 60px;
+}
+
+.viewpoints-title {
+  font-size: 46px;
+  color: #ffffff;
+  font-weight: 600;
+  margin-bottom: 24px;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+}
+
+.viewpoints-highlight {
+  color: #F79D00;
+}
+
+.viewpoints-subtitle {
+  font-size: 16px;
+  color: #d8cce6;
+  line-height: 28px;
+  font-weight: 400;
+  margin: 0 auto;
+  padding: 0 10px;
+  max-width: 950px;
+}
+
+.desktop-break {
+  display: block;
+}
+
+/* Premium Bento Box Grid */
+.viewpoints-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 24px;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* Row 1 & Row 3: 2 Large Cards (Span 3 each) */
+.viewpoint-card:nth-child(1),
+.viewpoint-card:nth-child(2),
+.viewpoint-card:nth-child(6),
+.viewpoint-card:nth-child(7) {
+  grid-column: span 3;
+  height: 380px;
+}
+
+/* Row 2: 3 Smaller Cards (Span 2 each) */
+.viewpoint-card:nth-child(3),
+.viewpoint-card:nth-child(4),
+.viewpoint-card:nth-child(5) {
+  grid-column: span 2;
+  height: 380px;
+}
+
+/* Base Card Styles with Smooth Intro Animation */
+@keyframes cardFadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.viewpoint-card {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  background-color: #150016;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  box-sizing: border-box;
+  animation: cardFadeUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* Interactive Hover Lift */
+.viewpoint-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.viewpoint-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+  transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Smooth Image Zoom on Hover */
+.viewpoint-card:hover .viewpoint-image {
+  transform: scale(1.08);
+}
+
+/* Refined Overlay: Top half is 100% clear for image visibility, bottom is dark for text */
+.viewpoint-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 65%; /* Restricts darkness to the bottom area only */
+  background: linear-gradient(to top, rgba(21, 0, 22, 0.98) 0%, rgba(21, 0, 22, 0.85) 45%, transparent 100%);
+  z-index: 2;
+  transition: height 0.4s ease;
+}
+
+.viewpoint-card:hover .viewpoint-overlay {
+  height: 70%;
+  background: linear-gradient(to top, rgba(21, 0, 22, 0.98) 0%, rgba(21, 0, 22, 0.9) 50%, transparent 100%);
+}
+
+.viewpoint-badge {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  z-index: 3;
+  background: rgba(20, 0, 20, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 6px 14px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.viewpoint-badge svg {
+  width: 14px;
+  height: 14px;
+  color: #F79D00;
+}
+
+.viewpoint-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 32px 24px;
+  z-index: 3;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  transition: transform 0.4s ease;
+}
+
+.viewpoint-card:hover .viewpoint-content {
+  transform: translateY(-4px);
+}
+
+.viewpoint-card-title {
+  font-size: 26px;
+  color: #ffffff;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
+}
+
+.viewpoint-card-desc {
+  font-size: 14px;
+  color: #f2ebfa;
+  line-height: 22px;
+  margin: 0 0 20px 0;
+  font-weight: 400;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+}
+
+.viewpoint-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #F79D00;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.3s ease;
+  width: fit-content;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.viewpoint-link svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.3s ease;
+}
+
+.viewpoint-card:hover .viewpoint-link svg {
+  transform: translateX(6px);
+}
+
+/* Responsive Layout Adjustments */
+@media (max-width: 1024px) {
+  .viewpoints-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .viewpoint-card:nth-child(n) {
+    grid-column: span 1;
+    height: 350px;
+  }
+  
+  .viewpoint-card:last-child:nth-child(odd) {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .viewpoints-section {
+    padding: 60px 20px;
+  }
+  .viewpoints-title {
+    font-size: 32px;
+  }
+  .viewpoints-subtitle {
+    font-size: 15px;
+    line-height: 24px;
+  }
+  .desktop-break {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .viewpoints-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .viewpoint-card:nth-child(n),
+  .viewpoint-card:last-child:nth-child(odd) {
+    grid-column: span 1;
+    height: 320px;
+  }
+  
+  .viewpoint-card-title {
+    font-size: 22px;
+  }
+}
