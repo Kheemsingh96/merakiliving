@@ -42,21 +42,21 @@ const viewpointsData = [
   {
     id: 5,
     title: 'Kausani',
-    distance: '35 km • 48 min drive',
+    distance: '35 km • 58 min drive',
     description: 'Panoramic Himalayan Retreat. Admire spectacular Himalayan vistas, lush tea gardens, and breathtaking sunrises in this peaceful hill station.',
     image: imgKausani
   },
   {
     id: 6,
     title: 'Dol Ashram',
-    distance: '40 km • 60 min drive',
+    distance: '35 km • 60 min drive',
     description: 'Peace, Yoga & Spiritual Retreat. Reconnect through yoga, meditation, spiritual teachings, and serene Himalayan surroundings in a peaceful ashram setting.',
     image: imgDolAshram
   },
   {
     id: 7,
     title: 'Nainital',
-    distance: '32 km • 1 hr 20 min drive',
+    distance: '32 km • 50 Minutes drive',
     description: 'The Jewel of Kumaon. Enjoy boating on Naini Lake, vibrant Mall Road, scenic viewpoints, and charming cafés surrounded by green hills.',
     image: imgNainital
   }
