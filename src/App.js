@@ -6,6 +6,8 @@ import Viewpoints from './components/Viewpoints/Viewpoints';
 import Explore from './components/Explore/Explore';
 import Cafe from './components/Cafe/Cafe';
 import Review from './components/Review/Review';
+import FAQ from './components/FAQ/FAQ';
+import CTA from './components/CTA/CTA';
 import './App.css';
 
 function App() {
@@ -18,6 +20,8 @@ function App() {
       <Explore />
       <Cafe />
       <Review />
+      <FAQ />
+      <CTA />
     </div>
   );
 }

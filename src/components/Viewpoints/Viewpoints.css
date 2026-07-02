@@ -1,9 +1,11 @@
+/* src/components/Viewpoints/Viewpoints.css */
+
 .viewpoints-section {
   display: flex;
   flex-direction: column;
   align-items: center;
   background-color: #2D002E;
-  padding: 100px 24px;
+  padding: 80px 24px; /* Matched Experience */
   width: 100%;
   box-sizing: border-box;
   overflow: hidden;
@@ -16,12 +18,13 @@
   margin-bottom: 60px;
 }
 
+/* Exact typography match, keeping white color for dark background */
 .viewpoints-title {
   font-size: 40px;
-  color: #ffffff;
+  color: #ffffff; 
   font-weight: 600;
   margin-bottom: 24px;
-  line-height: 60px;
+  line-height: 60px; /* Matched Experience */
   letter-spacing: -0.5px;
 }
 
@@ -29,13 +32,14 @@
   color: #F79D00;
 }
 
+/* Exact typography match, keeping light color for dark background */
 .viewpoints-subtitle {
   font-size: 16px;
   color: #d8cce6;
   line-height: 28px;
   font-weight: 400;
   margin: 0 auto;
-  padding: 0 10px;
+  padding: 0 20px; /* Matched Experience */
   max-width: 950px;
 }
 
@@ -224,7 +228,10 @@
   transform: translateX(6px);
 }
 
-/* Responsive Layout Adjustments */
+/* =========================================
+   Responsive Layout Adjustments
+   ========================================= */
+
 @media (max-width: 1024px) {
   .viewpoints-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -240,15 +247,18 @@
   }
 }
 
+/* Tablet Match */
 @media (max-width: 768px) {
   .viewpoints-section {
-    padding: 60px 20px;
+    padding: 60px 20px; /* Matched Experience */
   }
   .viewpoints-title {
-    font-size: 32px;
+    font-size: 32px; /* Matched Experience */
+    line-height: normal;
+    margin-bottom: 16px;
   }
   .viewpoints-subtitle {
-    font-size: 15px;
+    font-size: 15px; /* Matched Experience */
     line-height: 24px;
   }
   .desktop-break {
@@ -256,6 +266,7 @@
   }
 }
 
+/* Grid Specific Breakpoint */
 @media (max-width: 600px) {
   .viewpoints-grid {
     grid-template-columns: 1fr;
@@ -269,5 +280,20 @@
   
   .viewpoint-card-title {
     font-size: 22px;
+  }
+}
+
+/* Mobile Match (Newly added specifically for typography & padding exact match) */
+@media (max-width: 480px) {
+  .viewpoints-section {
+    padding: 40px 16px; /* Matched Experience */
+  }
+  .viewpoints-title {
+    font-size: 26px; /* Matched Experience */
+  }
+  .viewpoints-subtitle {
+    font-size: 14px; /* Matched Experience */
+    line-height: 22px;
+    padding: 0 5px;
   }
 }

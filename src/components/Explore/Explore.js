@@ -1,78 +1,128 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import './Explore.css';
+
+import luxuryMain from '../../assets/images/luxury-main.png';
+import luxury1 from '../../assets/images/luxury-1.png';
+import luxury2 from '../../assets/images/luxury-2.png';
+import luxury3 from '../../assets/images/luxury-3.png';
+
+import exteriorMain from '../../assets/images/exterior-main.png';
+import exterior1 from '../../assets/images/exterior-1.png';
+import exterior2 from '../../assets/images/exterior-2.png';
+
+import himalayanMain from '../../assets/images/himalayan-main.png';
+import himalayan1 from '../../assets/images/himalayan-1.png';
+import himalayan2 from '../../assets/images/himalayan-2.png';
+import himalayan3 from '../../assets/images/himalayan-3.png';
+
+import gardenMain from '../../assets/images/garden-main.png';
+import garden1 from '../../assets/images/garden-1.png';
+import garden2 from '../../assets/images/garden-2.png';
+import garden3 from '../../assets/images/garden-3.png';
+import garden4 from '../../assets/images/garden-4.png';
+import garden5 from '../../assets/images/garden-5.png';
+import garden6 from '../../assets/images/garden-6.png';
+
+import cafeMain from '../../assets/images/cafe-main.png';
+import cafe1 from '../../assets/images/cafe-1.png';
+import cafe2 from '../../assets/images/cafe-2.png';
+import cafe3 from '../../assets/images/cafe-3.png';
+import cafe4 from '../../assets/images/cafe-4.png';
+import cafe5 from '../../assets/images/cafe-5.png';
+import cafe6 from '../../assets/images/cafe-6.png';
+import cafe7 from '../../assets/images/cafe-7.png';
 
 const exploreData = [
   {
     id: 1,
     title: 'Luxury Rooms',
     photosCount: '4 Photos',
-    coverImage: 'https://kimi-web-img.moonshot.cn/img/imageio.forbes.com/b760ed38588b2b52e6ff4876ae7c0c59dcb3b383.jpg',
+    coverImage: luxuryMain,
     gallery: [
-      'https://kimi-web-img.moonshot.cn/img/imageio.forbes.com/b760ed38588b2b52e6ff4876ae7c0c59dcb3b383.jpg',
-      'https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&q=80&w=1000',
-      'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=1000',
-      'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&q=80&w=1000'
+      { src: luxuryMain, name: 'Master Suite', desc: 'Spacious king-size bedroom with panoramic valley views and premium linen bedding.' },
+      { src: luxury1, name: 'Deluxe Twin Room', desc: 'Elegant twin bedroom with handcrafted wooden interiors and ambient lighting.' },
+      { src: luxury2, name: 'Premium Suite', desc: 'Luxurious suite featuring a private balcony and modern amenities.' },
+      { src: luxury3, name: 'Family Room', desc: 'Comfortable family room with cozy seating and nature-inspired decor.' }
     ]
   },
   {
     id: 2,
     title: 'Exterior',
     photosCount: '3 Photos',
-    coverImage: 'https://kimi-web-img.moonshot.cn/img/images.adsttc.com/66c5c6b482f05cbd4079ae9e61313d6a11a1c639.jpg',
+    coverImage: exteriorMain,
     gallery: [
-      'https://kimi-web-img.moonshot.cn/img/images.adsttc.com/66c5c6b482f05cbd4079ae9e61313d6a11a1c639.jpg',
-      'https://images.unsplash.com/photo-1600596542815-78b9dba3b914?auto=format&fit=crop&q=80&w=1000',
-      'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&q=80&w=1000'
+      { src: exteriorMain, name: 'Main Entrance', desc: 'Grand stone pathway leading to the resort entrance surrounded by lush gardens.' },
+      { src: exterior1, name: 'Resort Facade', desc: 'Stunning architectural design blending modern luxury with Himalayan aesthetics.' },
+      { src: exterior2, name: 'Evening View', desc: 'Resort illuminated beautifully at dusk with warm ambient lighting.' }
     ]
   },
   {
     id: 3,
     title: 'Himalayan Views',
     photosCount: '4 Photos',
-    coverImage: 'https://kimi-web-img.moonshot.cn/img/thumbs.dreamstime.com/fdf3e13fc1c012371f30804b2b562c29d25afec3.jpg',
+    coverImage: himalayanMain,
     gallery: [
-      'https://kimi-web-img.moonshot.cn/img/thumbs.dreamstime.com/fdf3e13fc1c012371f30804b2b562c29d25afec3.jpg',
-      'https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&q=80&w=1000',
-      'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&q=80&w=1000',
-      'https://images.unsplash.com/photo-1483728642387-6c3ba6c6af5f?auto=format&fit=crop&q=80&w=1000'
+      { src: himalayanMain, name: 'Sunrise Panorama', desc: 'Breathtaking sunrise over the snow-capped Himalayan peaks from the terrace.' },
+      { src: himalayan1, name: 'Valley Vista', desc: 'Sweeping views of the verdant valley stretching into the distant mountains.' },
+      { src: himalayan2, name: 'Golden Hour', desc: 'Himalayan ranges bathed in golden light during the magical evening hours.' },
+      { src: himalayan3, name: 'Misty Morning', desc: 'Serene morning mist rolling through the mountain valleys at dawn.' }
     ]
   },
   {
     id: 4,
-    title: 'Garden & Outdoor',
-    photosCount: '3 Photos',
-    coverImage: 'https://kimi-web-img.moonshot.cn/img/occa-design.com/ca295fd152a2739eca253c05600d1d1f5195c54f.webp',
+    title: 'Organic Farm',
+    photosCount: '6 Photos',
+    coverImage: gardenMain,
     gallery: [
-      'https://kimi-web-img.moonshot.cn/img/occa-design.com/ca295fd152a2739eca253c05600d1d1f5195c54f.webp',
-      'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=1000',
-      'https://images.unsplash.com/photo-1598533781289-54316d93e157?auto=format&fit=crop&q=80&w=1000'
+      { src: gardenMain, name: 'Organic Vegetable Patch', desc: 'Fresh seasonal vegetables grown naturally without any chemicals or pesticides.' },
+      { src: garden1, name: 'Herb Garden', desc: 'Aromatic herbs like basil, rosemary, and mint cultivated for the kitchen.' },
+      { src: garden2, name: 'Flower Walkway', desc: 'Colorful flower-lined pathways perfect for a peaceful morning stroll.' },
+      { src: garden3, name: 'Fruit Orchard', desc: 'Seasonal fruit trees bearing apples, pears, and local Himalayan fruits.' },
+      { src: garden4, name: 'Greenhouse', desc: 'Climate-controlled greenhouse nurturing exotic plants and seedlings.' },
+      { src: garden5, name: 'Compost Area', desc: 'Sustainable composting system turning organic waste into rich garden soil.' },
+      { src: garden6, name: 'Garden Seating', desc: 'Cozy outdoor seating nestled among blooming flowers and greenery.' }
     ]
   },
   {
     id: 5,
     title: 'Cafe & Dining',
-    photosCount: '3 Photos',
-    coverImage: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=1000',
+    photosCount: '7 Photos',
+    coverImage: cafeMain,
     gallery: [
-      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=1000',
-      'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&q=80&w=1000',
-      'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&q=80&w=1000'
+      { src: cafeMain, name: 'Main Dining Hall', desc: 'Elegant dining space with floor-to-ceiling windows and mountain views.' },
+      { src: cafe1, name: 'Outdoor Cafe', desc: 'Al fresco dining on the terrace with fresh mountain air and scenic vistas.' },
+      { src: cafe2, name: 'Breakfast Spread', desc: 'Hearty breakfast featuring farm-fresh ingredients and local delicacies.' },
+      { src: cafe3, name: 'Chef\'s Special', desc: 'Gourmet dishes crafted by our expert chefs using organic produce.' },
+      { src: cafe4, name: 'Coffee Corner', desc: 'Artisanal coffee bar serving freshly brewed Himalayan coffee and pastries.' },
+      { src: cafe5, name: 'Private Dining', desc: 'Intimate private dining room for special celebrations and gatherings.' },
+      { src: cafe6, name: 'Bar Area', desc: 'Well-stocked bar offering premium spirits, cocktails, and local brews.' },
+      { src: cafe7, name: 'Evening Ambience', desc: 'Warm candlelit dining experience under the starlit Himalayan sky.' }
     ]
   }
 ];
 
 const Explore = () => {
   const [activeGallery, setActiveGallery] = useState(null);
+  const [activePhoto, setActivePhoto] = useState(null);
 
-  const handleOpenGallery = (item) => {
+  const handleOpenGallery = useCallback((item) => {
     setActiveGallery(item);
     document.body.style.overflow = 'hidden';
-  };
+  }, []);
 
-  const handleCloseGallery = () => {
+  const handleCloseGallery = useCallback(() => {
     setActiveGallery(null);
+    setActivePhoto(null);
     document.body.style.overflow = 'auto';
-  };
+  }, []);
+
+  const handleOpenPhoto = useCallback((photo) => {
+    setActivePhoto(photo);
+  }, []);
+
+  const handleClosePhoto = useCallback(() => {
+    setActivePhoto(null);
+  }, []);
 
   return (
     <section className="explore-section">
@@ -81,23 +131,21 @@ const Explore = () => {
           Explore <span className="explore-highlight">Meraki Living</span>
         </h2>
         <p className="explore-subtitle">
-          Discover every corner of Meraki Living through beautifully curated spaces. From elegant interiors and cozy rooms to breathtaking Himalayan views and peaceful outdoor retreats, every place is designed to make your stay truly unforgettable.
+          Discover every corner of Meraki Living through beautifully curated spaces. From elegant interiors and cozy rooms to breathtaking Himalayan views, peaceful outdoor retreats, and our fresh organic farm—every place is designed to make your stay truly unforgettable.
         </p>
       </div>
 
       <div className="explore-grid">
-        {exploreData.map((item, index) => (
+        {exploreData.map((item) => (
           <div
             className="explore-card"
             key={item.id}
-            style={{ animationDelay: `${index * 0.15}s` }}
             onClick={() => handleOpenGallery(item)}
           >
             <div className="explore-image-wrapper">
-              <img src={item.coverImage} alt={item.title} className="explore-image" />
+              <img src={item.coverImage} alt={item.title} className="explore-image" loading="lazy" />
               <div className="explore-overlay"></div>
             </div>
-
             <div className="explore-content">
               <div className="explore-info">
                 <h3 className="explore-card-title">{item.title}</h3>
@@ -111,12 +159,11 @@ const Explore = () => {
                   <span>{item.photosCount}</span>
                 </div>
               </div>
-
               <div className="explore-action">
                 <span className="explore-action-text">View Gallery</span>
                 <div className="explore-action-icon">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M7 17L17 7M17 7H7M17 7V17"></path>
+                    <path d="M5 12h14M12 5l7 7-7 7"></path>
                   </svg>
                 </div>
               </div>
@@ -128,7 +175,6 @@ const Explore = () => {
       {activeGallery && (
         <div className="gallery-modal-overlay" onClick={handleCloseGallery}>
           <div className="gallery-modal-container" onClick={(e) => e.stopPropagation()}>
-
             <div className="gallery-modal-header">
               <div className="gallery-modal-title-box">
                 <h3 className="gallery-modal-title">{activeGallery.title}</h3>
@@ -140,17 +186,47 @@ const Explore = () => {
                 </svg>
               </button>
             </div>
-
             <div className="gallery-modal-body">
               <div className="gallery-masonry">
                 {activeGallery.gallery.map((photo, index) => (
-                  <div className="gallery-masonry-item" key={index}>
-                    <img src={photo} alt={`${activeGallery.title} - ${index + 1}`} loading="lazy" />
+                  <div className="gallery-masonry-item" key={index} onClick={() => handleOpenPhoto(photo)}>
+                    <img src={photo.src} alt={photo.name} loading="lazy" />
+                    <div className="gallery-item-overlay">
+                      <div className="gallery-item-name">{photo.name}</div>
+                      <div className="gallery-item-view">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <span>View Details</span>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
+          </div>
+        </div>
+      )}
 
+      {activePhoto && (
+        <div className="photo-detail-overlay" onClick={handleClosePhoto}>
+          <div className="photo-detail-container" onClick={(e) => e.stopPropagation()}>
+            <button className="photo-detail-close" onClick={handleClosePhoto} aria-label="Close Details">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 5L5 19M5 5L19 19"></path>
+              </svg>
+            </button>
+            <div className="photo-detail-inner">
+              <div className="photo-detail-image-box">
+                <img src={activePhoto.src} alt={activePhoto.name} />
+              </div>
+              <div className="photo-detail-info">
+                <div className="photo-detail-tag">Photo Details</div>
+                <h3 className="photo-detail-name">{activePhoto.name}</h3>
+                <p className="photo-detail-desc">{activePhoto.desc}</p>
+              </div>
+            </div>
           </div>
         </div>
       )}

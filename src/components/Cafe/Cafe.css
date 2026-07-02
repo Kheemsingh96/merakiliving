@@ -1,9 +1,11 @@
+/* src/components/Cafe/Cafe.css */
+
 .cafe-section {
   background-color: #2D002E; 
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  padding: 100px 24px;
+  padding: 80px 24px; /* Matched Experience */
   width: 100%;
   box-sizing: border-box;
   color: #ffffff;
@@ -101,11 +103,12 @@
   justify-content: center;
 }
 
+/* Exact typography match */
 .cafe-title {
   font-size: 40px;
   font-weight: 600;
   margin: 0 0 24px 0;
-  line-height: 60px;
+  line-height: 60px; /* Matched Experience */
   letter-spacing: -0.5px;
   color: #ffffff;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
@@ -115,10 +118,11 @@
   color: #F79D00; 
 }
 
+/* Exact typography match */
 .cafe-description {
   font-size: 16px;
   color: #d8cce6; 
-  line-height: 28px;
+  line-height: 28px; /* Matched Experience */
   margin: 0 0 40px 0;
   font-weight: 400;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
@@ -296,13 +300,21 @@
   }
 }
 
+/* Tablet Match */
 @media (max-width: 768px) {
   .cafe-section {
-    padding: 60px 20px;
+    padding: 60px 20px; /* Matched Experience */
   }
   
   .cafe-title {
-    font-size: 34px;
+    font-size: 32px; /* Matched Experience */
+    line-height: normal;
+    margin-bottom: 16px;
+  }
+
+  .cafe-description {
+    font-size: 15px; /* Matched Experience */
+    line-height: 24px;
   }
   
   .cafe-main-image {
@@ -310,14 +322,9 @@
   }
 }
 
+/* Specific component tweaks (Unchanged for layout stability) */
 @media (max-width: 600px) {
-  .cafe-title {
-    font-size: 28px;
-  }
-  
   .cafe-description {
-    font-size: 15px;
-    line-height: 26px;
     max-width: 100%;
   }
   
@@ -331,5 +338,22 @@
 
   .cafe-features-list {
     max-width: 100%;
+  }
+}
+
+/* Mobile Match (Newly added exactly as per Experience & Others) */
+@media (max-width: 480px) {
+  .cafe-section {
+    padding: 40px 16px; /* Matched Experience */
+  }
+  
+  .cafe-title {
+    font-size: 26px; /* Matched Experience */
+  }
+  
+  .cafe-description {
+    font-size: 14px; /* Matched Experience */
+    line-height: 22px;
+    padding: 0 5px;
   }
 }
