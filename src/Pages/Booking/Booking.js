@@ -4,7 +4,6 @@ import {
   Calendar01Icon,
   UserGroupIcon,
   BedIcon,
-  Search01Icon,
   WhatsappIcon,
   CallIcon,
   CheckmarkCircle01Icon,
@@ -118,11 +117,6 @@ const Booking = ({ setCurrentPage }) => {
   const formatDate = (date) => {
     if (!date) return "Add Dates";
     return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).replace(/ (\d{4})$/, ', $1');
-  };
-
-  const formatDateShort = (date) => {
-    if (!date) return "—";
-    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
   };
 
   const getNights = () => {
