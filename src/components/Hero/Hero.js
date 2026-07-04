@@ -33,14 +33,18 @@ const slides = [
 const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const dayNames = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
-const Hero = () => {
+const Hero = ({ setCurrentPage }) => {
   const [activeIndex, setActiveIndex] = useState(0);
-  
   const [activePopup, setActivePopup] = useState(null);
-  const [checkInDate, setCheckInDate] = useState(null);
-  const [checkOutDate, setCheckOutDate] = useState(null);
-  const [currentCalendarMonth, setCurrentCalendarMonth] = useState(new Date());
-  const [guests, setGuests] = useState({ adults: 2, children: 0, rooms: 1 });
+  
+  const storedCheckIn = sessionStorage.getItem('meraki_checkIn');
+  const storedCheckOut = sessionStorage.getItem('meraki_checkOut');
+  const storedGuests = sessionStorage.getItem('meraki_guests');
+
+  const [checkInDate, setCheckInDate] = useState(storedCheckIn ? new Date(storedCheckIn) : null);
+  const [checkOutDate, setCheckOutDate] = useState(storedCheckOut ? new Date(storedCheckOut) : null);
+  const [currentCalendarMonth, setCurrentCalendarMonth] = useState(storedCheckIn ? new Date(storedCheckIn) : new Date());
+  const [guests, setGuests] = useState(storedGuests ? JSON.parse(storedGuests) : { adults: 2, children: 0, rooms: 1 });
   
   const bookingRef = useRef(null);
 
@@ -63,7 +67,7 @@ const Hero = () => {
 
   const formatDate = (date) => {
     if (!date) return "Add Dates";
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).replace(/ (\d{4})$/, ', $1');
   };
 
   const getGuestString = () => {
@@ -73,16 +77,29 @@ const Hero = () => {
 
   const handleGuestChange = (type, operation) => {
     setGuests(prev => {
-      const current = prev[type];
+      let newGuests = { ...prev };
       if (operation === 'add') {
-        return { ...prev, [type]: current + 1 };
+        newGuests[type] = prev[type] + 1;
       } else {
-        if (type === 'adults' && current <= 1) return prev;
-        if (type === 'rooms' && current <= 1) return prev;
-        if (type === 'children' && current <= 0) return prev;
-        return { ...prev, [type]: current - 1 };
+        if (type === 'adults' && prev.adults <= 1) return prev;
+        if (type === 'children' && prev.children <= 0) return prev;
+        if (type === 'rooms' && prev.rooms <= 1) return prev;
+        newGuests[type] = prev[type] - 1;
       }
+      
+      if (type === 'adults') {
+        newGuests.rooms = Math.max(newGuests.rooms, Math.ceil(newGuests.adults / 3));
+      }
+      
+      return newGuests;
     });
+  };
+
+  const handleSearchClick = () => {
+    if (checkInDate) sessionStorage.setItem('meraki_checkIn', checkInDate.toISOString());
+    if (checkOutDate) sessionStorage.setItem('meraki_checkOut', checkOutDate.toISOString());
+    sessionStorage.setItem('meraki_guests', JSON.stringify(guests));
+    setCurrentPage('booking');
   };
 
   const renderCalendar = () => {
@@ -136,7 +153,7 @@ const Hero = () => {
     }
 
     return (
-      <div className="dropdown-popup">
+      <div className="dropdown-popup" onClick={(e) => e.stopPropagation()}>
         <div className="calendar-header">
           <button 
             className="calendar-nav-btn" 
@@ -163,7 +180,7 @@ const Hero = () => {
   };
 
   const renderGuestsDropdown = () => (
-    <div className="dropdown-popup guests-popup">
+    <div className="dropdown-popup guests-popup" onClick={(e) => e.stopPropagation()}>
       <div className="guest-row">
         <div className="guest-info">
           <span className="guest-type">Adults</span>
@@ -217,7 +234,7 @@ const Hero = () => {
           <h1 className="hero-title">{slides[activeIndex].title}</h1>
           <p className="hero-description">{slides[activeIndex].description}</p>
         </div>
-        <button className="hero-btn">Explore Rooms</button>
+        <button className="hero-btn" onClick={handleSearchClick}>Explore Rooms</button>
       </div>
 
       <div className="hero-booking-container">
@@ -260,7 +277,7 @@ const Hero = () => {
             {activePopup === 'guests' && renderGuestsDropdown()}
           </div>
           
-          <button className="booking-search-btn">Search</button>
+          <button className="booking-search-btn" onClick={handleSearchClick}>Search</button>
         </div>
       </div>
 

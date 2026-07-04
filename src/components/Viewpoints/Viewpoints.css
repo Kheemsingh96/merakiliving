@@ -1,11 +1,9 @@
-/* src/components/Viewpoints/Viewpoints.css */
-
 .viewpoints-section {
   display: flex;
   flex-direction: column;
   align-items: center;
   background-color: #2D002E;
-  padding: 80px 24px; /* Matched Experience */
+  padding: 70px 48px;
   width: 100%;
   box-sizing: border-box;
   overflow: hidden;
@@ -15,16 +13,15 @@
   text-align: center;
   max-width: 1000px;
   width: 100%;
-  margin-bottom: 60px;
+  margin-bottom: 72px;
 }
 
-/* Exact typography match, keeping white color for dark background */
 .viewpoints-title {
-  font-size: 40px;
-  color: #ffffff; 
+  font-size: 42px;
+  color: #ffffff;
   font-weight: 600;
-  margin-bottom: 24px;
-  line-height: 60px; /* Matched Experience */
+  margin-bottom: 20px;
+  line-height: 65px;
   letter-spacing: -0.5px;
 }
 
@@ -32,14 +29,12 @@
   color: #F79D00;
 }
 
-/* Exact typography match, keeping light color for dark background */
 .viewpoints-subtitle {
-  font-size: 16px;
+  font-size: 18px;
   color: #d8cce6;
-  line-height: 28px;
+  line-height: 32px;
   font-weight: 400;
   margin: 0 auto;
-  padding: 0 20px; /* Matched Experience */
   max-width: 950px;
 }
 
@@ -47,7 +42,6 @@
   display: block;
 }
 
-/* Premium Bento Box Grid */
 .viewpoints-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -57,7 +51,6 @@
   margin: 0 auto;
 }
 
-/* Row 1 & Row 3: 2 Large Cards (Span 3 each) */
 .viewpoint-card:nth-child(1),
 .viewpoint-card:nth-child(2),
 .viewpoint-card:nth-child(6),
@@ -66,7 +59,6 @@
   height: 380px;
 }
 
-/* Row 2: 3 Smaller Cards (Span 2 each) */
 .viewpoint-card:nth-child(3),
 .viewpoint-card:nth-child(4),
 .viewpoint-card:nth-child(5) {
@@ -74,7 +66,6 @@
   height: 380px;
 }
 
-/* Base Card Styles with Smooth Intro Animation */
 @keyframes cardFadeUp {
   0% {
     opacity: 0;
@@ -99,7 +90,6 @@
   transition: transform 0.4s ease, box-shadow 0.4s ease;
 }
 
-/* Interactive Hover Lift */
 .viewpoint-card:hover {
   transform: translateY(-8px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
@@ -116,18 +106,16 @@
   transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* Smooth Image Zoom on Hover */
 .viewpoint-card:hover .viewpoint-image {
   transform: scale(1.08);
 }
 
-/* Refined Overlay: Top half is 100% clear for image visibility, bottom is dark for text */
 .viewpoint-overlay {
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 65%; /* Restricts darkness to the bottom area only */
+  height: 65%;
   background: linear-gradient(to top, rgba(21, 0, 22, 0.98) 0%, rgba(21, 0, 22, 0.85) 45%, transparent 100%);
   z-index: 2;
   transition: height 0.4s ease;
@@ -184,7 +172,7 @@
 }
 
 .viewpoint-card-title {
-  font-size: 26px;
+  font-size: 24px;
   color: #ffffff;
   font-weight: 600;
   margin: 0 0 10px 0;
@@ -228,72 +216,85 @@
   transform: translateX(6px);
 }
 
-/* =========================================
-   Responsive Layout Adjustments
-   ========================================= */
-
 @media (max-width: 1024px) {
+  .viewpoints-section {
+    padding: 65px 40px;
+  }
+  .viewpoints-header {
+    margin-bottom: 60px;
+  }
+  .viewpoints-title {
+    font-size: 38px;
+    line-height: 48px;
+  }
+  .viewpoints-subtitle {
+    font-size: 17px;
+    line-height: 30px;
+  }
   .viewpoints-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  
   .viewpoint-card:nth-child(n) {
     grid-column: span 1;
     height: 350px;
   }
-  
   .viewpoint-card:last-child:nth-child(odd) {
     grid-column: span 2;
   }
 }
 
-/* Tablet Match */
 @media (max-width: 768px) {
   .viewpoints-section {
-    padding: 60px 20px; /* Matched Experience */
+    padding: 50px 32px;
+  }
+  .viewpoints-header {
+    margin-bottom: 56px;
   }
   .viewpoints-title {
-    font-size: 32px; /* Matched Experience */
-    line-height: normal;
+    font-size: 34px;
+    line-height: 44px;
     margin-bottom: 16px;
   }
   .viewpoints-subtitle {
-    font-size: 15px; /* Matched Experience */
-    line-height: 24px;
+    font-size: 16px;
+    line-height: 28px;
   }
   .desktop-break {
     display: none;
   }
 }
 
-/* Grid Specific Breakpoint */
 @media (max-width: 600px) {
   .viewpoints-grid {
     grid-template-columns: 1fr;
   }
-  
   .viewpoint-card:nth-child(n),
   .viewpoint-card:last-child:nth-child(odd) {
     grid-column: span 1;
     height: 320px;
   }
-  
   .viewpoint-card-title {
     font-size: 22px;
   }
 }
 
-/* Mobile Match (Newly added specifically for typography & padding exact match) */
 @media (max-width: 480px) {
   .viewpoints-section {
-    padding: 40px 16px; /* Matched Experience */
+    padding: 45px 24px;
+  }
+  .viewpoints-header {
+    margin-bottom: 48px;
   }
   .viewpoints-title {
-    font-size: 26px; /* Matched Experience */
+    font-size: 26px;
+    line-height: 38px;
+    margin-bottom: 14px;
   }
   .viewpoints-subtitle {
-    font-size: 14px; /* Matched Experience */
-    line-height: 22px;
-    padding: 0 5px;
+    font-size: 16px;
+    line-height: 26px;
+  }
+  .viewpoint-card-title {
+    font-size: 20px;
   }
 }

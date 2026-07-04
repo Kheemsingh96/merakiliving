@@ -1,11 +1,9 @@
-/* src/components/Review/Review.css */
-
 .review-section {
   display: flex;
   flex-direction: column;
   align-items: center;
   background-color: #ffffff;
-  padding: 80px 24px; /* Matched Experience */
+  padding: 70px 48px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -14,16 +12,15 @@
   text-align: center;
   max-width: 1000px;
   width: 100%;
-  margin-bottom: 60px;
+  margin-bottom: 72px;
 }
 
-/* Updated to exactly match Experience Title */
 .review-title {
-  font-size: 40px;
+  font-size: 42px;
   color: #373737;
   font-weight: 600;
-  margin-bottom: 24px;
-  line-height: 60px; /* Matched Experience */
+  margin-bottom: 20px;
+  line-height: 65px;
   letter-spacing: -0.5px;
 }
 
@@ -31,14 +28,12 @@
   color: #870097;
 }
 
-/* Updated to exactly match Experience Subtitle */
 .review-subtitle {
-  font-size: 16px;
+  font-size: 18px;
   color: #817F7F;
-  line-height: 28px;
+  line-height: 32px;
   font-weight: 400;
   margin: 0 auto;
-  padding: 0 20px; /* Matched Experience */
   max-width: 950px;
 }
 
@@ -125,7 +120,6 @@
   flex-grow: 1;
 }
 
-/* Updated Button Styling for perfect size */
 .review-action {
   display: flex;
   justify-content: center;
@@ -146,7 +140,7 @@
   gap: 16px;
   transition: transform 0.3s ease;
   border: none;
-  line-height: 1.4;
+  line-height: 24px;
   text-align: left;
   white-space: nowrap;
 }
@@ -161,67 +155,85 @@
   stroke: #ffffff;
 }
 
-/* =========================================
-   Responsive Layout Adjustments
-   ========================================= */
-
 @media (max-width: 1024px) {
+  .review-section {
+    padding: 65px 40px;
+  }
+  .review-header {
+    margin-bottom: 60px;
+  }
+  .review-title {
+    font-size: 38px;
+    line-height: 48px;
+  }
+  .review-subtitle {
+    font-size: 17px;
+    line-height: 30px;
+  }
   .review-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 24px;
   }
 }
 
-/* Tablet Match */
 @media (max-width: 768px) {
   .review-section {
-    padding: 60px 20px; /* Matched Experience */
+    padding: 50px 32px;
   }
-
+  .review-header {
+    margin-bottom: 56px;
+  }
   .review-title {
-    font-size: 32px; /* Matched Experience */
-    line-height: normal;
+    font-size: 34px;
+    line-height: 44px;
     margin-bottom: 16px;
   }
-
   .review-subtitle {
-    font-size: 15px; /* Matched Experience */
-    line-height: 24px;
+    font-size: 16px;
+    line-height: 28px;
   }
 }
 
-/* Grid & Button Specific Breakpoint (Unchanged for layout stability) */
 @media (max-width: 600px) {
   .review-grid {
     grid-template-columns: 1fr;
   }
-
   .review-btn {
     width: 100%;
     padding: 14px 20px;
     font-size: 15px;
     gap: 16px;
   }
-
   .btn-arrow {
     width: 20px;
     height: 20px;
   }
 }
 
-/* Mobile Match (Newly added to match Experience perfectly) */
 @media (max-width: 480px) {
   .review-section {
-    padding: 40px 16px; /* Matched Experience */
+    padding: 45px 24px;
   }
-  
+  .review-header {
+    margin-bottom: 48px;
+  }
   .review-title {
-    font-size: 26px; /* Matched Experience */
+    font-size: 26px;
+    line-height: 38px;
+    margin-bottom: 14px;
   }
-  
   .review-subtitle {
-    font-size: 14px; /* Matched Experience */
-    line-height: 22px;
-    padding: 0 5px;
+    font-size: 16px;
+    line-height: 26px;
+  }
+  .review-card {
+    padding: 24px;
+  }
+  .review-name {
+    font-size: 17px;
+  }
+  .review-text {
+    font-size: 14px;
+    line-height: 24px;
   }
 }

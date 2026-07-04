@@ -3,7 +3,7 @@
   flex-direction: column;
   align-items: center;
   background-color: #ffffff;
-  padding: 80px 24px;
+  padding: 70px 48px;
   width: 100%;
   box-sizing: border-box;
   position: relative;
@@ -12,19 +12,19 @@
 
 .explore-header {
   text-align: center;
-  max-width: 1240px;
+  max-width: 1280px;
   width: 100%;
-  margin-bottom: 50px;
+  margin-bottom: 72px;
   position: relative;
   z-index: 2;
 }
 
 .explore-title {
-  font-size: 40px;
+  font-size: 42px;
   color: #373737;
   font-weight: 600;
-  margin-bottom: 24px;
-  line-height: 60px;
+  margin-bottom: 20px;
+  line-height: 65px;
   letter-spacing: -0.5px;
 }
 
@@ -33,12 +33,11 @@
 }
 
 .explore-subtitle {
-  font-size: 16px;
+  font-size: 18px;
   color: #817F7F;
-  line-height: 28px;
+  line-height: 32px;
   font-weight: 400;
   margin: 0 auto;
-  padding: 0 20px;
   max-width: 800px;
 }
 
@@ -496,18 +495,32 @@
   color: #373737;
   font-weight: 600;
   margin: 0 0 16px 0;
-  line-height: 1.3;
+  line-height: 36px;
   letter-spacing: -0.3px;
 }
 
 .photo-detail-desc {
   font-size: 15px;
   color: #666666;
-  line-height: 1.7;
+  line-height: 26px;
   margin: 0;
 }
 
 @media (max-width: 1024px) {
+  .explore-section {
+    padding: 65px 40px;
+  }
+  .explore-header {
+    margin-bottom: 60px;
+  }
+  .explore-title {
+    font-size: 38px;
+    line-height: 48px;
+  }
+  .explore-subtitle {
+    font-size: 17px;
+    line-height: 30px;
+  }
   .explore-grid {
     grid-template-columns: repeat(8, minmax(0, 1fr));
     grid-auto-rows: 120px;
@@ -524,7 +537,6 @@
     grid-column: span 8;
     grid-row: span 4;
   }
-
   .photo-detail-inner {
     flex-direction: column;
   }
@@ -539,18 +551,20 @@
 
 @media (max-width: 768px) {
   .explore-section {
-    padding: 60px 20px;
+    padding: 50px 32px;
+  }
+  .explore-header {
+    margin-bottom: 56px;
   }
   .explore-title {
-    font-size: 32px;
-    line-height: normal;
+    font-size: 34px;
+    line-height: 44px;
     margin-bottom: 16px;
   }
   .explore-subtitle {
-    font-size: 15px;
-    line-height: 24px;
+    font-size: 16px;
+    line-height: 28px;
   }
-
   .gallery-modal-overlay {
     padding: 16px;
   }
@@ -559,6 +573,7 @@
   }
   .gallery-modal-title {
     font-size: 20px;
+    line-height: 28px;
   }
   .gallery-modal-body {
     padding: 20px;
@@ -567,7 +582,6 @@
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 16px;
   }
-
   .photo-detail-overlay {
     padding: 16px;
   }
@@ -579,9 +593,11 @@
   }
   .photo-detail-name {
     font-size: 22px;
+    line-height: 30px;
   }
   .photo-detail-desc {
     font-size: 14px;
+    line-height: 24px;
   }
 }
 
@@ -617,11 +633,9 @@
     opacity: 1;
     transform: translateX(0);
   }
-
   .gallery-masonry {
     grid-template-columns: 1fr;
   }
-
   .photo-detail-image-box {
     height: 220px;
   }
@@ -630,22 +644,26 @@
   }
   .photo-detail-name {
     font-size: 20px;
+    line-height: 28px;
   }
 }
 
 @media (max-width: 480px) {
   .explore-section {
-    padding: 40px 16px;
+    padding: 45px 24px;
+  }
+  .explore-header {
+    margin-bottom: 48px;
   }
   .explore-title {
     font-size: 26px;
+    line-height: 38px;
+    margin-bottom: 14px;
   }
   .explore-subtitle {
-    font-size: 14px;
-    line-height: 22px;
-    padding: 0 5px;
+    font-size: 16px;
+    line-height: 26px;
   }
-
   .photo-detail-image-box {
     height: 200px;
   }
@@ -654,10 +672,11 @@
   }
   .photo-detail-name {
     font-size: 18px;
+    line-height: 26px;
     margin-bottom: 10px;
   }
   .photo-detail-desc {
     font-size: 13px;
-    line-height: 1.6;
+    line-height: 22px;
   }
 }

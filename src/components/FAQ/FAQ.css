@@ -1,11 +1,9 @@
-/* src/components/FAQ/FAQ.css */
-
 .faq-section {
   display: flex;
   flex-direction: column;
   align-items: center;
   background-color: #F8F3F8;
-  padding: 80px 24px; /* Matched Experience exactly */
+  padding: 70px 48px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -14,39 +12,35 @@
   text-align: center;
   max-width: 900px;
   width: 100%;
-  margin-bottom: 60px;
+  margin-bottom: 72px;
 }
 
-/* Exact typography match to previous sections */
 .faq-title {
-  font-size: 40px;
+  font-size: 42px;
   color: #373737;
   font-weight: 600;
-  margin-bottom: 24px;
-  line-height: 60px; /* Matched Experience */
+  margin-bottom: 20px;
+  line-height: 65px;
   letter-spacing: -0.5px;
 }
 
-/* Exact typography match to previous sections */
 .faq-subtitle {
-  font-size: 16px;
+  font-size: 18px;
   color: #817F7F;
-  line-height: 28px;
+  line-height: 32px;
   font-weight: 400;
   margin: 0 auto;
-  padding: 0 20px;
   max-width: 800px;
 }
 
 .faq-container {
   width: 100%;
-  max-width: 900px; /* Kept slightly narrower than grid for better reading experience */
+  max-width: 900px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-/* Premium Accordion Card Style */
 .faq-item {
   background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.05);
@@ -58,7 +52,7 @@
 
 .faq-item:hover {
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
-  border-color: rgba(135, 0, 151, 0.2); /* Subtle purple hint on hover */
+  border-color: rgba(135, 0, 151, 0.2);
 }
 
 .faq-item.active {
@@ -81,19 +75,18 @@
   font-weight: 600;
   color: #373737;
   padding-right: 20px;
-  line-height: 1.4;
+  line-height: 26px;
   transition: color 0.3s ease;
 }
 
 .faq-item:hover .faq-question h3 {
-  color: #870097; /* Theme Purple */
+  color: #870097;
 }
 
 .faq-item.active .faq-question h3 {
   color: #870097;
 }
 
-/* Elegant Icon Wrapper */
 .faq-icon-wrapper {
   width: 36px;
   height: 36px;
@@ -122,7 +115,6 @@
   color: #870097;
 }
 
-/* Smooth Accordion Animation using CSS Grid */
 .faq-answer-wrapper {
   display: grid;
   grid-template-rows: 0fr;
@@ -146,83 +138,86 @@
   font-weight: 400;
 }
 
-/* =========================================
-   Responsive Layout Adjustments (Exact Match)
-   ========================================= */
+@media (max-width: 1024px) {
+  .faq-section {
+    padding: 65px 40px;
+  }
+  .faq-header {
+    margin-bottom: 60px;
+  }
+  .faq-title {
+    font-size: 38px;
+    line-height: 48px;
+  }
+  .faq-subtitle {
+    font-size: 17px;
+    line-height: 30px;
+  }
+}
 
-/* Tablet Match */
 @media (max-width: 768px) {
   .faq-section {
-    padding: 60px 20px; /* Matched Experience */
+    padding: 50px 32px;
   }
-  
   .faq-header {
-    margin-bottom: 48px;
+    margin-bottom: 56px;
   }
-
   .faq-title {
-    font-size: 32px; /* Matched Experience */
-    line-height: normal;
+    font-size: 34px;
+    line-height: 44px;
     margin-bottom: 16px;
   }
-
   .faq-subtitle {
-    font-size: 15px; /* Matched Experience */
-    line-height: 24px;
+    font-size: 16px;
+    line-height: 28px;
   }
-
   .faq-question {
     padding: 20px 24px;
   }
-
   .faq-question h3 {
-    font-size: 16px;
+    font-size: 17px;
+    line-height: 24px;
   }
-
   .faq-answer-content p {
     padding: 0 24px 20px 24px;
   }
 }
 
-/* Mobile Match (Exactly as per Experience & Others) */
 @media (max-width: 480px) {
   .faq-section {
-    padding: 40px 16px; /* Matched Experience */
+    padding: 45px 24px;
   }
-  
+  .faq-header {
+    margin-bottom: 48px;
+  }
   .faq-title {
-    font-size: 26px; /* Matched Experience */
+    font-size: 26px;
+    line-height: 38px;
+    margin-bottom: 14px;
   }
-  
   .faq-subtitle {
-    font-size: 14px; /* Matched Experience */
-    line-height: 22px;
-    padding: 0 5px;
+    font-size: 16px;
+    line-height: 26px;
   }
-
   .faq-item {
     border-radius: 12px;
   }
-
   .faq-question {
     padding: 16px 20px;
   }
-
   .faq-question h3 {
-    font-size: 15px;
+    font-size: 16px;
+    line-height: 22px;
     padding-right: 12px;
   }
-
   .faq-icon-wrapper {
     width: 32px;
     height: 32px;
   }
-
   .faq-icon {
     width: 18px;
     height: 18px;
   }
-
   .faq-answer-content p {
     font-size: 14px;
     padding: 0 20px 16px 20px;
