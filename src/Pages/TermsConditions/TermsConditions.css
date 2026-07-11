@@ -1,0 +1,179 @@
+/* ============================================
+   MERAKI LIVING — TERMS & CONDITIONS
+   ============================================ */
+
+.terms-conditions-wrapper {
+  width: 100%;
+  background: #F8F3F8;
+  padding: 180px 48px 80px;
+  box-sizing: border-box;
+  min-height: 100vh;
+}
+
+.terms-conditions-container {
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Header Section */
+.terms-conditions-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.terms-conditions-title {
+  font-size: 32px;
+  color: #373737;
+  font-weight: 600;
+  margin: 0 0 14px 0;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+}
+
+.terms-conditions-intro {
+  font-size: 16px;
+  color: #777777;
+  margin: 0 auto;
+  font-weight: 400;
+  line-height: 1.6;
+  max-width: 560px;
+}
+
+/* Content Card */
+.terms-conditions-content {
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  padding: 40px 48px;
+}
+
+.terms-conditions-content h2 {
+  font-size: 18px;
+  color: #373737;
+  font-weight: 600;
+  margin: 0 0 14px 0;
+  line-height: 1.4;
+  letter-spacing: -0.2px;
+  padding-top: 32px;
+}
+
+.terms-conditions-content h2:first-of-type {
+  padding-top: 0;
+}
+
+.terms-conditions-content p {
+  font-size: 15px;
+  color: #555555;
+  margin: 0 0 14px 0;
+  font-weight: 400;
+  line-height: 1.7;
+}
+
+.terms-conditions-content p:last-child {
+  margin-bottom: 0;
+}
+
+.terms-conditions-content strong {
+  color: #373737;
+  font-weight: 600;
+}
+
+/* Section Dividers */
+.terms-conditions-section + .terms-conditions-section {
+  margin-top: 32px;
+  padding-top: 32px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* Footer Note */
+.terms-conditions-footer {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.terms-conditions-footer p {
+  font-size: 14px;
+  color: #888888;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .terms-conditions-wrapper {
+    padding: 100px 32px 60px;
+  }
+
+  .terms-conditions-title {
+    font-size: 28px;
+    line-height: 38px;
+  }
+
+  .terms-conditions-intro {
+    font-size: 15px;
+  }
+
+  .terms-conditions-content {
+    padding: 32px 28px;
+    border-radius: 16px;
+  }
+
+  .terms-conditions-content h2 {
+    font-size: 17px;
+    padding-top: 28px;
+  }
+
+  .terms-conditions-content p {
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  .terms-conditions-section + .terms-conditions-section {
+    margin-top: 28px;
+    padding-top: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .terms-conditions-wrapper {
+    padding: 90px 24px 48px;
+  }
+
+  .terms-conditions-title {
+    font-size: 24px;
+    line-height: 34px;
+    margin-bottom: 10px;
+  }
+
+  .terms-conditions-intro {
+    font-size: 14px;
+  }
+
+  .terms-conditions-header {
+    margin-bottom: 32px;
+  }
+
+  .terms-conditions-content {
+    padding: 24px 22px;
+    border-radius: 14px;
+  }
+
+  .terms-conditions-content h2 {
+    font-size: 16px;
+    padding-top: 24px;
+    margin-bottom: 10px;
+  }
+
+  .terms-conditions-content p {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .terms-conditions-section + .terms-conditions-section {
+    margin-top: 24px;
+    padding-top: 24px;
+  }
+}

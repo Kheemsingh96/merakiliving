@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import './Explore.css';
 
 import luxuryMain from '../../assets/images/luxury-main.png';
@@ -32,7 +32,7 @@ import cafe5 from '../../assets/images/cafe-5.png';
 import cafe6 from '../../assets/images/cafe-6.png';
 import cafe7 from '../../assets/images/cafe-7.png';
 
-const exploreData = [
+const EXPLORE_DATA = [
   {
     id: 1,
     title: 'Luxury Rooms',
@@ -42,8 +42,8 @@ const exploreData = [
       { src: luxuryMain, name: 'Master Suite', desc: 'Spacious king-size bedroom with panoramic valley views and premium linen bedding.' },
       { src: luxury1, name: 'Deluxe Twin Room', desc: 'Elegant twin bedroom with handcrafted wooden interiors and ambient lighting.' },
       { src: luxury2, name: 'Premium Suite', desc: 'Luxurious suite featuring a private balcony and modern amenities.' },
-      { src: luxury3, name: 'Family Room', desc: 'Comfortable family room with cozy seating and nature-inspired decor.' }
-    ]
+      { src: luxury3, name: 'Family Room', desc: 'Comfortable family room with cozy seating and nature-inspired decor.' },
+    ],
   },
   {
     id: 2,
@@ -53,8 +53,8 @@ const exploreData = [
     gallery: [
       { src: exteriorMain, name: 'Main Entrance', desc: 'Grand stone pathway leading to the resort entrance surrounded by lush gardens.' },
       { src: exterior1, name: 'Resort Facade', desc: 'Stunning architectural design blending modern luxury with Himalayan aesthetics.' },
-      { src: exterior2, name: 'Evening View', desc: 'Resort illuminated beautifully at dusk with warm ambient lighting.' }
-    ]
+      { src: exterior2, name: 'Evening View', desc: 'Resort illuminated beautifully at dusk with warm ambient lighting.' },
+    ],
   },
   {
     id: 3,
@@ -65,8 +65,8 @@ const exploreData = [
       { src: himalayanMain, name: 'Sunrise Panorama', desc: 'Breathtaking sunrise over the snow-capped Himalayan peaks from the terrace.' },
       { src: himalayan1, name: 'Valley Vista', desc: 'Sweeping views of the verdant valley stretching into the distant mountains.' },
       { src: himalayan2, name: 'Golden Hour', desc: 'Himalayan ranges bathed in golden light during the magical evening hours.' },
-      { src: himalayan3, name: 'Misty Morning', desc: 'Serene morning mist rolling through the mountain valleys at dawn.' }
-    ]
+      { src: himalayan3, name: 'Misty Morning', desc: 'Serene morning mist rolling through the mountain valleys at dawn.' },
+    ],
   },
   {
     id: 4,
@@ -80,8 +80,8 @@ const exploreData = [
       { src: garden3, name: 'Fruit Orchard', desc: 'Seasonal fruit trees bearing apples, pears, and local Himalayan fruits.' },
       { src: garden4, name: 'Greenhouse', desc: 'Climate-controlled greenhouse nurturing exotic plants and seedlings.' },
       { src: garden5, name: 'Compost Area', desc: 'Sustainable composting system turning organic waste into rich garden soil.' },
-      { src: garden6, name: 'Garden Seating', desc: 'Cozy outdoor seating nestled among blooming flowers and greenery.' }
-    ]
+      { src: garden6, name: 'Garden Seating', desc: 'Cozy outdoor seating nestled among blooming flowers and greenery.' },
+    ],
   },
   {
     id: 5,
@@ -92,18 +92,17 @@ const exploreData = [
       { src: cafeMain, name: 'Main Dining Hall', desc: 'Elegant dining space with floor-to-ceiling windows and mountain views.' },
       { src: cafe1, name: 'Outdoor Cafe', desc: 'Al fresco dining on the terrace with fresh mountain air and scenic vistas.' },
       { src: cafe2, name: 'Breakfast Spread', desc: 'Hearty breakfast featuring farm-fresh ingredients and local delicacies.' },
-      { src: cafe3, name: 'Chef\'s Special', desc: 'Gourmet dishes crafted by our expert chefs using organic produce.' },
+      { src: cafe3, name: "Chef's Special", desc: 'Gourmet dishes crafted by our expert chefs using organic produce.' },
       { src: cafe4, name: 'Coffee Corner', desc: 'Artisanal coffee bar serving freshly brewed Himalayan coffee and pastries.' },
       { src: cafe5, name: 'Private Dining', desc: 'Intimate private dining room for special celebrations and gatherings.' },
       { src: cafe6, name: 'Bar Area', desc: 'Well-stocked bar offering premium spirits, cocktails, and local brews.' },
-      { src: cafe7, name: 'Evening Ambience', desc: 'Warm candlelit dining experience under the starlit Himalayan sky.' }
-    ]
-  }
+      { src: cafe7, name: 'Evening Ambience', desc: 'Warm candlelit dining experience under the starlit Himalayan sky.' },
+    ],
+  },
 ];
 
-const Explore = () => {
+function Explore() {
   const [activeGallery, setActiveGallery] = useState(null);
-  const [activePhoto, setActivePhoto] = useState(null);
 
   const handleOpenGallery = useCallback((item) => {
     setActiveGallery(item);
@@ -112,49 +111,54 @@ const Explore = () => {
 
   const handleCloseGallery = useCallback(() => {
     setActiveGallery(null);
-    setActivePhoto(null);
-    document.body.style.overflow = 'auto';
+    document.body.style.overflow = '';
   }, []);
 
-  const handleOpenPhoto = useCallback((photo) => {
-    setActivePhoto(photo);
-  }, []);
-
-  const handleClosePhoto = useCallback(() => {
-    setActivePhoto(null);
-  }, []);
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && activeGallery) {
+        handleCloseGallery();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [activeGallery, handleCloseGallery]);
 
   return (
-    <section className="explore-section">
+    <section className="explore-section" aria-label="Explore Meraki Living">
       <div className="explore-header">
         <h2 className="explore-title">
           Explore <span className="explore-highlight">Meraki Living</span>
         </h2>
         <p className="explore-subtitle">
-          Discover every corner of Meraki Living through beautifully curated spaces. From elegant interiors and cozy rooms to breathtaking Himalayan views, peaceful outdoor retreats, and our fresh organic farm—every place is designed to make your stay truly unforgettable.
+          Discover every corner of Meraki Living through beautifully curated spaces. From elegant interiors and cozy rooms to breathtaking Himalayan views, peaceful outdoor retreats, and our fresh organic farm — every place is designed to make your stay truly unforgettable.
         </p>
       </div>
 
       <div className="explore-grid">
-        {exploreData.map((item) => (
-          <div
+        {EXPLORE_DATA.map((item) => (
+          <article
             className="explore-card"
             key={item.id}
             onClick={() => handleOpenGallery(item)}
+            role="button"
+            tabIndex={0}
+            aria-label={`Open ${item.title} gallery`}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleOpenGallery(item); }}
           >
             <div className="explore-image-wrapper">
               <img src={item.coverImage} alt={item.title} className="explore-image" loading="lazy" />
-              <div className="explore-overlay"></div>
+              <div className="explore-overlay" />
             </div>
             <div className="explore-content">
               <div className="explore-info">
                 <h3 className="explore-card-title">{item.title}</h3>
                 <div className="explore-meta">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="2" y="4" width="20" height="16" rx="3" ry="3"></rect>
-                    <path d="M2 14L6.5 9.5C7.32843 8.67157 8.67157 8.67157 9.5 9.5L14 14"></path>
-                    <path d="M12 12L14.5 9.5C15.3284 8.67157 16.6716 8.67157 17.5 9.5L22 14"></path>
-                    <circle cx="17.5" cy="8.5" r="1.5" fill="currentColor"></circle>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <rect x="2" y="4" width="20" height="16" rx="3" ry="3" />
+                    <path d="M2 14L6.5 9.5C7.32843 8.67157 8.67157 8.67157 9.5 9.5L14 14" />
+                    <path d="M12 12L14.5 9.5C15.3284 8.67157 16.6716 8.67157 17.5 9.5L22 14" />
+                    <circle cx="17.5" cy="8.5" r="1.5" fill="currentColor" />
                   </svg>
                   <span>{item.photosCount}</span>
                 </div>
@@ -162,44 +166,40 @@ const Explore = () => {
               <div className="explore-action">
                 <span className="explore-action-text">View Gallery</span>
                 <div className="explore-action-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M5 12h14M12 5l7 7-7 7"></path>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
                   </svg>
                 </div>
               </div>
             </div>
-          </div>
+          </article>
         ))}
       </div>
 
       {activeGallery && (
-        <div className="gallery-modal-overlay" onClick={handleCloseGallery}>
+        <div className="gallery-modal-overlay" onClick={handleCloseGallery} role="dialog" aria-modal="true" aria-label={`${activeGallery.title} Gallery`}>
           <div className="gallery-modal-container" onClick={(e) => e.stopPropagation()}>
             <div className="gallery-modal-header">
               <div className="gallery-modal-title-box">
                 <h3 className="gallery-modal-title">{activeGallery.title}</h3>
                 <span className="gallery-modal-count">{activeGallery.photosCount}</span>
               </div>
-              <button className="gallery-modal-close" onClick={handleCloseGallery} aria-label="Close Gallery">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M19 5L5 19M5 5L19 19"></path>
+              <button className="gallery-modal-close" onClick={handleCloseGallery} aria-label="Close Gallery" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M19 5L5 19M5 5L19 19" />
                 </svg>
               </button>
             </div>
             <div className="gallery-modal-body">
-              <div className="gallery-masonry">
+              <div className="gallery-grid">
                 {activeGallery.gallery.map((photo, index) => (
-                  <div className="gallery-masonry-item" key={index} onClick={() => handleOpenPhoto(photo)}>
-                    <img src={photo.src} alt={photo.name} loading="lazy" />
-                    <div className="gallery-item-overlay">
-                      <div className="gallery-item-name">{photo.name}</div>
-                      <div className="gallery-item-view">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                          <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                        <span>View Details</span>
-                      </div>
+                  <div className="gallery-card" key={index}>
+                    <div className="gallery-card-image-box">
+                      <img src={photo.src} alt={photo.name} loading="lazy" />
+                    </div>
+                    <div className="gallery-card-content">
+                      <h4 className="gallery-card-name">{photo.name}</h4>
+                      <p className="gallery-card-desc">{photo.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -208,30 +208,8 @@ const Explore = () => {
           </div>
         </div>
       )}
-
-      {activePhoto && (
-        <div className="photo-detail-overlay" onClick={handleClosePhoto}>
-          <div className="photo-detail-container" onClick={(e) => e.stopPropagation()}>
-            <button className="photo-detail-close" onClick={handleClosePhoto} aria-label="Close Details">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M19 5L5 19M5 5L19 19"></path>
-              </svg>
-            </button>
-            <div className="photo-detail-inner">
-              <div className="photo-detail-image-box">
-                <img src={activePhoto.src} alt={activePhoto.name} />
-              </div>
-              <div className="photo-detail-info">
-                <div className="photo-detail-tag">Photo Details</div>
-                <h3 className="photo-detail-name">{activePhoto.name}</h3>
-                <p className="photo-detail-desc">{activePhoto.desc}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   );
-};
+}
 
 export default Explore;

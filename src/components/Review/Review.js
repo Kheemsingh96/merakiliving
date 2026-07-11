@@ -48,56 +48,56 @@ const reviewData = [
 
 const Review = () => {
   return (
-    <section className="review-section">
-      <div className="review-header">
+    <section className="review-section" aria-label="Guest Reviews">
+      <header className="review-header">
         <h2 className="review-title">
           What Our Guests <span className="review-highlight">Say</span>
         </h2>
         <p className="review-subtitle">
           Read through genuine experiences shared by our wonderful guests on Google.
         </p>
-      </div>
+      </header>
 
       <div className="review-grid">
-        {reviewData.map((review, index) => (
-          <div className="review-card" key={review.id} style={{ animationDelay: `${index * 0.15}s` }}>
+        {reviewData.map((review) => (
+          <article className="review-card" key={review.id}>
             <div className="review-card-top">
               <div className="review-user">
                 <div className="review-avatar">
-                  <img src={review.avatar} alt={review.name} loading="lazy" />
+                  <img src={review.avatar} alt={review.name} width="52" height="52" loading="lazy" />
                 </div>
                 <div className="review-user-info">
-                  <h4 className="review-name">{review.name}</h4>
-                  <span className="review-date">{review.date}</span>
+                  <h3 className="review-name">{review.name}</h3>
+                  <time className="review-date">{review.date}</time>
                 </div>
               </div>
             </div>
-            <div className="review-stars">
+            <div className="review-stars" aria-label="5 star rating">
               {[...Array(5)].map((_, i) => (
-                <svg key={i} viewBox="0 0 24 24" fill="#F79D00">
+                <svg key={i} viewBox="0 0 24 24" fill="#F79D00" aria-hidden="true">
                   <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
                 </svg>
               ))}
             </div>
-            <p className="review-text">"{review.text}"</p>
-          </div>
+            <blockquote className="review-text">"{review.text}"</blockquote>
+          </article>
         ))}
       </div>
-      
+
       <div className="review-action">
-  <a 
-    href="https://share.google/sktujL0NMtIqfBX45" 
-    className="review-btn" 
-    target="_blank" 
-    rel="noopener noreferrer"
-  >
-    <span className="btn-text">Read All Reviews on Google</span>
-    <svg className="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="5" y1="12" x2="19" y2="12"></line>
-      <polyline points="12 5 19 12 12 19"></polyline>
-    </svg>
-  </a>
-</div>
+        <a
+          href="https://share.google/sktujL0NMtIqfBX45"
+          className="review-btn"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Read all reviews on Google"
+        >
+          <span>Read All Reviews on Google</span>
+          <svg className="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
     </section>
   );
 };

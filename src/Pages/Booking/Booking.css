@@ -1,6 +1,6 @@
 .booking-section {
   width: 100%;
-  background: #F8F3F8;
+  background: #FFFFFF;
   padding: 120px 48px 80px;
   box-sizing: border-box;
   min-height: 100vh;
@@ -12,7 +12,6 @@
   width: 100%;
 }
 
-/* ─── Back Navigation ─── */
 .booking-nav {
   margin-bottom: 28px;
 }
@@ -40,7 +39,6 @@
   height: 18px;
 }
 
-/* ─── Search Bar ─── */
 .booking-search-wrapper {
   margin-bottom: 48px;
   position: relative;
@@ -58,11 +56,6 @@
   gap: 0;
   position: relative;
   z-index: 100;
-  transition: box-shadow 0.3s ease;
-}
-
-.booking-search-bar:hover {
-  box-shadow: 0 6px 32px rgba(135, 0, 151, 0.1);
 }
 
 .booking-search-item {
@@ -159,16 +152,15 @@
   height: 18px;
 }
 
-/* ─── Results Header ─── */
 .booking-results-header {
-  margin-bottom: 36px;
+  margin-bottom: 40px;
 }
 
 .booking-results-title {
   font-size: 30px;
   color: #373737;
   font-weight: 600;
-  margin: 0 0 10px 0;
+  margin: 0 0 12px 0;
   line-height: 1.2;
   letter-spacing: -0.5px;
 }
@@ -185,11 +177,10 @@
   color: #cccccc;
 }
 
-/* ─── Layout ─── */
 .booking-layout {
   display: grid;
   grid-template-columns: 1fr 300px;
-  gap: 40px;
+  gap: 48px;
   align-items: start;
   position: relative;
   z-index: 1;
@@ -198,10 +189,9 @@
 .booking-rooms {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 40px;
 }
 
-/* ─── Room Card ─── */
 .booking-room-card {
   display: grid;
   grid-template-columns: 400px 1fr;
@@ -210,20 +200,13 @@
   overflow: hidden;
   border: 1px solid #f0f0f0;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-  transition: transform 0.35s ease, box-shadow 0.35s ease;
 }
 
-.booking-room-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 50px rgba(135, 0, 151, 0.1);
-}
-
-/* ─── Gallery ─── */
 .booking-room-gallery {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px;
+  gap: 14px;
+  padding: 18px;
   background: #FAFAFA;
 }
 
@@ -239,52 +222,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.6s ease;
-}
-
-.booking-room-card:hover .booking-room-main-image img {
-  transform: scale(1.05);
-}
-
-.booking-room-tag {
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  background: #870097;
-  color: #ffffff;
-  padding: 7px 16px;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-}
-
-.booking-room-rating {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  background: #ffffff;
-  padding: 7px 14px;
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 13px;
-  font-weight: 700;
-  color: #373737;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
-}
-
-.booking-room-rating svg {
-  width: 14px;
-  height: 14px;
-  color: #F5A623;
-}
-
-.rating-count {
-  font-weight: 500;
-  color: #888888;
-  font-size: 12px;
 }
 
 .booking-room-thumbs {
@@ -318,20 +255,18 @@
   object-fit: cover;
 }
 
-/* ─── Room Details ─── */
 .booking-room-details {
   padding: 28px 28px 24px 24px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 22px;
 }
 
 .booking-room-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 2px;
 }
 
 .booking-room-title {
@@ -364,18 +299,27 @@
   color: #870097;
 }
 
+.booking-room-desc-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .booking-room-desc {
-  font-size: 14px;
+  font-size: 15px;
   color: #666666;
-  line-height: 24px;
+  line-height: 26px;
   margin: 0;
+}
+
+.view-more-btn {
+  display: none;
 }
 
 .booking-room-meta {
   display: flex;
   gap: 24px;
   flex-wrap: wrap;
-  margin-top: 2px;
 }
 
 .booking-meta-item {
@@ -399,7 +343,6 @@
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
-  margin-top: 2px;
 }
 
 .booking-amenity-tag {
@@ -413,13 +356,6 @@
   font-size: 12px;
   color: #555555;
   font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.booking-amenity-tag:hover {
-  background: #FDF5FF;
-  border-color: #870097;
-  color: #870097;
 }
 
 .booking-amenity-tag svg {
@@ -429,120 +365,48 @@
   flex-shrink: 0;
 }
 
-.amenity-more {
-  background: transparent;
-  border: 1px dashed #ddd0df;
-  color: #870097;
-  cursor: pointer;
-}
-
-.amenity-more:hover {
-  background: rgba(135, 0, 151, 0.04);
-  border-style: solid;
-}
-
-/* ─── Expanded Details ─── */
-.booking-room-expanded {
-  animation: expandIn 0.3s ease;
-  margin-top: 4px;
-}
-
-@keyframes expandIn {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.expanded-divider {
-  height: 1px;
-  background: #f0f0f0;
-  margin: 8px 0 16px 0;
-}
-
-.expanded-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #373737;
-  margin: 0 0 14px 0;
-}
-
-.expanded-amenities {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-
-.expanded-amenity-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  color: #555555;
-  font-weight: 500;
-}
-
-.expanded-amenity-item svg {
-  width: 16px;
-  height: 16px;
-  color: #870097;
-  flex-shrink: 0;
-}
-
-/* ─── Room Footer ─── */
 .booking-room-footer {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 20px;
   padding-top: 20px;
   border-top: 1px solid #f0f0f0;
-  margin-top: 8px;
+  margin-top: 2px;
 }
 
 .booking-room-price {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.booking-price-main {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .booking-price-amount {
-  font-size: 28px;
+  font-size: 22px;
   color: #373737;
   font-weight: 700;
   letter-spacing: -0.5px;
   line-height: 1;
 }
 
-.booking-price-unit {
-  font-size: 14px;
+.booking-price-original {
+  font-size: 22px;
   color: #999999;
-  font-weight: 400;
+  font-weight: 500;
+  text-decoration: line-through;
+  line-height: 1;
 }
 
-.booking-price-total {
-  margin-top: 6px;
-  font-size: 14px;
-  color: #870097;
-  font-weight: 600;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.total-nights {
+.booking-price-discount {
   font-size: 12px;
-  color: #999999;
-  font-weight: 400;
-}
-
-.booking-room-actions {
-  display: flex;
-  gap: 12px;
+  color: #870097;
+  font-weight: 700;
+  background: rgba(135, 0, 151, 0.08);
+  padding: 5px 12px;
+  border-radius: 8px;
+  line-height: 1;
+  letter-spacing: 0.3px;
 }
 
 .booking-btn-primary {
@@ -553,7 +417,7 @@
   background: #870097;
   color: #ffffff;
   border: none;
-  padding: 14px 26px;
+  padding: 14px 32px;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 600;
@@ -574,42 +438,6 @@
   height: 16px;
 }
 
-.booking-btn-secondary {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: #ffffff;
-  color: #555555;
-  border: 1.5px solid #e8e0ea;
-  padding: 14px 26px;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  white-space: nowrap;
-}
-
-.booking-btn-secondary:hover {
-  background: #FDF5FF;
-  border-color: #870097;
-  color: #870097;
-  box-shadow: 0 2px 12px rgba(135, 0, 151, 0.1);
-}
-
-.booking-btn-secondary svg {
-  width: 16px;
-  height: 16px;
-  color: #666666;
-  transition: color 0.2s ease;
-}
-
-.booking-btn-secondary:hover svg {
-  color: #870097;
-}
-
-/* ─── Sidebar ─── */
 .booking-sidebar {
   position: sticky;
   top: 100px;
@@ -720,18 +548,6 @@
   height: 18px;
 }
 
-/* ─── Dropdown Popup ─── */
-@keyframes popupFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(12px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
 .dropdown-popup {
   position: absolute;
   top: calc(100% + 16px);
@@ -743,7 +559,6 @@
   border: 1px solid #f0f0f0;
   z-index: 1000;
   cursor: default;
-  animation: popupFadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   box-sizing: border-box;
   min-width: 360px;
 }
@@ -753,7 +568,6 @@
   right: 0;
 }
 
-/* ─── Calendar ─── */
 .calendar-header {
   display: flex;
   align-items: center;
@@ -861,7 +675,6 @@
   cursor: not-allowed;
 }
 
-/* ─── Guests Dropdown ─── */
 .guests-popup {
   min-width: 360px;
 }
@@ -967,223 +780,14 @@
   background: #6B007A;
 }
 
-/* ─── Confirmation Modal ─── */
-.booking-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-  padding: 20px;
-  animation: fadeIn 0.2s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.booking-modal {
-  background: #ffffff;
-  border-radius: 24px;
-  max-width: 480px;
-  width: 100%;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
-  animation: modalSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
-}
-
-@keyframes modalSlideUp {
-  from { opacity: 0; transform: translateY(30px) scale(0.97); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.modal-header {
-  padding: 28px 28px 0;
-  text-align: center;
-}
-
-.modal-header h3 {
-  font-size: 20px;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin: 0 0 6px 0;
-}
-
-.modal-header p {
-  font-size: 14px;
-  color: #888888;
-  margin: 0;
-}
-
-.modal-body {
-  padding: 24px 28px;
-}
-
-.modal-room-info {
-  background: #FDF5FF;
-  border: 1px solid #F0E0F5;
-  border-radius: 16px;
-  padding: 16px 20px;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.modal-room-info h4 {
-  font-size: 16px;
-  font-weight: 700;
-  color: #373737;
-  margin: 0 0 6px 0;
-}
-
-.modal-tag {
-  font-size: 12px;
-  color: #870097;
-  font-weight: 600;
-  background: rgba(135, 0, 151, 0.08);
-  padding: 4px 12px;
-  border-radius: 20px;
-  display: inline-block;
-}
-
-.modal-details {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-bottom: 20px;
-}
-
-.modal-detail-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 16px;
-  background: #FAFAFA;
-  border-radius: 12px;
-}
-
-.modal-detail-row svg {
-  width: 20px;
-  height: 20px;
-  color: #870097;
-  flex-shrink: 0;
-}
-
-.modal-detail-row div {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.detail-label {
-  font-size: 12px;
-  color: #888888;
-  font-weight: 500;
-}
-
-.detail-value {
-  font-size: 14px;
-  color: #373737;
-  font-weight: 600;
-}
-
-.modal-price {
-  background: linear-gradient(135deg, #870097 0%, #6B007A 100%);
-  border-radius: 16px;
-  padding: 20px;
-  text-align: center;
-  color: #ffffff;
-}
-
-.modal-price-label {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  display: block;
-  margin-bottom: 4px;
-}
-
-.modal-price-value {
-  font-size: 32px;
-  font-weight: 700;
-  display: block;
-  letter-spacing: -0.5px;
-}
-
-.modal-price-note {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.6);
-  display: block;
-  margin-top: 4px;
-}
-
-.modal-footer {
-  display: flex;
-  gap: 12px;
-  padding: 0 28px 28px;
-}
-
-.modal-btn-secondary {
-  flex: 1;
-  padding: 14px;
-  background: #ffffff;
-  color: #555555;
-  border: 2px solid #f0e8f1;
-  border-radius: 14px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.modal-btn-secondary:hover {
-  background: #FDF5FF;
-  border-color: #870097;
-  color: #870097;
-}
-
-.modal-btn-primary {
-  flex: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 14px;
-  background: #25D366;
-  color: #ffffff;
-  border: none;
-  border-radius: 14px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.25s;
-  box-shadow: 0 4px 16px rgba(37, 211, 102, 0.3);
-}
-
-.modal-btn-primary:hover {
-  background: #1EBE5A;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(37, 211, 102, 0.4);
-}
-
-.modal-btn-primary svg {
-  width: 18px;
-  height: 18px;
-}
-
-/* ─── Responsive ─── */
+/* Tablet (1024px and below) */
 @media (max-width: 1024px) {
   .booking-section {
     padding: 100px 40px 60px;
   }
   .booking-layout {
     grid-template-columns: 1fr;
-    gap: 32px;
+    gap: 40px;
   }
   .booking-sidebar {
     position: static;
@@ -1191,7 +795,7 @@
   .booking-help-card {
     flex-direction: row;
     text-align: left;
-    padding: 24px;
+    padding: 28px;
     align-items: center;
     gap: 20px;
   }
@@ -1203,14 +807,41 @@
   .booking-room-card {
     grid-template-columns: 340px 1fr;
   }
+  .booking-room-details {
+    padding: 24px 24px 20px;
+    gap: 20px;
+  }
+  .booking-room-desc {
+    font-size: 14px;
+    line-height: 24px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .booking-room-desc.expanded {
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+    display: block;
+  }
+  .view-more-btn {
+    display: inline;
+    color: #870097;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 24px;
+  }
 }
 
+/* Tablet (768px and below) */
 @media (max-width: 768px) {
   .booking-section {
-    padding: 90px 32px 50px;
+    padding: 90px 24px 40px;
   }
   .booking-search-wrapper {
-    margin-bottom: 36px;
+    margin-bottom: 32px;
   }
   .booking-search-bar {
     flex-wrap: wrap;
@@ -1243,6 +874,17 @@
   .guests-popup {
     min-width: 100%;
   }
+  .booking-results-header {
+    margin-bottom: 28px;
+  }
+  .booking-results-title {
+    font-size: 26px;
+    line-height: 36px;
+    margin-bottom: 8px;
+  }
+  .booking-results-subtitle {
+    font-size: 14px;
+  }
   .booking-room-card {
     grid-template-columns: 1fr;
   }
@@ -1250,27 +892,77 @@
     padding: 14px;
   }
   .booking-room-details {
-    padding: 22px;
-    gap: 14px;
+    padding: 22px 20px 20px;
+    gap: 18px;
+  }
+  .booking-room-header {
+    margin-bottom: 0;
   }
   .booking-room-title {
-    font-size: 20px;
-    line-height: 28px;
+    font-size: 22px;
+    line-height: 30px;
+  }
+  .booking-room-size {
+    display: none;
+  }
+  .booking-room-desc {
+    font-size: 14px;
+    line-height: 24px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .booking-room-desc.expanded {
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+    display: block;
+  }
+  .view-more-btn {
+    display: inline;
+    color: #870097;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 24px;
+  }
+  .booking-room-meta {
+    gap: 18px;
+  }
+  .booking-meta-item {
+    font-size: 14px;
+  }
+  .booking-meta-item svg {
+    width: 18px;
+    height: 18px;
+  }
+  .booking-room-amenities {
+    gap: 8px;
+  }
+  .booking-amenity-tag {
+    font-size: 13px;
+    padding: 8px 14px;
   }
   .booking-room-footer {
     flex-direction: column;
     align-items: stretch;
     gap: 16px;
+    padding-top: 18px;
+    margin-top: 4px;
   }
-  .booking-room-actions {
-    width: 100%;
-    flex-direction: column;
-    gap: 10px;
+  .booking-room-price {
+    justify-content: flex-start;
   }
-  .booking-btn-primary,
-  .booking-btn-secondary {
+  .booking-price-amount,
+  .booking-price-original {
+    font-size: 20px;
+  }
+  .booking-btn-primary {
     width: 100%;
     justify-content: center;
+    padding: 16px;
+    font-size: 15px;
   }
   .booking-help-card {
     flex-direction: column;
@@ -1281,52 +973,43 @@
     flex-direction: column;
     width: 100%;
   }
-  .booking-results-title {
-    font-size: 28px;
-    line-height: 38px;
-  }
-  .booking-results-subtitle {
-    font-size: 15px;
-  }
-  .expanded-amenities {
-    grid-template-columns: 1fr;
-  }
-  .modal-footer {
-    flex-direction: column;
-  }
-  .modal-btn-primary,
-  .modal-btn-secondary {
-    width: 100%;
-  }
 }
 
+/* Mobile (480px and below) */
 @media (max-width: 480px) {
   .booking-section {
-    padding: 100px 24px 40px;
+    padding: 100px 16px 32px;
   }
   .booking-nav {
-    margin-bottom: 16px;
+    margin-bottom: 20px;
   }
   .booking-search-bar {
     padding: 12px;
-    gap: 8px;
+    gap: 15px;
     border-radius: 16px;
   }
   .booking-search-item {
     flex: 1 1 100%;
-    padding: 8px 0;
+    padding: 6px 0;
   }
   .booking-search-icon {
     width: 40px;
     height: 40px;
   }
+  .booking-search-label {
+    font-size: 10px;
+  }
+  .booking-search-value {
+    margin-top: 3px;
+    font-size: 14px;
+  }
   .booking-results-title {
-    font-size: 24px;
-    line-height: 34px;
-    margin-bottom: 8px;
+    font-size: 22px;
+    line-height: 30px;
   }
   .booking-results-subtitle {
     font-size: 14px;
+    font-weight: 500;
   }
   .calendar-day {
     width: 36px;
@@ -1345,57 +1028,88 @@
   .guest-desc {
     font-size: 12px;
   }
-  .booking-room-details {
-    padding: 18px;
-    gap: 12px;
-  }
-  .booking-room-title {
-    font-size: 18px;
-    line-height: 26px;
-  }
-  .booking-room-desc {
-    font-size: 13px;
-    line-height: 22px;
-  }
-  .booking-room-meta {
-    gap: 14px;
-  }
-  .booking-meta-item {
-    font-size: 12px;
-  }
-  .booking-price-amount {
-    font-size: 24px;
-  }
-  .booking-room-footer {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 14px;
-  }
-  .booking-room-actions {
-    width: 100%;
-    flex-direction: column;
+  .booking-room-gallery {
+    padding: 12px;
     gap: 10px;
   }
-  .booking-btn-primary,
-  .booking-btn-secondary {
-    width: 100%;
-    justify-content: center;
+  .booking-room-details {
+    padding: 18px 16px 16px;
+    gap: 16px;
+  }
+  .booking-room-title {
+    font-size: 24px;
+    line-height: 28px;
+  }
+  .booking-room-desc {
+    font-size: 14px;
+    line-height: 28px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .booking-room-desc.expanded {
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+    display: block;
+  }
+  .view-more-btn {
+    display: inline;
+    color: #870097;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 28px;
+  }
+  .booking-room-meta {
+    gap: 18px;
+  }
+  .booking-meta-item {
+    font-size: 13px;
+  }
+  .booking-meta-item svg {
+    width: 16px;
+    height: 16px;
+  }
+  .booking-amenity-tag {
+    font-size: 13px;
+    padding: 7px 12px;
+  }
+  .booking-price-amount,
+  .booking-price-original {
+    font-size: 18px;
+  }
+  .booking-room-footer {
+    gap: 20px;
+    padding-top: 16px;
+  }
+  .booking-btn-primary {
+    padding: 14px;
+    font-size: 14px;
   }
   .booking-help-card {
     padding: 24px;
+    gap: 12px;
+  }
+  .booking-help-icon {
+    width: 48px;
+    height: 48px;
+  }
+  .booking-help-icon svg {
+    width: 22px;
+    height: 22px;
   }
   .booking-help-title {
     font-size: 16px;
   }
-  .booking-modal {
-    border-radius: 20px;
+  .booking-help-text {
+    font-size: 13px;
+    line-height: 20px;
   }
-  .modal-header,
-  .modal-body {
-    padding-left: 20px;
-    padding-right: 20px;
-  }
-  .modal-footer {
-    padding: 0 20px 20px;
+  .booking-help-btn-primary,
+  .booking-help-btn-secondary {
+    padding: 12px 16px;
+    font-size: 13px;
   }
 }

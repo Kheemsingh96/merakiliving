@@ -14,8 +14,8 @@ const FAQ = () => {
       answer: "Yes. A freshly prepared complimentary breakfast is included with your stay, featuring a selection of delicious local and classic favorites to start your day."
     },
     {
-      question: "Does Meraki Living have its own café?",
-      answer: "Absolutely. The Meraki Mountain Café serves handcrafted beverages, authentic Kumaoni specialties, and freshly prepared meals in a peaceful mountain setting with beautiful Himalayan views."
+      question: "Does Meraki Living have its own cafe?",
+      answer: "Absolutely. The Meraki Mountain Cafe serves handcrafted beverages, authentic Kumaoni specialties, and freshly prepared meals in a peaceful mountain setting with beautiful Himalayan views."
     },
     {
       question: "Is parking available at the property?",
@@ -40,52 +40,98 @@ const FAQ = () => {
   ];
 
   const toggleFAQ = (index) => {
-    // If the clicked one is already active, close it. Otherwise, open the clicked one.
     setActiveIndex(activeIndex === index ? null : index);
   };
 
   return (
-    <section className="faq-section">
-      <div className="faq-header">
+    <section className="faq-section" aria-label="Frequently Asked Questions">
+      <header className="faq-header">
         <h2 className="faq-title">Everything You Need to Know</h2>
         <p className="faq-subtitle">
           Planning your stay at Meraki Living? Here are answers to the questions our guests ask most often before booking their mountain getaway.
         </p>
-      </div>
+      </header>
 
       <div className="faq-container">
-        {faqs.map((faq, index) => (
-          <div 
-            key={index} 
-            className={`faq-item ${activeIndex === index ? 'active' : ''}`}
-          >
-            <div 
-              className="faq-question" 
-              onClick={() => toggleFAQ(index)}
-            >
-              <h3>{faq.question}</h3>
-              <div className="faq-icon-wrapper">
-                <svg 
-                  className="faq-icon" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
+        <div className="faq-column">
+          {faqs.filter((_, i) => i % 2 === 0).map((faq, colIndex) => {
+            const originalIndex = colIndex * 2;
+            return (
+              <div
+                key={originalIndex}
+                className={`faq-item ${activeIndex === originalIndex ? 'active' : ''}`}
+              >
+                <button
+                  className="faq-question"
+                  onClick={() => toggleFAQ(originalIndex)}
+                  aria-expanded={activeIndex === originalIndex}
                 >
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
+                  <h3>{faq.question}</h3>
+                  <div className="faq-icon-wrapper">
+                    <svg
+                      className="faq-icon"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </div>
+                </button>
+
+                <div className="faq-answer-wrapper">
+                  <div className="faq-answer-content">
+                    <p>{faq.answer}</p>
+                  </div>
+                </div>
               </div>
-            </div>
-            
-            <div className="faq-answer-wrapper">
-              <div className="faq-answer-content">
-                <p>{faq.answer}</p>
+            );
+          })}
+        </div>
+
+        <div className="faq-column">
+          {faqs.filter((_, i) => i % 2 === 1).map((faq, colIndex) => {
+            const originalIndex = colIndex * 2 + 1;
+            return (
+              <div
+                key={originalIndex}
+                className={`faq-item ${activeIndex === originalIndex ? 'active' : ''}`}
+              >
+                <button
+                  className="faq-question"
+                  onClick={() => toggleFAQ(originalIndex)}
+                  aria-expanded={activeIndex === originalIndex}
+                >
+                  <h3>{faq.question}</h3>
+                  <div className="faq-icon-wrapper">
+                    <svg
+                      className="faq-icon"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </div>
+                </button>
+
+                <div className="faq-answer-wrapper">
+                  <div className="faq-answer-content">
+                    <p>{faq.answer}</p>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        ))}
+            );
+          })}
+        </div>
       </div>
     </section>
   );

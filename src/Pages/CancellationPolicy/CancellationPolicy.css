@@ -1,0 +1,252 @@
+/* ============================================
+   MERAKI LIVING — CANCELLATION POLICY
+   ============================================ */
+
+.cancellation-policy-wrapper {
+  width: 100%;
+  background: #F8F3F8;
+  padding: 180px 48px 80px;
+  box-sizing: border-box;
+  min-height: 100vh;
+}
+
+.cancellation-policy-container {
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Header Section */
+.cancellation-policy-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.cancellation-policy-title {
+  font-size: 32px;
+  color: #373737;
+  font-weight: 600;
+  margin: 0 0 14px 0;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+}
+
+.cancellation-policy-intro {
+  font-size: 16px;
+  color: #777777;
+  margin: 0 auto;
+  font-weight: 400;
+  line-height: 1.6;
+  max-width: 560px;
+}
+
+/* Content Card */
+.cancellation-policy-content {
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  padding: 40px 48px;
+}
+
+.cancellation-policy-content h2 {
+  font-size: 18px;
+  color: #373737;
+  font-weight: 600;
+  margin: 0 0 14px 0;
+  line-height: 1.4;
+  letter-spacing: -0.2px;
+  padding-top: 32px;
+}
+
+.cancellation-policy-content h2:first-of-type {
+  padding-top: 0;
+}
+
+.cancellation-policy-content p {
+  font-size: 15px;
+  color: #555555;
+  margin: 0 0 14px 0;
+  font-weight: 400;
+  line-height: 1.7;
+}
+
+.cancellation-policy-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* Table */
+.cancellation-policy-table-wrapper {
+  overflow-x: auto;
+  margin: 16px 0 24px 0;
+}
+
+.cancellation-policy-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.cancellation-policy-table th,
+.cancellation-policy-table td {
+  padding: 14px 18px;
+  text-align: left;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.cancellation-policy-table th {
+  background: #FAFAFA;
+  color: #373737;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.3px;
+}
+
+.cancellation-policy-table td {
+  color: #555555;
+  font-weight: 400;
+}
+
+.cancellation-policy-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Highlight Box */
+.cancellation-policy-highlight {
+  background: #FDF5FF;
+  border: 1px solid #F0E0F5;
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin: 20px 0;
+}
+
+.cancellation-policy-highlight p {
+  font-size: 14px;
+  color: #870097;
+  font-weight: 500;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Section Dividers */
+.cancellation-policy-section + .cancellation-policy-section {
+  margin-top: 32px;
+  padding-top: 32px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* Footer Note */
+.cancellation-policy-footer {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.cancellation-policy-footer p {
+  font-size: 14px;
+  color: #888888;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .cancellation-policy-wrapper {
+    padding: 100px 32px 60px;
+  }
+
+  .cancellation-policy-title {
+    font-size: 28px;
+    line-height: 38px;
+  }
+
+  .cancellation-policy-intro {
+    font-size: 15px;
+  }
+
+  .cancellation-policy-content {
+    padding: 32px 28px;
+    border-radius: 16px;
+  }
+
+  .cancellation-policy-content h2 {
+    font-size: 17px;
+    padding-top: 28px;
+  }
+
+  .cancellation-policy-content p {
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  .cancellation-policy-table th,
+  .cancellation-policy-table td {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+
+  .cancellation-policy-highlight {
+    padding: 16px 20px;
+  }
+
+  .cancellation-policy-section + .cancellation-policy-section {
+    margin-top: 28px;
+    padding-top: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cancellation-policy-wrapper {
+    padding: 90px 24px 48px;
+  }
+
+  .cancellation-policy-title {
+    font-size: 24px;
+    line-height: 34px;
+    margin-bottom: 10px;
+  }
+
+  .cancellation-policy-intro {
+    font-size: 14px;
+  }
+
+  .cancellation-policy-header {
+    margin-bottom: 32px;
+  }
+
+  .cancellation-policy-content {
+    padding: 24px 22px;
+    border-radius: 14px;
+  }
+
+  .cancellation-policy-content h2 {
+    font-size: 16px;
+    padding-top: 24px;
+    margin-bottom: 10px;
+  }
+
+  .cancellation-policy-content p {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .cancellation-policy-table th,
+  .cancellation-policy-table td {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .cancellation-policy-highlight {
+    padding: 14px 18px;
+    border-radius: 12px;
+  }
+
+  .cancellation-policy-highlight p {
+    font-size: 13px;
+  }
+
+  .cancellation-policy-section + .cancellation-policy-section {
+    margin-top: 24px;
+    padding-top: 24px;
+  }
+}

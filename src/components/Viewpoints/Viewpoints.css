@@ -38,10 +38,6 @@
   max-width: 950px;
 }
 
-.desktop-break {
-  display: block;
-}
-
 .viewpoints-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -66,17 +62,6 @@
   height: 380px;
 }
 
-@keyframes cardFadeUp {
-  0% {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .viewpoint-card {
   position: relative;
   border-radius: 20px;
@@ -85,13 +70,11 @@
   border: 1px solid rgba(255, 255, 255, 0.05);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   cursor: pointer;
-  box-sizing: border-box;
-  animation: cardFadeUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-  transition: transform 0.4s ease, box-shadow 0.4s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .viewpoint-card:hover {
-  transform: translateY(-8px);
+  transform: translateY(-6px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
@@ -103,11 +86,11 @@
   height: 100%;
   object-fit: cover;
   z-index: 1;
-  transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: transform 0.5s ease;
 }
 
 .viewpoint-card:hover .viewpoint-image {
-  transform: scale(1.08);
+  transform: scale(1.06);
 }
 
 .viewpoint-overlay {
@@ -118,12 +101,6 @@
   height: 65%;
   background: linear-gradient(to top, rgba(21, 0, 22, 0.98) 0%, rgba(21, 0, 22, 0.85) 45%, transparent 100%);
   z-index: 2;
-  transition: height 0.4s ease;
-}
-
-.viewpoint-card:hover .viewpoint-overlay {
-  height: 70%;
-  background: linear-gradient(to top, rgba(21, 0, 22, 0.98) 0%, rgba(21, 0, 22, 0.9) 50%, transparent 100%);
 }
 
 .viewpoint-badge {
@@ -151,6 +128,7 @@
   width: 14px;
   height: 14px;
   color: #F79D00;
+  flex-shrink: 0;
 }
 
 .viewpoint-content {
@@ -164,11 +142,6 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  transition: transform 0.4s ease;
-}
-
-.viewpoint-card:hover .viewpoint-content {
-  transform: translateY(-4px);
 }
 
 .viewpoint-card-title {
@@ -210,6 +183,7 @@
   width: 16px;
   height: 16px;
   transition: transform 0.3s ease;
+  flex-shrink: 0;
 }
 
 .viewpoint-card:hover .viewpoint-link svg {
@@ -259,9 +233,6 @@
     font-size: 16px;
     line-height: 28px;
   }
-  .desktop-break {
-    display: none;
-  }
 }
 
 @media (max-width: 600px) {
@@ -294,7 +265,19 @@
     font-size: 16px;
     line-height: 26px;
   }
+  .viewpoints-grid {
+    gap: 16px;
+  }
   .viewpoint-card-title {
     font-size: 20px;
+  }
+  .viewpoint-content {
+    padding: 24px 20px;
+  }
+  .viewpoint-badge {
+    top: 16px;
+    left: 16px;
+    padding: 5px 12px;
+    font-size: 11px;
   }
 }

@@ -1,4 +1,3 @@
-/* src/components/Navbar/Navbar.css */
 .navbar-wrapper {
   position: absolute;
   top: 32px;
@@ -35,7 +34,6 @@
   width: auto;
 }
 
-/* Desktop Links */
 .navbar-links {
   display: flex;
   list-style: none;
@@ -56,7 +54,6 @@
   color: #5C0E60;
 }
 
-/* Desktop Actions */
 .navbar-actions {
   display: flex;
   align-items: center;
@@ -78,7 +75,6 @@
   background-color: #5C0E60;
 }
 
-/* Transforming Hamburger Icon */
 .hamburger-btn {
   display: none;
   width: 32px;
@@ -89,7 +85,7 @@
   cursor: pointer;
   padding: 0;
   margin-right: 8px;
-  z-index: 105; /* Must be higher than mobile-menu (102) */
+  z-index: 105;
 }
 
 .hamburger-line {
@@ -102,26 +98,25 @@
   transition: all 0.35s ease-in-out;
 }
 
-/* Default 3 Lines */
 .hamburger-line:nth-child(1) { top: 0px; }
 .hamburger-line:nth-child(2) { top: 10px; opacity: 1; transform: translateX(0); }
 .hamburger-line:nth-child(3) { top: 20px; }
 
-/* Active State (Transforms to X) */
 .hamburger-btn.active .hamburger-line:nth-child(1) {
   top: 10px;
   transform: rotate(45deg);
 }
+
 .hamburger-btn.active .hamburger-line:nth-child(2) {
   opacity: 0;
   transform: translateX(-15px);
 }
+
 .hamburger-btn.active .hamburger-line:nth-child(3) {
   top: 10px;
   transform: rotate(-45deg);
 }
 
-/* Mobile Menu Overlay */
 .mobile-menu-overlay {
   position: fixed;
   top: 0;
@@ -140,7 +135,6 @@
   visibility: visible;
 }
 
-/* Mobile Menu Drawer */
 .mobile-menu {
   position: fixed;
   top: 0;
@@ -149,7 +143,7 @@
   max-width: 85vw;
   height: 100vh;
   background-color: #ffffff;
-  z-index: 102; /* Hamburger (105) will sit on top of this */
+  z-index: 102;
   display: flex;
   flex-direction: column;
   padding: 24px;
@@ -163,7 +157,6 @@
   right: 0;
 }
 
-/* Mobile Menu Header */
 .mobile-menu-header {
   display: flex;
   align-items: center;
@@ -171,7 +164,7 @@
   margin-bottom: 40px;
   padding-bottom: 20px;
   border-bottom: 1px solid #f0f0f0;
-  min-height: 40px; /* Space for logo */
+  min-height: 40px;
 }
 
 .mobile-logo-img {
@@ -179,7 +172,6 @@
   width: auto;
 }
 
-/* Mobile Links - Strict Color Lock */
 .mobile-navbar-links {
   display: flex;
   flex-direction: column;
@@ -191,17 +183,16 @@
 
 .mobile-navbar-links a {
   text-decoration: none;
-  color: #373737 !important; /* Forces color to stay the same */
+  color: #373737;
   font-size: 18px;
   font-weight: 500;
   outline: none;
-  -webkit-tap-highlight-color: transparent; /* Removes blue tap highlight on mobile */
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* Mobile Action Button */
 .mobile-navbar-actions {
   display: flex;
-  margin-top: 32px; 
+  margin-top: 32px;
   width: 100%;
 }
 
@@ -223,10 +214,6 @@
   background-color: #5C0E60;
 }
 
-/* ==========================================================================
-   RESPONSIVE DESIGN
-   ========================================================================== */
-
 @media (max-width: 1024px) {
   .navbar-links {
     gap: 20px;
@@ -234,19 +221,19 @@
 }
 
 @media (max-width: 850px) {
-  .navbar-links, 
+  .navbar-links,
   .navbar-actions {
     display: none;
   }
-  
+
   .hamburger-btn {
     display: block;
   }
-  
+
   .navbar-container {
     padding: 12px 20px;
   }
-  
+
   .logo-img {
     height: 44px;
   }
@@ -265,5 +252,103 @@
   .mobile-menu {
     width: 280px;
     padding: 20px;
+  }
+
+  .mobile-menu-header {
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+  }
+
+  .mobile-navbar-links {
+    gap: 20px;
+  }
+
+  .mobile-navbar-links a {
+    font-size: 16px;
+  }
+
+  .btn-book-now-mobile {
+    padding: 14px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 360px) {
+  .navbar-wrapper {
+    top: 16px;
+    padding: 0px 12px;
+  }
+
+  .navbar-container {
+    padding: 8px 14px;
+  }
+
+  .logo-img {
+    height: 40px;
+  }
+
+  .hamburger-btn {
+    width: 28px;
+    height: 20px;
+  }
+
+  .hamburger-line {
+    height: 2px;
+  }
+
+  .hamburger-line:nth-child(1) { top: 0px; }
+  .hamburger-line:nth-child(2) { top: 9px; }
+  .hamburger-line:nth-child(3) { top: 18px; }
+
+  .hamburger-btn.active .hamburger-line:nth-child(1) {
+    top: 9px;
+    transform: rotate(45deg);
+  }
+
+  .hamburger-btn.active .hamburger-line:nth-child(3) {
+    top: 9px;
+    transform: rotate(-45deg);
+  }
+
+  .mobile-menu {
+    width: 260px;
+    padding: 16px;
+  }
+
+  .mobile-menu-header {
+    margin-bottom: 28px;
+    padding-bottom: 14px;
+  }
+
+  .mobile-logo-img {
+    height: 36px;
+  }
+
+  .mobile-navbar-links {
+    gap: 18px;
+  }
+
+  .mobile-navbar-links a {
+    font-size: 15px;
+  }
+
+  .mobile-navbar-actions {
+    margin-top: 24px;
+  }
+
+  .btn-book-now-mobile {
+    padding: 12px;
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 851px) {
+  .mobile-menu-overlay.active {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .mobile-menu.active {
+    right: -100%;
   }
 }

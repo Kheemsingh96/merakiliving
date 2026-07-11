@@ -1,4 +1,3 @@
-/* src/components/Hero/Hero.css */
 .hero-section {
   position: relative;
   display: flex;
@@ -6,6 +5,7 @@
   justify-content: center;
   padding: 260px 24px 220px;
   box-sizing: border-box;
+  min-height: 100vh;
 }
 
 .hero-bg {
@@ -52,18 +52,6 @@
   flex-direction: column;
   align-items: center;
   gap: 24px;
-  animation: fadeInText 0.8s ease-in-out;
-}
-
-@keyframes fadeInText {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0px);
-  }
 }
 
 .hero-title {
@@ -218,18 +206,6 @@
   background-color: #5C0E60;
 }
 
-/* Dropdown Popups */
-@keyframes popupFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0px);
-  }
-}
-
 .dropdown-popup {
   position: absolute;
   top: calc(100% + 16px);
@@ -245,7 +221,17 @@
   box-sizing: border-box;
 }
 
-/* Calendar Styles */
+@keyframes popupFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
+
 .calendar-header {
   display: flex;
   align-items: center;
@@ -340,7 +326,6 @@
   cursor: not-allowed;
 }
 
-/* Guests Styles */
 .guests-popup {
   min-width: 340px;
 }
@@ -447,17 +432,11 @@
   opacity: 1;
 }
 
-
-/* ==========================================================================
-   RESPONSIVE DESIGN
-   ========================================================================== */
-
-/* Tablet Landscape */
 @media (max-width: 1024px) {
   .hero-section {
     padding: 220px 24px 180px;
   }
-  
+
   .hero-title {
     font-size: 48px;
     line-height: 58px;
@@ -466,7 +445,7 @@
   .hero-booking-bar {
     padding: 12px;
   }
-  
+
   .booking-item {
     padding: 12px 16px;
     gap: 12px;
@@ -482,13 +461,11 @@
   }
 }
 
-/* Tablet Portrait & Mobile */
 @media (max-width: 768px) {
   .hero-section {
-    /* Large bottom padding required because the booking bar is vertically stacked and absolute */
     padding: 180px 24px 440px;
   }
-  
+
   .hero-content {
     gap: 16px;
   }
@@ -501,7 +478,7 @@
     font-size: 38px;
     line-height: 48px;
   }
-  
+
   .hero-description {
     font-size: 15px;
     line-height: 24px;
@@ -543,7 +520,6 @@
     padding: 18px 24px;
   }
 
-  /* Dropdown Adjustments for Mobile */
   .dropdown-popup {
     top: calc(100% + 8px);
     left: 0;
@@ -562,12 +538,11 @@
   }
 }
 
-/* Small Mobile */
 @media (max-width: 480px) {
   .hero-section {
     padding: 140px 16px 420px;
   }
-  
+
   .hero-title {
     font-size: 32px;
     line-height: 40px;
@@ -611,26 +586,24 @@
     font-size: 15px;
   }
 
-  /* Calendar specific tweaks for small mobile */
   .calendar-day {
     width: 32px;
     height: 32px;
     font-size: 13px;
   }
-  
+
   .calendar-days-header {
     font-size: 12px;
   }
 
-  /* Guests specific tweaks for small mobile */
   .guest-row {
     padding: 16px 0px;
   }
-  
+
   .guest-type {
     font-size: 15px;
   }
-  
+
   .guest-desc {
     font-size: 12px;
   }

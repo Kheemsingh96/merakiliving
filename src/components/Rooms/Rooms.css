@@ -46,11 +46,11 @@
   overflow: hidden;
   border: 1px solid #f0f0f0;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-  transition: transform 0.35s ease, box-shadow 0.35s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .room-card:hover {
-  transform: translateY(-8px);
+  transform: translateY(-6px);
   box-shadow: 0 20px 50px rgba(135, 0, 151, 0.1);
 }
 
@@ -65,7 +65,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.6s ease;
+  transition: transform 0.5s ease;
 }
 
 .room-card:hover .room-image-box img {
@@ -109,6 +109,7 @@
   width: 14px;
   height: 14px;
   color: #F5A623;
+  flex-shrink: 0;
 }
 
 .room-rating-stars span {
@@ -135,7 +136,7 @@
 }
 
 .room-title {
-  font-size: 24px;
+  font-size: 22px;
   color: #373737;
   font-weight: 600;
   margin: 0;
@@ -166,13 +167,6 @@
   font-size: 12px;
   color: #666666;
   font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.room-amenity:hover {
-  background: #FDF5FF;
-  border-color: #870097;
-  color: #870097;
 }
 
 .room-amenity svg {
@@ -180,6 +174,7 @@
   height: 16px;
   color: #870097;
   stroke-width: 1.5;
+  flex-shrink: 0;
 }
 
 .room-footer {
@@ -239,21 +234,20 @@
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease;
   box-shadow: 0 4px 12px rgba(135, 0, 151, 0.25);
   white-space: nowrap;
 }
 
 .room-btn:hover {
   background: #6B007A;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(135, 0, 151, 0.35);
 }
 
 .room-btn svg {
   width: 16px;
   height: 16px;
   stroke-width: 2.5;
+  flex-shrink: 0;
 }
 
 @media (max-width: 1024px) {
@@ -320,6 +314,9 @@
   .rooms-subtitle {
     font-size: 16px;
     line-height: 26px;
+  }
+  .rooms-grid {
+    gap: 20px;
   }
   .room-image-box {
     aspect-ratio: 16 / 10;
