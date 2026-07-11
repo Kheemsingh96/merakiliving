@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './GuestDetails.css';
 
 import room1 from '../../assets/images/room-1.png';
@@ -171,7 +171,7 @@ const amenityIcons = {
 };
 
 const GuestDetails = ({ setCurrentPage, selectedRoomId = 1 }) => {
-  const [currentStep, setCurrentStep] = useState(2);
+  const [currentStep] = useState(1);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
