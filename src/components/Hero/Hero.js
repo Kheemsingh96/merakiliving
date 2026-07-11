@@ -109,6 +109,7 @@ function Hero({ setCurrentPage }) {
     if (setCurrentPage) setCurrentPage('booking');
   }, [checkInDate, checkOutDate, guests, setCurrentPage]);
 
+  // eslint-disable-next-line no-unused-vars
   const handleNavClick = useCallback((page) => {
     setActivePopup(null);
     if (setCurrentPage) setCurrentPage(page);
