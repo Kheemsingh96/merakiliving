@@ -4,12 +4,13 @@ import logo from '../../assets/images/logo.png';
 
 const NAV_ITEMS = [
   { id: 'home', label: 'Home' },
+  { id: 'stay', label: 'Stay' },
   { id: 'own-villa', label: 'Own a Villa' },
-  { id: 'sell-rent', label: 'Sell/Rent' },
-  { id: 'cafe-meraki', label: 'Cafe Meraki' },
-  { id: 'farm-stay', label: 'Farm Stay' },
+  { id: 'experiences', label: 'Experiences' },
+  { id: 'cafe', label: 'Cafe' },
   { id: 'gallery', label: 'Gallery' },
-  { id: 'contact', label: 'Contact Us' },
+  { id: 'about', label: 'About' },
+  { id: 'contact', label: 'Contact' },
 ];
 
 function Navbar({ setCurrentPage, currentPage }) {
