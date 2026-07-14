@@ -21,13 +21,14 @@ function Hero({ setCurrentPage }) {
   useEffect(() => {
     const intervalId = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % SLIDES.length);
-    }, 6000);
+    }, 4000); // 4s transition gives a more premium, relaxed feel than 3s
 
     return () => clearInterval(intervalId);
   }, []);
 
   return (
     <section className="hero-section" aria-label="Hero Banner">
+      {/* Background Slider */}
       <div className="hero-bg-wrapper">
         {SLIDES.map((slide, index) => (
           <div
@@ -40,69 +41,53 @@ function Hero({ setCurrentPage }) {
         ))}
       </div>
 
-      <div className="hero-overlay-radial" />
-      <div className="hero-overlay-vignette" />
-      <div className="hero-overlay-top" />
+      {/* Gradients */}
+      <div className="hero-overlay-main" />
       <div className="hero-overlay-bottom" />
-      <div className="hero-overlay-warm" />
-      <div className="hero-overlay-plum" />
 
-      <div className={`hero-content ${isLoaded ? 'hero-loaded' : ''}`}>
-        <div className="hero-text-wrapper">
-          <p className="hero-pre-title">Meraki Living</p>
+      {/* Content */}
+      <div className="hero-container">
+        <div className={`hero-content ${isLoaded ? 'hero-loaded' : ''}`}>
+          <div className="hero-text-wrapper">
+            <p className="hero-pre-title">Meraki Living</p>
 
-          <h1 className="hero-title">
-            SROT <span className="hindi-title">स्रोत</span>
-          </h1>
+            <h1 className="hero-title">
+              SROT <span className="hindi-title">स्रोत</span>
+            </h1>
 
-          <h2 className="hero-subtitle">Luxury Boutique Farm Retreat</h2>
+            <h2 className="hero-subtitle">Luxury Boutique Farm Retreat</h2>
 
-          <div className="hero-location">
-            <Location01Icon size={18} className="location-icon" variant="stroke" />
-            <span>Peora &bull; Near Mukteshwar &bull; Kumaon Himalayas</span>
+            <div className="hero-location">
+              <Location01Icon size={18} className="location-icon" variant="stroke" />
+              <span>Peora &bull; Near Mukteshwar &bull; Kumaon Himalayas</span>
+            </div>
+
+            <p className="hero-tagline">Where Every Journey Finds Its Source</p>
+
+            <p className="hero-description">
+              Nestled in the serene Himalayan village of Peora, surrounded by lush forests, fruit orchards, and a perennial mountain stream, SROT offers thoughtfully designed cottages, farm-fresh cuisine, and unforgettable Himalayan experiences.
+            </p>
           </div>
 
-          <p className="hero-tagline">Where Every Journey Finds Its Source</p>
-
-          <p className="hero-description">
-            Nestled in the serene Himalayan village of Peora, surrounded by lush forests, fruit orchards, and a perennial mountain stream, SROT offers thoughtfully designed cottages, farm-fresh cuisine, and unforgettable Himalayan experiences.
-          </p>
+          <div className="hero-btn-group">
+            <button
+              className="hero-btn"
+              aria-label="Book Your Stay"
+              type="button"
+              onClick={() => setCurrentPage('booking')}
+            >
+              Book Your Stay
+            </button>
+            <button
+              className="hero-btn-outline"
+              aria-label="Explore स्रोत"
+              type="button"
+              onClick={() => setCurrentPage('explore')}
+            >
+              Explore स्रोत
+            </button>
+          </div>
         </div>
-
-        <div className="hero-btn-group">
-          <button
-            className="hero-btn"
-            aria-label="Book Your Stay"
-            type="button"
-            onClick={() => setCurrentPage('booking')}
-          >
-            Book Your Stay
-          </button>
-          <button
-            className="hero-btn-outline"
-            aria-label="Explore स्रोत"
-            type="button"
-            onClick={() => setCurrentPage('explore')}
-          >
-            Explore स्रोत
-          </button>
-        </div>
-      </div>
-
-      <div className="hero-slide-indicators">
-        {SLIDES.map((_, index) => (
-          <button
-            key={index}
-            className={`hero-indicator ${index === activeIndex ? 'active' : ''}`}
-            onClick={() => setActiveIndex(index)}
-            aria-label={`Go to slide ${index + 1}`}
-            type="button"
-          />
-        ))}
-      </div>
-
-      <div className="hero-scroll-hint">
-        <div className="hero-scroll-line" />
       </div>
     </section>
   );

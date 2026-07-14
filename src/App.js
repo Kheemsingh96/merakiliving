@@ -21,6 +21,7 @@ import CancellationPolicy from './Pages/CancellationPolicy/CancellationPolicy';
 import './App.css';
 
 const HOME_PAGES = ['home', 'rooms', 'explore', 'cafe', 'faq'];
+const LEGAL_PAGES = ['privacy-policy', 'terms-conditions', 'cancellation-policy'];
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
@@ -37,6 +38,31 @@ function App() {
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const history = JSON.parse(sessionStorage.getItem('meraki_navHistory') || '[]');
+      if (history.length > 1) {
+        history.pop();
+        const previousPage = history[history.length - 1];
+        sessionStorage.setItem('meraki_navHistory', JSON.stringify(history));
+        setCurrentPage(previousPage);
+      } else {
+        setCurrentPage('home');
+        sessionStorage.setItem('meraki_navHistory', JSON.stringify(['home']));
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  useEffect(() => {
+    if (LEGAL_PAGES.includes(currentPage)) {
+      window.history.pushState({ page: currentPage }, '', window.location.href);
+    }
+  }, [currentPage]);
 
   const renderPage = useCallback(() => {
     if (HOME_PAGES.includes(currentPage)) {
@@ -61,11 +87,11 @@ function App() {
       case 'guest-details':
         return <GuestDetails setCurrentPage={handleNavigate} selectedRoomId={selectedRoomId} />;
       case 'privacy-policy':
-        return <PrivacyPolicy setCurrentPage={handleNavigate} />;
+        return <PrivacyPolicy />;
       case 'terms-conditions':
-        return <TermsConditions setCurrentPage={handleNavigate} />;
+        return <TermsConditions />;
       case 'cancellation-policy':
-        return <CancellationPolicy setCurrentPage={handleNavigate} />;
+        return <CancellationPolicy />;
       default:
         return (
           <>

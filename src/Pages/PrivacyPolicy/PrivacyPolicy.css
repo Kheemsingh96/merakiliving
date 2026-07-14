@@ -1,93 +1,84 @@
-/* ============================================
-   MERAKI LIVING — PRIVACY POLICY
-   ============================================ */
-
 .privacy-policy-wrapper {
   width: 100%;
-  background: #F8F3F8;
-  padding: 180px 48px 80px;
+  background: #F6F4F7;
+  padding: 120px 48px 100px;
   box-sizing: border-box;
   min-height: 100vh;
 }
 
-.privacy-policy-container {
-  max-width: 800px;
+.privacy-policy-outer {
+  max-width: 1280px;
   margin: 0 auto;
   width: 100%;
 }
 
-/* Header Section */
+.privacy-policy-content {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 0;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+}
+
 .privacy-policy-header {
-  text-align: center;
-  margin-bottom: 48px;
+  padding: 64px 80px 48px 80px;
+  border-bottom: 1px solid #F0EDF2;
 }
 
 .privacy-policy-title {
-  font-size: 32px;
-  color: #373737;
-  font-weight: 600;
-  margin: 0 0 14px 0;
-  line-height: 1.2;
-  letter-spacing: -0.5px;
+  font-size: 36px;
+  color: #1A1A1A;
+  font-weight: 500;
+  margin: 0 0 16px 0;
+  line-height: 1.15;
+  letter-spacing: -0.6px;
 }
 
 .privacy-policy-intro {
   font-size: 16px;
-  color: #777777;
-  margin: 0 auto;
-  font-weight: 400;
-  line-height: 1.6;
-  max-width: 560px;
-}
-
-/* Content Card */
-.privacy-policy-content {
-  background: #ffffff;
-  border-radius: 20px;
-  border: 1px solid #f0f0f0;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-  padding: 40px 48px;
-}
-
-.privacy-policy-content h2 {
-  font-size: 18px;
-  color: #373737;
-  font-weight: 600;
-  margin: 0 0 14px 0;
-  line-height: 1.4;
-  letter-spacing: -0.2px;
-  padding-top: 32px;
-}
-
-.privacy-policy-content h2:first-of-type {
-  padding-top: 0;
-}
-
-.privacy-policy-content p {
-  font-size: 15px;
-  color: #555555;
-  margin: 0 0 14px 0;
+  color: #8A7A8A;
+  margin: 0;
   font-weight: 400;
   line-height: 1.7;
+  max-width: 640px;
 }
 
-.privacy-policy-content p:last-child {
+.privacy-policy-body {
+  padding: 48px 80px 64px 80px;
+}
+
+.privacy-policy-body h2 {
+  font-size: 17px;
+  color: #1A1A1A;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  line-height: 1.4;
+  letter-spacing: -0.1px;
+}
+
+.privacy-policy-body p {
+  font-size: 15px;
+  color: #555555;
+  margin: 0 0 16px 0;
+  font-weight: 400;
+  line-height: 1.75;
+}
+
+.privacy-policy-body p:last-child {
   margin-bottom: 0;
 }
 
-/* Lists */
 .privacy-policy-list {
   list-style: none;
   padding: 0;
-  margin: 0 0 20px 0;
+  margin: 0 0 16px 0;
 }
 
 .privacy-policy-list li {
   position: relative;
-  padding-left: 28px;
+  padding-left: 24px;
   font-size: 15px;
   color: #555555;
-  line-height: 1.7;
+  line-height: 1.75;
   margin-bottom: 10px;
 }
 
@@ -100,123 +91,142 @@
   position: absolute;
   left: 0;
   top: 9px;
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: #870097;
   flex-shrink: 0;
 }
 
-/* Section Dividers */
 .privacy-policy-section + .privacy-policy-section {
-  margin-top: 32px;
-  padding-top: 32px;
-  border-top: 1px solid #f0f0f0;
+  margin-top: 0;
+  padding-top: 40px;
+  border-top: 1px solid #F0EDF2;
 }
 
-/* Footer Note */
 .privacy-policy-footer {
-  margin-top: 32px;
+  margin-top: 40px;
   padding-top: 24px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid #F0EDF2;
 }
 
 .privacy-policy-footer p {
   font-size: 14px;
-  color: #888888;
+  color: #999999;
   margin: 0;
   line-height: 1.6;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .privacy-policy-wrapper {
-    padding: 100px 32px 60px;
+    padding: 100px 32px 72px;
+  }
+
+  .privacy-policy-header {
+    padding: 48px 48px 36px 48px;
   }
 
   .privacy-policy-title {
-    font-size: 28px;
-    line-height: 38px;
+    font-size: 30px;
+    line-height: 1.2;
+    letter-spacing: -0.4px;
+    margin-bottom: 14px;
   }
 
   .privacy-policy-intro {
     font-size: 15px;
+    line-height: 1.65;
   }
 
-  .privacy-policy-content {
-    padding: 32px 28px;
-    border-radius: 16px;
+  .privacy-policy-body {
+    padding: 36px 48px 48px 48px;
   }
 
-  .privacy-policy-content h2 {
-    font-size: 17px;
-    padding-top: 28px;
+  .privacy-policy-body h2 {
+    font-size: 16px;
+    margin-bottom: 14px;
   }
 
-  .privacy-policy-content p,
+  .privacy-policy-body p,
+  .privacy-policy-list li {
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .privacy-policy-list li {
+    padding-left: 22px;
+    margin-bottom: 8px;
+  }
+
+  .privacy-policy-list li::before {
+    top: 8px;
+    width: 5px;
+    height: 5px;
+  }
+
+  .privacy-policy-section + .privacy-policy-section {
+    padding-top: 32px;
+  }
+
+  .privacy-policy-footer {
+    margin-top: 32px;
+    padding-top: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .privacy-policy-wrapper {
+    padding: 120px 20px 56px;
+  }
+
+  .privacy-policy-header {
+    padding: 36px 28px 28px 28px;
+  }
+
+  .privacy-policy-title {
+    font-size: 26px;
+    line-height: 1.2;
+    margin-bottom: 12px;
+    letter-spacing: -0.3px;
+  }
+
+  .privacy-policy-intro {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .privacy-policy-body {
+    padding: 28px 28px 36px 28px;
+  }
+
+  .privacy-policy-body h2 {
+    font-size: 15px;
+    margin-bottom: 12px;
+  }
+
+  .privacy-policy-body p,
   .privacy-policy-list li {
     font-size: 14px;
     line-height: 1.65;
   }
 
   .privacy-policy-list li {
-    padding-left: 24px;
+    margin-bottom: 8px;
+    padding-left: 20px;
   }
 
   .privacy-policy-list li::before {
-    top: 8px;
-    width: 7px;
-    height: 7px;
+    top: 7px;
+    width: 5px;
+    height: 5px;
   }
 
   .privacy-policy-section + .privacy-policy-section {
-    margin-top: 28px;
-    padding-top: 28px;
-  }
-}
-
-@media (max-width: 480px) {
-  .privacy-policy-wrapper {
-    padding: 90px 24px 48px;
-  }
-
-  .privacy-policy-title {
-    font-size: 24px;
-    line-height: 34px;
-    margin-bottom: 10px;
-  }
-
-  .privacy-policy-intro {
-    font-size: 14px;
-  }
-
-  .privacy-policy-header {
-    margin-bottom: 32px;
-  }
-
-  .privacy-policy-content {
-    padding: 24px 22px;
-    border-radius: 14px;
-  }
-
-  .privacy-policy-content h2 {
-    font-size: 16px;
     padding-top: 24px;
-    margin-bottom: 10px;
   }
 
-  .privacy-policy-content p,
-  .privacy-policy-list li {
-    font-size: 14px;
-    line-height: 1.6;
-  }
-
-  .privacy-policy-list li {
-    margin-bottom: 8px;
-  }
-
-  .privacy-policy-section + .privacy-policy-section {
+  .privacy-policy-footer {
     margin-top: 24px;
-    padding-top: 24px;
+    padding-top: 16px;
   }
 }
