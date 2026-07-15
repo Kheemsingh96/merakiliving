@@ -14,6 +14,7 @@ import Footer from './components/Footer/Footer';
 
 import Booking from './Pages/Booking/Booking';
 import GuestDetails from './Pages/GuestDetails/GuestDetails';
+import Payment from './Pages/Payment/Payment';
 import PrivacyPolicy from './Pages/PrivacyPolicy/PrivacyPolicy';
 import TermsConditions from './Pages/TermsConditions/TermsConditions';
 import CancellationPolicy from './Pages/CancellationPolicy/CancellationPolicy';
@@ -86,6 +87,8 @@ function App() {
         return <Booking setCurrentPage={handleNavigate} />;
       case 'guest-details':
         return <GuestDetails setCurrentPage={handleNavigate} selectedRoomId={selectedRoomId} />;
+      case 'payment':
+        return <Payment setCurrentPage={handleNavigate} selectedRoomId={selectedRoomId} />;
       case 'privacy-policy':
         return <PrivacyPolicy />;
       case 'terms-conditions':

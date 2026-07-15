@@ -1,53 +1,50 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Location01Icon } from 'hugeicons-react';
 import './Hero.css';
 
 import hero1 from '../../assets/images/hero1.png';
 import hero2 from '../../assets/images/hero2.png';
 import hero3 from '../../assets/images/hero3.png';
-import hero4 from '../../assets/images/hero4.png';
 
-const SLIDES = [hero1, hero2, hero3, hero4];
+const SLIDES = [hero1, hero2, hero3];
+const SLIDE_INTERVAL = 4000;
 
 function Hero({ setCurrentPage }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoaded(true), 200);
-    return () => clearTimeout(timer);
+  const nextSlide = useCallback(() => {
+    setActiveIndex((prev) => (prev + 1) % SLIDES.length);
   }, []);
 
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % SLIDES.length);
-    }, 4000); // 4s transition gives a more premium, relaxed feel than 3s
+    const loadTimer = setTimeout(() => setIsLoaded(true), 200);
+    const intervalId = setInterval(nextSlide, SLIDE_INTERVAL);
 
-    return () => clearInterval(intervalId);
-  }, []);
+    return () => {
+      clearTimeout(loadTimer);
+      clearInterval(intervalId);
+    };
+  }, [nextSlide]);
 
   return (
-    <section className="hero-section" aria-label="Hero Banner">
-      {/* Background Slider */}
+    <section className="hero-section">
       <div className="hero-bg-wrapper">
         {SLIDES.map((slide, index) => (
           <div
             key={index}
-            className={`hero-bg ${index === activeIndex ? 'active' : ''}`}
-            style={{ backgroundImage: `url('${slide}')` }}
-            role="img"
-            aria-label={`Hero background ${index + 1}`}
+            className={index === activeIndex ? 'hero-bg active' : 'hero-bg'}
+            style={{ backgroundImage: `url(${slide})` }}
+            aria-hidden="true"
           />
         ))}
       </div>
 
-      {/* Gradients */}
-      <div className="hero-overlay-main" />
-      <div className="hero-overlay-bottom" />
+      <div className="hero-overlay-main" aria-hidden="true" />
+      <div className="hero-overlay-bottom" aria-hidden="true" />
 
-      {/* Content */}
       <div className="hero-container">
-        <div className={`hero-content ${isLoaded ? 'hero-loaded' : ''}`}>
+        <div className={isLoaded ? 'hero-content hero-loaded' : 'hero-content'}>
           <div className="hero-text-wrapper">
             <p className="hero-pre-title">Meraki Living</p>
 
@@ -72,16 +69,12 @@ function Hero({ setCurrentPage }) {
           <div className="hero-btn-group">
             <button
               className="hero-btn"
-              aria-label="Book Your Stay"
-              type="button"
               onClick={() => setCurrentPage('booking')}
             >
               Book Your Stay
             </button>
             <button
               className="hero-btn-outline"
-              aria-label="Explore स्रोत"
-              type="button"
               onClick={() => setCurrentPage('explore')}
             >
               Explore स्रोत

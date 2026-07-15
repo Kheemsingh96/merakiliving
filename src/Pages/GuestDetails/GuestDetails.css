@@ -643,7 +643,7 @@
   width: 20px;
   height: 20px;
   border-radius: 5px;
-  border: 2px solid #d0d0d0;
+  border: 2px solid #E53935;
   background: #ffffff;
   display: flex;
   align-items: center;
@@ -685,8 +685,8 @@
   width: 20px;
   height: 20px;
   border-radius: 5px;
-  border: 2px solid #d0d0d0;
-  background: #ffffff;
+  border: 2px solid #870097;
+  background: #870097;
   display: flex;
   align-items: center;
   justify-content: center;

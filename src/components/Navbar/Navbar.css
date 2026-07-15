@@ -17,7 +17,7 @@
   background-color: #ffffff;
   width: 100%;
   max-width: 1280px;
-  padding: 12px 16px 12px 24px;
+  padding: 12px 24px;
   border-radius: 50px;
   box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
@@ -27,6 +27,7 @@
   display: flex;
   align-items: center;
   min-width: 150px;
+  flex-shrink: 0;
 }
 
 .logo-img {
@@ -40,6 +41,7 @@
   gap: 32px;
   margin: 0;
   padding: 0;
+  align-items: center;
 }
 
 .navbar-links a {
@@ -54,56 +56,49 @@
   color: #5C0E60;
 }
 
-.navbar-actions {
+.navbar-right {
   display: flex;
   align-items: center;
+  gap: 20px;
+  flex-shrink: 0;
 }
 
-.btn-book-now {
-  background-color: #8A158F;
-  color: #ffffff;
-  border: none;
-  padding: 12px 32px;
-  border-radius: 50px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.btn-book-now:hover {
-  background-color: #5C0E60;
+.venture-logo {
+  height: 28px;
+  width: auto;
+  display: block;
+  align-self: center;
 }
 
 .hamburger-btn {
   display: none;
-  width: 32px;
-  height: 22px;
+  width: 26px;
+  height: 20px;
   position: relative;
   background: transparent;
   border: none;
   cursor: pointer;
   padding: 0;
-  margin-right: 8px;
   z-index: 105;
+  flex-shrink: 0;
 }
 
 .hamburger-line {
   position: absolute;
   left: 0;
   width: 100%;
-  height: 2.5px;
+  height: 3px;
   background-color: #8A158F;
   border-radius: 4px;
   transition: all 0.35s ease-in-out;
 }
 
 .hamburger-line:nth-child(1) { top: 0px; }
-.hamburger-line:nth-child(2) { top: 10px; opacity: 1; transform: translateX(0); }
-.hamburger-line:nth-child(3) { top: 20px; }
+.hamburger-line:nth-child(2) { top: 8.5px; opacity: 1; transform: translateX(0); }
+.hamburger-line:nth-child(3) { top: 17px; }
 
 .hamburger-btn.active .hamburger-line:nth-child(1) {
-  top: 10px;
+  top: 8.5px;
   transform: rotate(45deg);
 }
 
@@ -113,7 +108,7 @@
 }
 
 .hamburger-btn.active .hamburger-line:nth-child(3) {
-  top: 10px;
+  top: 8.5px;
   transform: rotate(-45deg);
 }
 
@@ -190,30 +185,6 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.mobile-navbar-actions {
-  display: flex;
-  margin-top: 32px;
-  width: 100%;
-}
-
-.btn-book-now-mobile {
-  background-color: #8A158F;
-  color: #ffffff;
-  border: none;
-  padding: 16px;
-  border-radius: 50px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  width: 100%;
-  transition: background-color 0.3s ease;
-  box-shadow: 0px 8px 24px rgba(138, 21, 143, 0.3);
-}
-
-.btn-book-now-mobile:hover {
-  background-color: #5C0E60;
-}
-
 @media (max-width: 1024px) {
   .navbar-links {
     gap: 20px;
@@ -221,8 +192,7 @@
 }
 
 @media (max-width: 850px) {
-  .navbar-links,
-  .navbar-actions {
+  .navbar-links {
     display: none;
   }
 
@@ -237,6 +207,11 @@
   .logo-img {
     height: 44px;
   }
+
+  .venture-logo {
+    height: 44px;
+    align-self: center;
+  }
 }
 
 @media (max-width: 480px) {
@@ -247,6 +222,37 @@
 
   .navbar-container {
     padding: 10px 16px;
+  }
+
+  .logo-img {
+    height: 40px;
+  }
+
+  .venture-logo {
+    height: 20px;
+  }
+
+  .navbar-right {
+    gap: 16px;
+  }
+
+  .hamburger-btn {
+    width: 24px;
+    height: 18px;
+  }
+
+  .hamburger-line:nth-child(1) { top: 0px; }
+  .hamburger-line:nth-child(2) { top: 7.5px; }
+  .hamburger-line:nth-child(3) { top: 15px; }
+
+  .hamburger-btn.active .hamburger-line:nth-child(1) {
+    top: 7.5px;
+    transform: rotate(45deg);
+  }
+
+  .hamburger-btn.active .hamburger-line:nth-child(3) {
+    top: 7.5px;
+    transform: rotate(-45deg);
   }
 
   .mobile-menu {
@@ -266,11 +272,6 @@
   .mobile-navbar-links a {
     font-size: 16px;
   }
-
-  .btn-book-now-mobile {
-    padding: 14px;
-    font-size: 15px;
-  }
 }
 
 @media (max-width: 360px) {
@@ -284,29 +285,33 @@
   }
 
   .logo-img {
-    height: 40px;
+    height: 36px;
+  }
+
+  .venture-logo {
+    height: 36px;
   }
 
   .hamburger-btn {
-    width: 28px;
-    height: 20px;
+    width: 22px;
+    height: 17px;
   }
 
   .hamburger-line {
-    height: 2px;
+    height: 3px;
   }
 
   .hamburger-line:nth-child(1) { top: 0px; }
-  .hamburger-line:nth-child(2) { top: 9px; }
-  .hamburger-line:nth-child(3) { top: 18px; }
+  .hamburger-line:nth-child(2) { top: 7px; }
+  .hamburger-line:nth-child(3) { top: 14px; }
 
   .hamburger-btn.active .hamburger-line:nth-child(1) {
-    top: 9px;
+    top: 7px;
     transform: rotate(45deg);
   }
 
   .hamburger-btn.active .hamburger-line:nth-child(3) {
-    top: 9px;
+    top: 7px;
     transform: rotate(-45deg);
   }
 
@@ -330,15 +335,6 @@
 
   .mobile-navbar-links a {
     font-size: 15px;
-  }
-
-  .mobile-navbar-actions {
-    margin-top: 24px;
-  }
-
-  .btn-book-now-mobile {
-    padding: 12px;
-    font-size: 14px;
   }
 }
 

@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import './Navbar.css';
 import logo from '../../assets/images/logo.png';
+import ventureLogo from '../../assets/images/pranay-matiyani-ventures.png';
 
 const NAV_ITEMS = [
   { id: 'home', label: 'Home' },
@@ -19,16 +20,6 @@ function Navbar({ setCurrentPage, currentPage }) {
   const toggleMenu = useCallback(() => {
     setIsMenuOpen((prev) => !prev);
   }, []);
-
-  const handleBookNow = useCallback(() => {
-    sessionStorage.removeItem('meraki_checkIn');
-    sessionStorage.removeItem('meraki_checkOut');
-    sessionStorage.removeItem('meraki_guests');
-    setIsMenuOpen(false);
-    if (setCurrentPage) {
-      setCurrentPage('booking');
-    }
-  }, [setCurrentPage]);
 
   const handleNavClick = useCallback((page) => {
     setIsMenuOpen(false);
@@ -87,24 +78,21 @@ function Navbar({ setCurrentPage, currentPage }) {
           ))}
         </ul>
 
-        <div className="navbar-actions">
-          <button className="btn-book-now" onClick={handleBookNow} aria-label="Book your stay now" type="button">
-            Book Now
+        <div className="navbar-right">
+          <img src={ventureLogo} alt="Pranay Matiyani Ventures" className="venture-logo" width="150" height="50" loading="eager" />
+          <button
+            className={`hamburger-btn ${isMenuOpen ? 'active' : ''}`}
+            onClick={toggleMenu}
+            aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={isMenuOpen}
+            aria-controls="mobile-menu"
+            type="button"
+          >
+            <span className="hamburger-line" aria-hidden="true" />
+            <span className="hamburger-line" aria-hidden="true" />
+            <span className="hamburger-line" aria-hidden="true" />
           </button>
         </div>
-
-        <button
-          className={`hamburger-btn ${isMenuOpen ? 'active' : ''}`}
-          onClick={toggleMenu}
-          aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-          aria-expanded={isMenuOpen}
-          aria-controls="mobile-menu"
-          type="button"
-        >
-          <span className="hamburger-line" aria-hidden="true" />
-          <span className="hamburger-line" aria-hidden="true" />
-          <span className="hamburger-line" aria-hidden="true" />
-        </button>
       </nav>
 
       <div
@@ -140,11 +128,6 @@ function Navbar({ setCurrentPage, currentPage }) {
           ))}
         </ul>
 
-        <div className="mobile-navbar-actions">
-          <button className="btn-book-now-mobile" onClick={handleBookNow} aria-label="Book your stay now" type="button">
-            Book Now
-          </button>
-        </div>
       </div>
     </header>
   );

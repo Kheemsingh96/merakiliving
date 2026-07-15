@@ -1,54 +1,37 @@
-/* ============================================================
-   BASE LAYOUT & BACKGROUND
-   ============================================================ */
 .hero-section {
   position: relative;
   display: flex;
   align-items: center;
-  box-sizing: border-box;
   width: 100%;
   min-height: 100vh;
-  min-height: 100svh; /* Fixes image fit issue on mobile browsers */
+  min-height: 100svh;
   overflow: hidden;
   background-color: #0a0a0a;
 }
 
 .hero-bg-wrapper {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
+  inset: 0;
 }
 
 .hero-bg {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
   opacity: 0;
-  transition: opacity 1.8s cubic-bezier(0.25, 1, 0.5, 1); /* Smoother fade */
-  z-index: 0;
+  transition: opacity 1.8s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: opacity;
 }
 
 .hero-bg.active {
   opacity: 1;
 }
 
-/* ============================================================
-   GRADIENT OVERLAYS (Premium Feel)
-   ============================================================ */
 .hero-overlay-main {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 65%;
-  height: 100%;
   background: linear-gradient(
     90deg,
     rgba(5, 5, 7, 0.95) 0%,
@@ -77,17 +60,13 @@
   pointer-events: none;
 }
 
-/* ============================================================
-   CONTAINER & CONTENT
-   ============================================================ */
 .hero-container {
   position: relative;
   z-index: 2;
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 5%;
-  box-sizing: border-box;
+  padding: 100px 5%;
 }
 
 .hero-content {
@@ -97,10 +76,12 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 36px;
-  padding: 80px 0; /* Reduced from 120px to let flexbox center naturally */
+  padding: 80px 0;
   opacity: 0;
   transform: translateY(30px);
-  transition: opacity 1.4s cubic-bezier(0.22, 1, 0.36, 1), transform 1.4s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 1.4s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 1.4s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
 }
 
 .hero-content.hero-loaded {
@@ -115,9 +96,8 @@
   gap: 14px;
 }
 
-/* Typography */
 .hero-pre-title {
-  color: #F89C0E;
+  color: #f89c0e;
   font-size: 13px;
   font-weight: 600;
   margin: 0;
@@ -127,7 +107,7 @@
 }
 
 .hero-title {
-  color: #ffffff;
+  color: #fff;
   font-size: 76px;
   font-weight: 700;
   line-height: 1.1;
@@ -150,7 +130,7 @@
   font-size: 15px;
   font-weight: 500;
   letter-spacing: 4px;
-  margin: 4px 0 0 0;
+  margin: 4px 0 0;
   text-transform: uppercase;
   animation: heroFadeInUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.5s both;
 }
@@ -167,14 +147,14 @@
 }
 
 .location-icon {
-  color: #F89C0E;
+  color: #f89c0e;
 }
 
 .hero-tagline {
-  color: #F89C0E;
+  color: #f89c0e;
   font-size: 22px;
   font-weight: 500;
-  margin: 10px 0 4px 0;
+  margin: 10px 0 4px;
   animation: heroFadeInUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.7s both;
 }
 
@@ -188,9 +168,6 @@
   animation: heroFadeInUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.8s both;
 }
 
-/* ============================================================
-   CTA BUTTONS (Refined for Premium Look)
-   ============================================================ */
 .hero-btn-group {
   display: flex;
   gap: 20px;
@@ -205,7 +182,10 @@
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: background-color 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   letter-spacing: 0.5px;
   display: inline-flex;
   justify-content: center;
@@ -213,9 +193,9 @@
 }
 
 .hero-btn {
-  background-color: #8A158F;
-  color: #ffffff;
-  border: 1px solid #8A158F;
+  background-color: #8a158f;
+  color: #fff;
+  border: 1px solid #8a158f;
   box-shadow: 0 6px 20px rgba(138, 21, 143, 0.3);
 }
 
@@ -228,39 +208,30 @@
 
 .hero-btn-outline {
   background-color: transparent;
-  color: #ffffff;
+  color: #fff;
   border: 1.5px solid rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(4px); /* Premium glass effect */
 }
 
 .hero-btn-outline:hover {
   background-color: rgba(255, 255, 255, 0.15);
-  border-color: #ffffff;
+  border-color: #fff;
   transform: translateY(-3px);
 }
 
-/* ============================================================
-   ANIMATIONS
-   ============================================================ */
 @keyframes heroFadeInUp {
-  0% {
+  from {
     opacity: 0;
     transform: translateY(20px);
   }
-  100% {
+  to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-/* ============================================================
-   RESPONSIVE DESIGN (Fixed Gaps, Widths & Gradients)
-   ============================================================ */
-
-/* Tablet (Landscape & Standard) */
 @media (max-width: 1024px) {
   .hero-overlay-main {
-    width: 85%; /* Wider gradient for tablet text readability */
+    width: 85%;
   }
 
   .hero-title {
@@ -278,11 +249,9 @@
   }
 }
 
-/* Mobile Devices */
 @media (max-width: 768px) {
   .hero-overlay-main {
     width: 100%;
-    /* Balanced Mobile Gradient: Keeps top visible, perfectly darkens bottom for text */
     background: linear-gradient(
       180deg,
       rgba(5, 5, 7, 0.15) 0%,
@@ -291,17 +260,20 @@
       rgba(5, 5, 7, 0.95) 100%
     );
   }
-  
+
   .hero-overlay-bottom {
-    display: none; /* Merged into main overlay for mobile */
+    display: none;
+  }
+
+  .hero-container {
+    padding: 60px 5%;
   }
 
   .hero-content {
     align-items: center;
     text-align: center;
-    padding: 0; /* Let flexbox vertically center the content perfectly */
+    padding: 40px 0 0;
     gap: 28px;
-    margin-top: 40px; /* Slightly pushed down so sky/mountains show on top */
   }
 
   .hero-text-wrapper {
@@ -316,7 +288,6 @@
 
   .hero-title {
     font-size: 48px;
-    flex-direction: row;
     justify-content: center;
     gap: 12px;
   }
@@ -337,27 +308,23 @@
   .hero-description {
     font-size: 15px;
     line-height: 1.6;
-    max-width: 90%; /* Breathes well on sides */
+    max-width: 90%;
   }
 
-  /* Fixed Mobile Button Widths */
   .hero-btn-group {
     flex-direction: column;
-    width: auto; /* Removed width 100% */
     gap: 16px;
-    margin-top: 10px;
   }
 
   .hero-btn,
   .hero-btn-outline {
     width: 100%;
-    min-width: 240px; /* Looks elegant, not overly stretched */
+    min-width: 240px;
     padding: 15px 32px;
     font-size: 14px;
   }
 }
 
-/* Small Mobile */
 @media (max-width: 480px) {
   .hero-title {
     font-size: 40px;
@@ -365,11 +332,11 @@
   }
 
   .hindi-title {
-    font-size: 36px;
+    font-size: 40px;
   }
 
   .hero-subtitle {
-    font-size: 12px;
+    font-size: 14px;
     letter-spacing: 2.5px;
   }
 
@@ -378,7 +345,7 @@
   }
 
   .hero-description {
-    font-size: 14px;
+    font-size: 16px;
   }
 
   .hero-btn,
