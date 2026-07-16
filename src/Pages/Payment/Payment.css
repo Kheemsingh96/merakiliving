@@ -39,106 +39,92 @@
   height: 18px;
 }
 
-.pay-steps {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 0;
+/* ===== MODERN PROGRESS BAR ===== */
+.pay-progress {
   margin-bottom: 48px;
   padding: 0 20px;
 }
 
-.pay-step {
+.pay-progress-track {
+  position: relative;
+  height: 4px;
+  background: #EDE8EF;
+  border-radius: 2px;
+  margin: 0 48px 20px;
+}
+
+.pay-progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: #870097;
+  border-radius: 2px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pay-progress-steps {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  position: relative;
+}
+
+.pay-progress-step {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
   position: relative;
   flex: 1;
-  max-width: 200px;
 }
 
-.pay-step-track {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  width: 100%;
-}
-
-.pay-step-circle {
-  width: 36px;
-  height: 36px;
+.pay-progress-circle {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: #f5f0f6;
   color: #999999;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
-  border: none;
+  border: 2px solid transparent;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   z-index: 2;
   flex-shrink: 0;
 }
 
-.pay-step-circle svg {
-  width: 16px;
-  height: 16px;
-}
-
-.pay-step-track-line {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  height: 3px;
-  background: #e8e0ea;
-  z-index: 1;
-}
-
-.pay-step-track-left {
-  left: 0;
-  right: 50%;
-  margin-right: 20px;
-}
-
-.pay-step-track-right {
-  left: 50%;
-  right: 0;
-  margin-left: 20px;
-}
-
-.pay-step-track-line.filled {
-  background: #870097;
-}
-
-.pay-step.active .pay-step-circle {
+.pay-progress-step.active .pay-progress-circle {
   background: #870097;
   color: #ffffff;
   box-shadow: 0 4px 16px rgba(135, 0, 151, 0.3);
 }
 
-.pay-step.current .pay-step-circle {
+.pay-progress-step.current .pay-progress-circle {
   background: #ffffff;
   color: #870097;
   border: 2px solid #870097;
   box-shadow: 0 0 0 4px rgba(135, 0, 151, 0.08);
+  transform: scale(1.05);
 }
 
-.pay-step-label {
+.pay-progress-label {
   font-size: 13px;
   font-weight: 600;
   color: #bbbbbb;
   text-align: center;
   white-space: nowrap;
+  transition: all 0.3s ease;
 }
 
-.pay-step.active .pay-step-label {
+.pay-progress-step.active .pay-progress-label {
   color: #870097;
 }
 
-.pay-step.current .pay-step-label {
+.pay-progress-step.current .pay-progress-label {
   color: #870097;
   font-weight: 700;
 }
@@ -505,8 +491,9 @@
 .pay-upi-option {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 10px 12px;
+  padding: 12px 10px;
   border-radius: 10px;
   border: 1.5px solid #f0f0f0;
   background: #ffffff;
@@ -572,8 +559,7 @@
 }
 
 .pay-netbanking-placeholder,
-.pay-wallet-placeholder,
-.pay-paylater-placeholder {
+.pay-wallet-placeholder {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -584,12 +570,6 @@
 
 .pay-netbanking-placeholder svg,
 .pay-wallet-placeholder svg {
-  width: 32px;
-  height: 32px;
-  color: #870097;
-}
-
-.pay-paylater-placeholder svg {
   width: 32px;
   height: 32px;
   color: #870097;
@@ -690,6 +670,27 @@
   font-weight: 500;
   margin-top: 4px;
   line-height: 1.4;
+}
+
+.pay-upi-open-btn {
+  margin-top: 10px;
+  padding: 10px 18px;
+  background: #870097;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  align-self: flex-start;
+  font-family: inherit;
+}
+
+.pay-upi-open-btn:hover {
+  background: #6B007A;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(135, 0, 151, 0.25);
 }
 
 .pay-security-card {
@@ -1283,7 +1284,7 @@
     gap: 20px;
   }
 
-  .pay-steps {
+  .pay-progress {
     display: none;
   }
 
@@ -1336,7 +1337,7 @@
     padding: 90px 32px 50px;
   }
 
-  .pay-steps {
+  .pay-progress {
     display: none;
   }
 
@@ -1395,7 +1396,7 @@
     padding: 100px 24px 40px;
   }
 
-  .pay-steps {
+  .pay-progress {
     display: none;
   }
 
@@ -1440,7 +1441,7 @@
   }
 
   .pay-upi-option {
-    padding: 8px 10px;
+    padding: 10px 8px;
     font-size: 12px;
   }
 
