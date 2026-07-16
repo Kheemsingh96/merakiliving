@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './Payment.css';
 
 import room1 from '../../assets/images/room-1.png';
@@ -55,20 +55,6 @@ const CheckmarkIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
     <path d="M9 12l2 2 4-4"/>
-  </svg>
-);
-
-const PaytmIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-    <rect width="24" height="24" rx="4" fill="#00BAF2"/>
-    <text x="12" y="16" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold" fontFamily="Arial">P</text>
-  </svg>
-);
-
-const BhimIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-    <rect width="24" height="24" rx="4" fill="#0066B3"/>
-    <text x="12" y="16" textAnchor="middle" fill="white" fontSize="9" fontWeight="bold" fontFamily="Arial">B</text>
   </svg>
 );
 
@@ -144,14 +130,20 @@ const paymentMethods = [
     label: 'Wallets',
     subtitle: 'Paytm, PhonePe, Amazon Pay, Mobikwik',
     icon: Wallet02Icon
+  },
+  {
+    id: 'paylater',
+    label: 'Pay Later',
+    subtitle: 'Simpl, Lazypay, ICICI PayLater',
+    icon: ClockIcon
   }
 ];
 
 const upiOptions = [
-  { id: 'gpay', label: 'Google Pay', color: '#4285F4', Icon: SiGooglepay, scheme: 'tez://upi/pay' },
-  { id: 'phonepe', label: 'PhonePe', color: '#5f259f', Icon: SiPhonepe, scheme: 'phonepe://pay' },
-  { id: 'paytm', label: 'Paytm', color: '#00BAF2', Icon: PaytmIcon, scheme: 'paytmmp://upi/pay' },
-  { id: 'bhim', label: 'BHIM UPI', color: '#0066B3', Icon: BhimIcon, scheme: 'bhim://upi/pay' }
+  { id: 'gpay', label: 'Google Pay', color: '#4285F4', Icon: SiGooglepay },
+  { id: 'phonepe', label: 'PhonePe', color: '#5f259f', Icon: SiPhonepe },
+  { id: 'paytm', label: 'Paytm', color: '#00BAF2' },
+  { id: 'bhim', label: 'BHIM UPI', color: '#0066B3' }
 ];
 
 const cardNetworks = [
@@ -162,7 +154,7 @@ const cardNetworks = [
 ];
 
 const Payment = ({ setCurrentPage, selectedRoomId = 1 }) => {
-  const currentStep = 3;
+  const [currentStep] = useState(2);
   const [selectedMethod, setSelectedMethod] = useState('upi');
   const [selectedUpi, setSelectedUpi] = useState('gpay');
   const [upiId, setUpiId] = useState('');
@@ -277,14 +269,6 @@ const Payment = ({ setCurrentPage, selectedRoomId = 1 }) => {
     if (setCurrentPage) setCurrentPage(prevPage);
   };
 
-  const handleOpenUpiApp = () => {
-    const upi = upiOptions.find(u => u.id === selectedUpi);
-    if (upi && upi.scheme) {
-      const url = `${upi.scheme}?pa=${encodeURIComponent(upiId)}&pn=Meraki+Living&am=${totalAmount}&cu=INR&tn=Room+Booking`;
-      window.location.href = url;
-    }
-  };
-
   const steps = [
     { label: 'Your Stay', number: 1 },
     { label: 'Guest Details', number: 2 },
@@ -293,37 +277,23 @@ const Payment = ({ setCurrentPage, selectedRoomId = 1 }) => {
   ];
 
   const renderProgressBar = () => (
-    <div className="pay-progress">
-      <div className="pay-progress-track">
-        <div 
-          className="pay-progress-fill" 
-          style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
-        />
-      </div>
-      <div className="pay-progress-steps">
-        {steps.map((step) => {
-          const isActive = step.number <= currentStep;
-          const isCurrent = step.number === currentStep;
-          const isCompleted = step.number < currentStep;
-          return (
-            <div 
-              key={step.number} 
-              className={`pay-progress-step ${isActive ? 'active' : ''} ${isCurrent ? 'current' : ''}`}
-            >
-              <div className="pay-progress-circle">
-                {isCompleted ? (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                ) : (
-                  <span>{step.number}</span>
-                )}
-              </div>
-              <span className="pay-progress-label">{step.label}</span>
+    <div className="pay-steps">
+      {steps.map((step, idx) => (
+        <div key={step.number} className={`pay-step ${step.number <= currentStep ? 'active' : ''} ${step.number === currentStep ? 'current' : ''}`}>
+          <div className="pay-step-track">
+            {idx > 0 && <div className={`pay-step-track-line pay-step-track-left ${step.number <= currentStep ? 'filled' : ''}`}></div>}
+            <div className="pay-step-circle">
+              {step.number < currentStep ? (
+                <HugeiconsIcon icon={Tick02Icon} size={14} />
+              ) : (
+                <span>{step.number}</span>
+              )}
             </div>
-          );
-        })}
-      </div>
+            {idx < steps.length - 1 && <div className={`pay-step-track-line pay-step-track-right ${step.number < currentStep ? 'filled' : ''}`}></div>}
+          </div>
+          <span className="pay-step-label">{step.label}</span>
+        </div>
+      ))}
     </div>
   );
 
@@ -475,7 +445,7 @@ const Payment = ({ setCurrentPage, selectedRoomId = 1 }) => {
                 </div>
               </div>
               <div className="pay-method-icon">
-                {method.id === 'upi' ? (
+                {method.id === 'upi' || method.id === 'paylater' ? (
                   <IconComp />
                 ) : (
                   <HugeiconsIcon icon={IconComp} size={22} />
@@ -504,7 +474,7 @@ const Payment = ({ setCurrentPage, selectedRoomId = 1 }) => {
                 onClick={() => setSelectedUpi(upi.id)}
               >
                 {upi.Icon ? (
-                  <upi.Icon size={18} style={{ color: upi.color, flexShrink: 0 }} />
+                  <upi.Icon size={16} style={{ color: upi.color, flexShrink: 0 }} />
                 ) : (
                   <div className="pay-upi-dot" style={{ background: upi.color }}></div>
                 )}
@@ -530,15 +500,6 @@ const Payment = ({ setCurrentPage, selectedRoomId = 1 }) => {
             </div>
             {errors.upiId && <span className="pay-error-text">{errors.upiId}</span>}
             <span className="pay-input-hint">You will receive a payment request on your UPI app</span>
-            {upiId && /^[a-zA-Z0-9._-]+@[a-zA-Z]+$/.test(upiId.trim()) && (
-              <button 
-                className="pay-upi-open-btn" 
-                onClick={handleOpenUpiApp}
-                type="button"
-              >
-                Open {upiOptions.find(u => u.id === selectedUpi)?.label}
-              </button>
-            )}
           </div>
         </div>
       )}
@@ -649,6 +610,15 @@ const Payment = ({ setCurrentPage, selectedRoomId = 1 }) => {
             <HugeiconsIcon icon={Wallet02Icon} size={32} />
             <span className="pay-placeholder-title">Wallets</span>
             <span className="pay-placeholder-desc">Pay using your preferred wallet. Razorpay will handle the wallet selection at checkout.</span>
+          </div>
+        </div>
+      )}
+      {selectedMethod === 'paylater' && (
+        <div className="pay-method-form">
+          <div className="pay-paylater-placeholder">
+            <ClockIcon />
+            <span className="pay-placeholder-title">Pay Later</span>
+            <span className="pay-placeholder-desc">Buy now, pay later with your preferred provider. Razorpay will show available options at checkout.</span>
           </div>
         </div>
       )}

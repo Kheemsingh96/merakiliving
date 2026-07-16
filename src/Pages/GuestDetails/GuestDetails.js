@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './GuestDetails.css';
 
 import room1 from '../../assets/images/room-1.png';
@@ -171,52 +171,21 @@ const amenityIcons = {
 };
 
 const GuestDetails = ({ setCurrentPage, selectedRoomId = 1 }) => {
-  const currentStep = 2;
-
-  const [formData, setFormData] = useState(() => {
-    const stored = sessionStorage.getItem('meraki_guestDetails');
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        return {
-          firstName: parsed.firstName || '',
-          lastName: parsed.lastName || '',
-          email: parsed.email || '',
-          phone: parsed.phone || '',
-          countryCode: parsed.countryCode || '+91',
-          specialRequests: parsed.specialRequests || '',
-          agreeTerms: parsed.agreeTerms || false,
-          agreePrivacy: parsed.agreePrivacy || false
-        };
-      } catch (e) {
-        return {
-          firstName: '',
-          lastName: '',
-          email: '',
-          phone: '',
-          countryCode: '+91',
-          specialRequests: '',
-          agreeTerms: false,
-          agreePrivacy: false
-        };
-      }
-    }
-    return {
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: '',
-      countryCode: '+91',
-      specialRequests: '',
-      agreeTerms: false,
-      agreePrivacy: false
-    };
+  const [currentStep] = useState(1);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    countryCode: '+91',
+    specialRequests: '',
+    agreeTerms: false,
+    agreePrivacy: false
   });
-
   const [errors, setErrors] = useState({});
   const [showAmenities, setShowAmenities] = useState(false);
-  const [couponCode, setCouponCode] = useState(sessionStorage.getItem('meraki_couponCode') || '');
-  const [couponApplied, setCouponApplied] = useState(sessionStorage.getItem('meraki_couponApplied') === 'true');
+  const [couponCode, setCouponCode] = useState('');
+  const [couponApplied, setCouponApplied] = useState(false);
   const [couponError, setCouponError] = useState('');
 
   const room = roomsData.find(r => r.id === selectedRoomId) || roomsData[0];
@@ -285,8 +254,6 @@ const GuestDetails = ({ setCurrentPage, selectedRoomId = 1 }) => {
       return;
     }
     sessionStorage.setItem('meraki_guestDetails', JSON.stringify(formData));
-    sessionStorage.setItem('meraki_couponApplied', couponApplied.toString());
-    sessionStorage.setItem('meraki_couponCode', couponCode);
     if (setCurrentPage) {
       setCurrentPage('payment');
     }
@@ -316,30 +283,16 @@ const GuestDetails = ({ setCurrentPage, selectedRoomId = 1 }) => {
 
   const handleWhatsApp = () => {
     const message = encodeURIComponent(
-      `Hi Meraki Living! 
-
-I have a booking inquiry for the *${room.title}*
-` +
-      `Check-in: ${formatDate(checkInDate)}
-` +
-      `Check-out: ${formatDate(checkOutDate)}
-` +
-      `Nights: ${nights}
-` +
-      `${guests.adults + guests.children} Guests
-` +
-      `Rooms: ${guests.rooms}
-` +
-      `Total: Rs.${totalAmount.toLocaleString('en-IN')}
-
-` +
-      `Guest: ${formData.firstName} ${formData.lastName}
-` +
-      `${formData.email}
-` +
-      `${formData.countryCode} ${formData.phone}
-
-` +
+      `Hi Meraki Living! \n\nI have a booking inquiry for the *${room.title}*\n` +
+      `Check-in: ${formatDate(checkInDate)}\n` +
+      `Check-out: ${formatDate(checkOutDate)}\n` +
+      `Nights: ${nights}\n` +
+      `${guests.adults + guests.children} Guests\n` +
+      `Rooms: ${guests.rooms}\n` +
+      `Total: Rs.${totalAmount.toLocaleString('en-IN')}\n\n` +
+      `Guest: ${formData.firstName} ${formData.lastName}\n` +
+      `${formData.email}\n` +
+      `${formData.countryCode} ${formData.phone}\n\n` +
       `Please confirm availability. Thank you!`
     );
     window.open(`https://wa.me/917037189517?text=${message}`, '_blank');
@@ -364,37 +317,23 @@ I have a booking inquiry for the *${room.title}*
   ];
 
   const renderProgressBar = () => (
-    <div className="gd-progress">
-      <div className="gd-progress-track">
-        <div 
-          className="gd-progress-fill" 
-          style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
-        />
-      </div>
-      <div className="gd-progress-steps">
-        {steps.map((step) => {
-          const isActive = step.number <= currentStep;
-          const isCurrent = step.number === currentStep;
-          const isCompleted = step.number < currentStep;
-          return (
-            <div 
-              key={step.number} 
-              className={`gd-progress-step ${isActive ? 'active' : ''} ${isCurrent ? 'current' : ''}`}
-            >
-              <div className="gd-progress-circle">
-                {isCompleted ? (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                ) : (
-                  <span>{step.number}</span>
-                )}
-              </div>
-              <span className="gd-progress-label">{step.label}</span>
+    <div className="gd-steps">
+      {steps.map((step, idx) => (
+        <div key={step.number} className={`gd-step ${step.number <= currentStep ? 'active' : ''} ${step.number === currentStep ? 'current' : ''}`}>
+          <div className="gd-step-track">
+            {idx > 0 && <div className={`gd-step-track-line gd-step-track-left ${step.number <= currentStep ? 'filled' : ''}`}></div>}
+            <div className="gd-step-circle">
+              {step.number < currentStep ? (
+                <HugeiconsIcon icon={Tick02Icon} size={14} />
+              ) : (
+                <span>{step.number}</span>
+              )}
             </div>
-          );
-        })}
-      </div>
+            {idx < steps.length - 1 && <div className={`gd-step-track-line gd-step-track-right ${step.number < currentStep ? 'filled' : ''}`}></div>}
+          </div>
+          <span className="gd-step-label">{step.label}</span>
+        </div>
+      ))}
     </div>
   );
 
@@ -451,8 +390,7 @@ I have a booking inquiry for the *${room.title}*
               <span className="gd-summary-value">{guests.rooms} Room{guests.rooms > 1 ? 's' : ''}</span>
             </div>
           </div>
-        </div>
-      </div>
+        </div></div>
       <button 
         className="gd-edit-btn"
         onClick={() => {
@@ -495,7 +433,7 @@ I have a booking inquiry for the *${room.title}*
       </div>
 
       <div className="gd-price-divider"></div>
-
+      
       <div className="gd-price-row gd-total-row">
         <span>Total Amount</span>
         <span>Rs.{totalAmount.toLocaleString('en-IN')}</span>
@@ -709,10 +647,10 @@ I have a booking inquiry for the *${room.title}*
 
         <div className="gd-form-actions">
           <button type="button" className="gd-btn-secondary" onClick={() => {
-            const history = JSON.parse(sessionStorage.getItem('meraki_navHistory') || '[]');
-            const prevPage = history.length > 1 ? history[history.length - 2] : 'booking';
-            if (setCurrentPage) setCurrentPage(prevPage);
-          }}>
+                    const history = JSON.parse(sessionStorage.getItem('meraki_navHistory') || '[]');
+                    const prevPage = history.length > 1 ? history[history.length - 2] : 'booking';
+                    if (setCurrentPage) setCurrentPage(prevPage);
+                  }}>
             <HugeiconsIcon icon={ArrowLeft01Icon} size={18} />
             <span>Back</span>
           </button>
