@@ -13,20 +13,15 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import {
   ArrowLeft02Icon,
   BedDoubleIcon,
-  Calendar01Icon,
-  UserMultiple02Icon,
   SecurityValidationIcon,
   CreditCardPosIcon,
   BankIcon,
   Wallet02Icon,
-  LockIcon,
   User03Icon,
   Mail01Icon,
   Call02Icon,
   DiscountIcon,
-  CheckmarkCircle01Icon,
-  BulbChargingIcon,
-  RupeeShieldIcon
+  CheckmarkCircle01Icon
 } from '@hugeicons/core-free-icons';
 
 const SmartphoneIcon = () => (
@@ -259,7 +254,6 @@ const Payment = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
     setErrors({});
     setIsProcessing(true);
     
-    // Simulate brief network processing, then direct navigation to confirmation
     setTimeout(() => {
       setIsProcessing(false);
       if (setCurrentPage) setCurrentPage('confirmation');
@@ -652,7 +646,6 @@ const Payment = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
       
       <div className="pay-price-divider" style={{ marginTop: '20px' }}></div>
 
-      {/* Button directly below the divider */}
       <button
         className={`pay-btn-primary ${isProcessing ? 'processing' : ''}`}
         onClick={handlePayNow}
