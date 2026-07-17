@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './GuestDetails.css';
 
 import room1 from '../../assets/images/room-1.png';
@@ -26,10 +26,9 @@ import {
   BulbChargingIcon,
   ViewIcon,
   DiscountIcon,
-  Tick02Icon
+  WhatsappIcon,
+  CreditCardPosIcon,
 } from '@hugeicons/core-free-icons';
-
-import { FaWhatsapp } from 'react-icons/fa';
 
 const ArrowDownIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -170,22 +169,67 @@ const amenityIcons = {
   'Kitchenette': HomeIcon
 };
 
-const GuestDetails = ({ setCurrentPage, selectedRoomId = 1 }) => {
-  const [currentStep] = useState(1);
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    countryCode: '+91',
-    specialRequests: '',
-    agreeTerms: false,
-    agreePrivacy: false
+const EMPTY_GUEST_FORM = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  countryCode: '+91',
+  specialRequests: '',
+  agreeTerms: false,
+  agreePrivacy: false
+};
+
+// Detects whether the app was just loaded via a full page refresh
+const isPageReload = () => {
+  try {
+    const navEntries = performance.getEntriesByType('navigation');
+    if (navEntries && navEntries.length > 0) {
+      return navEntries[0].type === 'reload';
+    }
+    return performance.navigation && performance.navigation.type === 1;
+  } catch (e) {
+    return false;
+  }
+};
+
+// Stays true only until the first GuestDetails mount after a page refresh.
+// In-app navigation never resets this, so coming back from the Payment
+// page within the same session still restores the saved form data.
+let pendingReloadReset = isPageReload();
+
+// Saved guest details are restored only when the user arrives here by
+// navigating back from the Payment page - never after a page refresh
+// and never on a fresh forward navigation.
+const shouldRestoreGuestData = () =>
+  !pendingReloadReset && sessionStorage.getItem('meraki_restoreGuestDetails') === 'true';
+
+const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
+  const [animateIn, setAnimateIn] = useState(false);
+  const [currentStep] = useState(2);
+
+  const [formData, setFormData] = useState(() => {
+    if (shouldRestoreGuestData()) {
+      try {
+        const savedDetails = sessionStorage.getItem('meraki_guestDetails');
+        if (savedDetails) {
+          return { ...EMPTY_GUEST_FORM, ...JSON.parse(savedDetails) };
+        }
+      } catch (e) {
+        // corrupted data - fall through to the empty form
+      }
+    }
+    return { ...EMPTY_GUEST_FORM };
   });
+
   const [errors, setErrors] = useState({});
   const [showAmenities, setShowAmenities] = useState(false);
-  const [couponCode, setCouponCode] = useState('');
-  const [couponApplied, setCouponApplied] = useState(false);
+  const [couponCode, setCouponCode] = useState(() =>
+    shouldRestoreGuestData() ? sessionStorage.getItem('meraki_couponCode') || '' : ''
+  );
+  const [couponApplied, setCouponApplied] = useState(() =>
+    shouldRestoreGuestData() && sessionStorage.getItem('meraki_couponApplied') === 'true'
+  );
   const [couponError, setCouponError] = useState('');
 
   const room = roomsData.find(r => r.id === selectedRoomId) || roomsData[0];
@@ -205,6 +249,21 @@ const GuestDetails = ({ setCurrentPage, selectedRoomId = 1 }) => {
   const taxableAmount = subtotal - discountAmount;
   const taxes = Math.round(taxableAmount * 0.05);
   const totalAmount = taxableAmount + taxes;
+
+  useEffect(() => {
+    const timer = setTimeout(() => setAnimateIn(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Right after a page refresh, clear any previously saved guest details
+  // so the user always starts with a fresh form (runs once per page load).
+  useEffect(() => {
+    if (pendingReloadReset) {
+      pendingReloadReset = false;
+      sessionStorage.removeItem('meraki_guestDetails');
+      sessionStorage.removeItem('meraki_restoreGuestDetails');
+    }
+  }, []);
 
   const formatDate = (date) => {
     if (!date) return 'Add Dates';
@@ -254,8 +313,20 @@ const GuestDetails = ({ setCurrentPage, selectedRoomId = 1 }) => {
       return;
     }
     sessionStorage.setItem('meraki_guestDetails', JSON.stringify(formData));
+    sessionStorage.setItem('meraki_couponApplied', couponApplied.toString());
+    sessionStorage.setItem('meraki_couponCode', couponCode);
     if (setCurrentPage) {
       setCurrentPage('payment');
+    }
+  };
+
+  // Back to the previous page (Rooms / Booking) using the shared
+  // pop-based back navigation, so it never re-opens the Payment page.
+  const handleBackToBooking = () => {
+    if (goBack) {
+      goBack('booking');
+    } else if (setCurrentPage) {
+      setCurrentPage('booking');
     }
   };
 
@@ -299,10 +370,10 @@ const GuestDetails = ({ setCurrentPage, selectedRoomId = 1 }) => {
   };
 
   const steps = [
-    { label: 'Your Stay', number: 1 },
-    { label: 'Guest Details', number: 2 },
-    { label: 'Payment', number: 3 },
-    { label: 'Confirmation', number: 4 }
+    { label: 'Your Stay', number: 1, icon: BedDoubleIcon },
+    { label: 'Guest Details', number: 2, icon: User03Icon },
+    { label: 'Payment', number: 3, icon: CreditCardPosIcon },
+    { label: 'Confirmation', number: 4, icon: SecurityValidationIcon }
   ];
 
   const countryCodes = [
@@ -318,22 +389,27 @@ const GuestDetails = ({ setCurrentPage, selectedRoomId = 1 }) => {
 
   const renderProgressBar = () => (
     <div className="gd-steps">
-      {steps.map((step, idx) => (
-        <div key={step.number} className={`gd-step ${step.number <= currentStep ? 'active' : ''} ${step.number === currentStep ? 'current' : ''}`}>
-          <div className="gd-step-track">
-            {idx > 0 && <div className={`gd-step-track-line gd-step-track-left ${step.number <= currentStep ? 'filled' : ''}`}></div>}
-            <div className="gd-step-circle">
-              {step.number < currentStep ? (
-                <HugeiconsIcon icon={Tick02Icon} size={14} />
-              ) : (
-                <span>{step.number}</span>
+      {steps.map((step, idx) => {
+        const isActive = step.number <= currentStep;
+        const isCurrent = step.number === currentStep;
+        const isCompleted = step.number < currentStep;
+        return (
+          <div key={step.number} className={`gd-step ${isActive ? 'active' : ''} ${isCurrent ? 'current' : ''} ${isCompleted ? 'completed' : ''}`}>
+            <div className="gd-step-track">
+              {idx > 0 && (
+                <div className={`gd-step-track-line gd-step-track-left ${isActive ? 'filled' : ''}`}></div>
+              )}
+              <div className="gd-step-circle">
+                <HugeiconsIcon icon={step.icon} size={14} />
+              </div>
+              {idx < steps.length - 1 && (
+                <div className={`gd-step-track-line gd-step-track-right ${isCompleted ? 'filled' : ''}`}></div>
               )}
             </div>
-            {idx < steps.length - 1 && <div className={`gd-step-track-line gd-step-track-right ${step.number < currentStep ? 'filled' : ''}`}></div>}
+            <span className="gd-step-label">{step.label}</span>
           </div>
-          <span className="gd-step-label">{step.label}</span>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 
@@ -390,8 +466,9 @@ const GuestDetails = ({ setCurrentPage, selectedRoomId = 1 }) => {
               <span className="gd-summary-value">{guests.rooms} Room{guests.rooms > 1 ? 's' : ''}</span>
             </div>
           </div>
-        </div></div>
-      <button 
+        </div>
+      </div>
+      <button
         className="gd-edit-btn"
         onClick={() => {
           if (setCurrentPage) setCurrentPage('booking');
@@ -433,7 +510,7 @@ const GuestDetails = ({ setCurrentPage, selectedRoomId = 1 }) => {
       </div>
 
       <div className="gd-price-divider"></div>
-      
+
       <div className="gd-price-row gd-total-row">
         <span>Total Amount</span>
         <span>Rs.{totalAmount.toLocaleString('en-IN')}</span>
@@ -646,11 +723,7 @@ const GuestDetails = ({ setCurrentPage, selectedRoomId = 1 }) => {
         </div>
 
         <div className="gd-form-actions">
-          <button type="button" className="gd-btn-secondary" onClick={() => {
-                    const history = JSON.parse(sessionStorage.getItem('meraki_navHistory') || '[]');
-                    const prevPage = history.length > 1 ? history[history.length - 2] : 'booking';
-                    if (setCurrentPage) setCurrentPage(prevPage);
-                  }}>
+          <button type="button" className="gd-btn-secondary" onClick={handleBackToBooking}>
             <HugeiconsIcon icon={ArrowLeft01Icon} size={18} />
             <span>Back</span>
           </button>
@@ -727,7 +800,7 @@ const GuestDetails = ({ setCurrentPage, selectedRoomId = 1 }) => {
       </div>
       <div className="gd-help-actions">
         <button className="gd-help-btn gd-whatsapp-btn" onClick={handleWhatsApp}>
-          <FaWhatsapp size={18} />
+          <HugeiconsIcon icon={WhatsappIcon} size={18} />
           <span>WhatsApp Us</span>
         </button>
         <a href="tel:+917037189517" className="gd-help-btn gd-call-btn">
@@ -746,15 +819,11 @@ const GuestDetails = ({ setCurrentPage, selectedRoomId = 1 }) => {
   );
 
   return (
-    <section className="gd-section">
+    <section className={`gd-section ${animateIn ? 'gd-animate' : ''}`}>
       <div className="gd-container">
 
         <div className="gd-nav">
-          <button className="gd-back-btn" onClick={() => {
-            const history = JSON.parse(sessionStorage.getItem('meraki_navHistory') || '[]');
-            const prevPage = history.length > 1 ? history[history.length - 2] : 'booking';
-            if (setCurrentPage) setCurrentPage(prevPage);
-          }}>
+          <button className="gd-back-btn" onClick={handleBackToBooking}>
             <HugeiconsIcon icon={ArrowLeft02Icon} size={18} />
             <span>Back to Rooms</span>
           </button>

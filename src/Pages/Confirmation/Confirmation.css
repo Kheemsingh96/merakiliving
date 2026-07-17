@@ -1,0 +1,225 @@
+/* Container & Layout */
+.conf-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #FAFAFA; /* Softer background */
+  padding: 20px;
+  font-family: inherit;
+}
+
+.conf-card {
+  background: #ffffff;
+  padding: 56px 40px;
+  border-radius: 20px;
+  border: none;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.03); /* Larger, softer shadow for premium depth */
+  text-align: center;
+  max-width: 420px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.conf-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Elegant Typography */
+.conf-title {
+  font-size: 22px;
+  font-weight: 500; /* Reduced font-weight for elegance */
+  color: #1a1a1a;
+  margin: 0 0 10px 0;
+  letter-spacing: -0.3px;
+}
+
+.conf-desc {
+  font-size: 14px;
+  color: #666666;
+  font-weight: 400; /* Light text */
+  margin: 0 0 28px 0;
+  line-height: 1.5;
+  height: 21px; 
+}
+
+.fade-text {
+  animation: textFade 0.4s ease-in-out;
+}
+
+@keyframes textFade {
+  0% { opacity: 0; transform: translateY(2px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.conf-secure-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  color: #888888;
+  font-size: 12px;
+  font-weight: 500; /* Subtle badge */
+  margin-top: 10px;
+}
+
+.conf-secure-badge svg {
+  color: #2E7D32;
+}
+
+/* =========================================
+   Premium Processing Animation (Card & UPI)
+   ========================================= */
+.conf-animation-container {
+  position: relative;
+  width: 180px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 36px;
+}
+
+.conf-icon-floating {
+  color: #870097;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  box-shadow: 0 10px 24px rgba(135, 0, 151, 0.08); /* Soft colored shadow */
+  border: 1px solid #FDF5FF;
+}
+
+.card-icon {
+  animation: gentleFloat 3s ease-in-out infinite;
+}
+
+.phone-icon {
+  animation: gentleFloat 3s ease-in-out infinite 1.5s;
+}
+
+/* Subtle Scanner Track */
+.conf-scanner-track {
+  position: absolute;
+  top: 50%;
+  left: 30px;
+  right: 30px;
+  height: 2px;
+  background: #FDF5FF;
+  transform: translateY(-50%);
+  z-index: 1;
+  overflow: hidden;
+  border-radius: 2px;
+}
+
+.conf-scanner-beam {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 40px;
+  background: linear-gradient(90deg, transparent, #870097, transparent);
+  animation: elegantScan 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* =========================================
+   Premium Success Ripple Animation
+   ========================================= */
+.conf-success-ripple {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.conf-success-icon {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  background: #2E7D32;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  box-shadow: 0 12px 24px rgba(46, 125, 50, 0.2);
+}
+
+.conf-success-ripple::before,
+.conf-success-ripple::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 64px;
+  height: 64px;
+  border: 1px solid rgba(46, 125, 50, 0.3);
+  border-radius: 50%;
+  z-index: 1;
+  animation: elegantRipple 2s cubic-bezier(0.2, 0.8, 0.4, 1) infinite;
+}
+
+.conf-success-ripple::after {
+  animation-delay: 1s;
+}
+
+/* Keyframes */
+@keyframes gentleFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes elegantScan {
+  0% { transform: translateX(-40px); opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translateX(120px); opacity: 0; }
+}
+
+@keyframes elegantRipple {
+  0% { width: 64px; height: 64px; opacity: 1; border-width: 2px; }
+  100% { width: 140px; height: 140px; opacity: 0; border-width: 0px; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.animate-pop {
+  animation: popIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.95); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .conf-card {
+    padding: 40px 24px;
+  }
+  .conf-title {
+    font-size: 20px;
+  }
+  .conf-desc {
+    font-size: 13px;
+  }
+}

@@ -4,6 +4,14 @@
   padding: 120px 48px 80px;
   box-sizing: border-box;
   min-height: 100vh;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gd-section.gd-animate {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .gd-container {
@@ -39,6 +47,7 @@
   height: 18px;
 }
 
+/* Premium Progress Bar */
 .gd-steps {
   display: flex;
   align-items: flex-start;
@@ -67,8 +76,8 @@
 }
 
 .gd-step-circle {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: #f5f0f6;
   color: #999999;
@@ -77,7 +86,8 @@
   justify-content: center;
   font-size: 13px;
   font-weight: 700;
-  border: none;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid transparent;
   position: relative;
   z-index: 2;
   flex-shrink: 0;
@@ -94,19 +104,20 @@
   transform: translateY(-50%);
   height: 3px;
   background: #e8e0ea;
+  transition: background 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1;
 }
 
 .gd-step-track-left {
   left: 0;
   right: 50%;
-  margin-right: 20px;
+  margin-right: 22px;
 }
 
 .gd-step-track-right {
   left: 50%;
   right: 0;
-  margin-left: 20px;
+  margin-left: 22px;
 }
 
 .gd-step-track-line.filled {
@@ -117,6 +128,7 @@
   background: #870097;
   color: #ffffff;
   box-shadow: 0 4px 16px rgba(135, 0, 151, 0.3);
+  border-color: #870097;
 }
 
 .gd-step.current .gd-step-circle {
@@ -132,6 +144,7 @@
   color: #bbbbbb;
   text-align: center;
   white-space: nowrap;
+  transition: color 0.3s ease;
 }
 
 .gd-step.active .gd-step-label {
@@ -195,14 +208,32 @@
 
 .gd-card {
   background: #ffffff;
-  border-radius: 20px;
-  border: 1px solid #f0f0f0;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  border-radius: 16px;
+  border: none;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
   overflow: hidden;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+.gd-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
 }
 
 .gd-summary-card {
   padding: 24px;
+  animation: cardFadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both;
+}
+
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .gd-summary-header {
@@ -368,6 +399,7 @@
 
 .gd-form-card {
   padding: 24px;
+  animation: cardFadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.4s both;
 }
 
 .gd-form-header {
@@ -427,7 +459,6 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  width: 100%;
 }
 
 .gd-form-group.error .gd-input,
@@ -455,17 +486,17 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #ffffff;
+  background: #FAFAFA;
   border: 1.5px solid #f0f0f0;
   border-radius: 10px;
   padding: 0 14px;
   transition: all 0.2s ease;
-  width: 100%;
-  box-sizing: border-box;
 }
 
 .gd-input-wrapper:focus-within {
   border-color: #870097;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(135, 0, 151, 0.08);
 }
 
 .gd-input-wrapper svg {
@@ -485,8 +516,6 @@
   font-weight: 500;
   outline: none;
   font-family: inherit;
-  width: 100%;
-  min-width: 0;
 }
 
 .gd-input::placeholder {
@@ -497,25 +526,23 @@
 .gd-phone-wrapper {
   display: flex;
   gap: 10px;
-  width: 100%;
-  box-sizing: border-box;
 }
 
 .gd-country-select {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #ffffff;
+  background: #FAFAFA;
   border: 1.5px solid #f0f0f0;
   border-radius: 10px;
   padding: 0 12px;
   transition: all 0.2s ease;
-  flex-shrink: 0;
-  box-sizing: border-box;
 }
 
 .gd-country-select:focus-within {
   border-color: #870097;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(135, 0, 151, 0.08);
 }
 
 .gd-country-select svg {
@@ -539,8 +566,7 @@
 
 .gd-phone-input {
   flex: 1;
-  min-width: 0;
-  background: #ffffff;
+  background: #FAFAFA;
   border: 1.5px solid #f0f0f0;
   border-radius: 10px;
   padding: 12px 14px;
@@ -550,11 +576,12 @@
   outline: none;
   font-family: inherit;
   transition: all 0.2s ease;
-  box-sizing: border-box;
 }
 
 .gd-phone-input:focus {
   border-color: #870097;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(135, 0, 151, 0.08);
 }
 
 .gd-phone-input::placeholder {
@@ -566,17 +593,17 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  background: #ffffff;
+  background: #FAFAFA;
   border: 1.5px solid #f0f0f0;
   border-radius: 10px;
   padding: 12px 14px;
   transition: all 0.2s ease;
-  width: 100%;
-  box-sizing: border-box;
 }
 
 .gd-textarea-wrapper:focus-within {
   border-color: #870097;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(135, 0, 151, 0.08);
 }
 
 .gd-textarea-wrapper svg {
@@ -599,7 +626,6 @@
   font-family: inherit;
   resize: vertical;
   min-height: 80px;
-  width: 100%;
 }
 
 .gd-textarea::placeholder {
@@ -640,17 +666,7 @@
 }
 
 .gd-checkbox-group.error .gd-checkbox-custom {
-  width: 20px;
-  height: 20px;
-  border-radius: 5px;
-  border: 2px solid #E53935;
-  background: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  margin-top: 1px;
-  transition: all 0.2s ease;
+  border-color: #E53935;
 }
 
 .gd-checkbox-label {
@@ -682,17 +698,8 @@
 }
 
 .gd-checkbox:checked + .gd-checkbox-custom {
-  width: 20px;
-  height: 20px;
-  border-radius: 5px;
-  border: 2px solid #870097;
+  border-color: #870097;
   background: #870097;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  margin-top: 1px;
-  transition: all 0.2s ease;
 }
 
 .gd-checkbox-custom svg {
@@ -812,6 +819,7 @@
 
 .gd-price-card {
   padding: 24px;
+  animation: cardFadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.35s both;
 }
 
 .gd-price-title {
@@ -913,7 +921,7 @@
   flex: 1;
   min-width: 0;
   background: #ffffff;
-  border: 1.5px solid #f0f0f0;
+  border: 1.5px solid #e8e0ea;
   border-radius: 10px;
   padding: 0 14px;
   min-height: 44px;
@@ -923,6 +931,7 @@
 
 .gd-coupon-input-box:focus-within {
   border-color: #870097;
+  box-shadow: 0 0 0 3px rgba(135, 0, 151, 0.08);
 }
 
 .gd-coupon-input-box svg {
@@ -1080,6 +1089,10 @@
   flex-shrink: 0;
 }
 
+.gd-amenities-card {
+  animation: cardFadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.45s both;
+}
+
 .gd-amenities-toggle {
   display: flex;
   align-items: center;
@@ -1122,6 +1135,7 @@
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
   padding: 0 24px 20px;
+  animation: expandIn 0.3s ease;
 }
 
 .gd-amenity-item {
@@ -1154,6 +1168,7 @@
 
 .gd-policy-card {
   padding: 16px 24px;
+  animation: cardFadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.5s both;
 }
 
 .gd-policy-item {
@@ -1214,6 +1229,7 @@
 
 .gd-help-card {
   padding: 24px;
+  animation: cardFadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.55s both;
 }
 
 .gd-help-header {
@@ -1309,6 +1325,17 @@
   box-shadow: 0 2px 12px rgba(135, 0, 151, 0.1);
 }
 
+@keyframes expandIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (max-width: 1024px) {
   .gd-section {
     padding: 100px 40px 60px;
@@ -1399,6 +1426,14 @@
     font-size: 15px;
   }
 
+  .gd-phone-wrapper {
+    flex-direction: column;
+  }
+
+  .gd-country-select {
+    width: 100%;
+  }
+
   .gd-summary-row {
     flex-direction: column;
     gap: 12px;
@@ -1483,6 +1518,10 @@
     font-size: 13px;
   }
 
+  .gd-card {
+    border-radius: 14px;
+  }
+
   .gd-summary-card,
   .gd-form-card {
     padding: 20px;
@@ -1534,7 +1573,7 @@
     flex: 1;
     min-width: 0;
     background: #ffffff;
-    border: 1.5px solid #f0f0f0;
+    border: 1.5px solid #e8e0ea;
     border-radius: 10px;
     padding: 0 14px;
     min-height: 44px;

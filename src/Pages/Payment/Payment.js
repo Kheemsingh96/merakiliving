@@ -1,48 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Payment.css';
 
 import room1 from '../../assets/images/room-1.png';
 import room2 from '../../assets/images/room-2.png';
 import room3 from '../../assets/images/room-3.png';
+import gpayLogo from '../../assets/images/gpay.png';
+import phonepeLogo from '../../assets/images/phonepe.png';
+import paytmLogo from '../../assets/images/paytm.png';
+import bhimLogo from '../../assets/images/bhim.png';
 
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
-  ArrowLeft01Icon,
-  ArrowRight01Icon,
   ArrowLeft02Icon,
   BedDoubleIcon,
   Calendar01Icon,
-  Call02Icon,
-  CheckmarkCircle01Icon,
-  StarIcon,
   UserMultiple02Icon,
-  RupeeShieldIcon,
   SecurityValidationIcon,
-  BulbChargingIcon,
-  DiscountIcon,
-  Tick02Icon,
   CreditCardPosIcon,
   BankIcon,
   Wallet02Icon,
-  LockIcon
+  LockIcon,
+  User03Icon,
+  Mail01Icon,
+  Call02Icon,
+  DiscountIcon,
+  CheckmarkCircle01Icon,
+  BulbChargingIcon,
+  RupeeShieldIcon
 } from '@hugeicons/core-free-icons';
-
-import { FaWhatsapp } from 'react-icons/fa';
-import { SiGooglepay, SiPhonepe } from 'react-icons/si';
-
-const ClockIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10"/>
-    <polyline points="12 6 12 12 16 14"/>
-  </svg>
-);
-
-const ShieldTickIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-    <polyline points="9 12 12 15 16 10"/>
-  </svg>
-);
 
 const SmartphoneIcon = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -64,86 +49,42 @@ const roomsData = [
     tag: 'Mountain View',
     image: room1,
     title: 'Himalayan View Room',
-    desc: 'Peaceful mountain-facing room designed for couples and relaxing escapes.',
     price: '3,500',
     rating: 4.9,
-    reviews: 128,
-    guests: '2 Guests',
-    bed: 'King Bed',
-    view: 'Mountain View',
-    size: '280 sq ft',
-    amenities: ['Free WiFi', 'Free Parking', 'Breakfast Included', 'Room Heater']
+    reviews: 128
   },
   {
     id: 2,
     tag: 'Valley Surroundings',
     image: room2,
     title: 'Premium Valley Room',
-    desc: 'Elegant room with cozy interiors and beautiful valley surroundings.',
     price: '4,500',
     rating: 4.8,
-    reviews: 96,
-    guests: '2 Guests',
-    bed: 'Queen Bed',
-    view: 'Private Sitting Area',
-    size: '320 sq ft',
-    amenities: ['Free WiFi', 'Free Parking', 'Breakfast Included', 'Balcony']
+    reviews: 96
   },
   {
     id: 3,
     tag: 'Family Comfort',
     image: room3,
     title: 'Luxury Family Suite',
-    desc: 'Spacious comfort designed for families and memorable mountain stays.',
     price: '6,000',
     rating: 5.0,
-    reviews: 84,
-    guests: '4 Guests',
-    bed: 'Premium Room',
-    view: 'Extra Space',
-    size: '450 sq ft',
-    amenities: ['Free WiFi', 'Free Parking', 'Breakfast Included', 'Kitchenette']
+    reviews: 84
   }
 ];
 
 const paymentMethods = [
-  {
-    id: 'upi',
-    label: 'UPI',
-    subtitle: 'Google Pay, PhonePe, Paytm, BHIM',
-    icon: SmartphoneIcon
-  },
-  {
-    id: 'card',
-    label: 'Credit / Debit Card',
-    subtitle: 'Visa, Mastercard, RuPay, Amex',
-    icon: CreditCardPosIcon
-  },
-  {
-    id: 'netbanking',
-    label: 'Net Banking',
-    subtitle: 'All major banks supported',
-    icon: BankIcon
-  },
-  {
-    id: 'wallet',
-    label: 'Wallets',
-    subtitle: 'Paytm, PhonePe, Amazon Pay, Mobikwik',
-    icon: Wallet02Icon
-  },
-  {
-    id: 'paylater',
-    label: 'Pay Later',
-    subtitle: 'Simpl, Lazypay, ICICI PayLater',
-    icon: ClockIcon
-  }
+  { id: 'upi', label: 'UPI', subtitle: 'Google Pay, PhonePe, Paytm', icon: SmartphoneIcon },
+  { id: 'card', label: 'Credit / Debit Card', subtitle: 'Visa, Mastercard, RuPay', icon: CreditCardPosIcon },
+  { id: 'netbanking', label: 'Net Banking', subtitle: 'All major banks supported', icon: BankIcon },
+  { id: 'wallet', label: 'Wallets', subtitle: 'Paytm, PhonePe, Amazon Pay', icon: Wallet02Icon }
 ];
 
 const upiOptions = [
-  { id: 'gpay', label: 'Google Pay', color: '#4285F4', Icon: SiGooglepay },
-  { id: 'phonepe', label: 'PhonePe', color: '#5f259f', Icon: SiPhonepe },
-  { id: 'paytm', label: 'Paytm', color: '#00BAF2' },
-  { id: 'bhim', label: 'BHIM UPI', color: '#0066B3' }
+  { id: 'gpay', label: 'Google Pay', image: gpayLogo, link: 'upi://pay' },
+  { id: 'phonepe', label: 'PhonePe', image: phonepeLogo, link: 'phonepe://pay' },
+  { id: 'paytm', label: 'Paytm', image: paytmLogo, link: 'paytmmp://pay' },
+  { id: 'bhim', label: 'BHIM UPI', image: bhimLogo, link: 'bhim://pay' }
 ];
 
 const cardNetworks = [
@@ -153,8 +94,19 @@ const cardNetworks = [
   { id: 'amex', label: 'Amex' }
 ];
 
-const Payment = ({ setCurrentPage, selectedRoomId = 1 }) => {
-  const [currentStep] = useState(2);
+const formatText = (text) => {
+  if (!text) return '';
+  return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+};
+
+const formatEmail = (email) => {
+  if (!email) return '';
+  return email.toLowerCase();
+};
+
+const Payment = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
+  const [animateIn, setAnimateIn] = useState(false);
+  const [currentStep] = useState(3);
   const [selectedMethod, setSelectedMethod] = useState('upi');
   const [selectedUpi, setSelectedUpi] = useState('gpay');
   const [upiId, setUpiId] = useState('');
@@ -167,20 +119,56 @@ const Payment = ({ setCurrentPage, selectedRoomId = 1 }) => {
   const [errors, setErrors] = useState({});
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const [couponCode, setCouponCode] = useState('');
+  const [couponApplied, setCouponApplied] = useState(false);
+  const [couponError, setCouponError] = useState('');
+
+  const [guestData, setGuestData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    countryCode: '+91'
+  });
+
   const room = roomsData.find(r => r.id === selectedRoomId) || roomsData[0];
+
+  useEffect(() => {
+    const timer = setTimeout(() => setAnimateIn(true), 100);
+    
+    try {
+      const savedDetails = sessionStorage.getItem('meraki_guestDetails');
+      if (savedDetails) {
+        const parsed = JSON.parse(savedDetails);
+        setGuestData({
+          firstName: parsed.firstName || '',
+          lastName: parsed.lastName || '',
+          email: parsed.email || '',
+          phone: parsed.phone || '',
+          countryCode: parsed.countryCode || '+91'
+        });
+      }
+      
+      const savedCoupon = sessionStorage.getItem('meraki_couponCode');
+      const isApplied = sessionStorage.getItem('meraki_couponApplied') === 'true';
+      if (savedCoupon && isApplied) {
+        setCouponCode(savedCoupon);
+        setCouponApplied(true);
+      }
+    } catch (e) {
+    }
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   const storedCheckIn = sessionStorage.getItem('meraki_checkIn');
   const storedCheckOut = sessionStorage.getItem('meraki_checkOut');
   const storedGuests = sessionStorage.getItem('meraki_guests');
-  const storedCoupon = sessionStorage.getItem('meraki_couponApplied');
-  const storedCouponCode = sessionStorage.getItem('meraki_couponCode');
 
   const checkInDate = storedCheckIn ? new Date(storedCheckIn) : new Date();
   const checkOutDate = storedCheckOut ? new Date(storedCheckOut) : new Date(new Date().setDate(new Date().getDate() + 2));
   const guests = storedGuests ? JSON.parse(storedGuests) : { adults: 2, children: 0, rooms: 1 };
-  const couponApplied = storedCoupon === 'true';
-  const couponCode = storedCouponCode || '';
-
+  
   const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
   const pricePerNight = parseInt(room.price.replace(/,/g, ''));
   const subtotal = pricePerNight * nights;
@@ -189,14 +177,30 @@ const Payment = ({ setCurrentPage, selectedRoomId = 1 }) => {
   const taxes = Math.round(taxableAmount * 0.05);
   const totalAmount = taxableAmount + taxes;
 
-  const formatDate = (date) => {
-    if (!date) return 'Add Dates';
-    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).replace(/ (\d{4})$/, ', $1');
+  const handleApplyCoupon = () => {
+    setCouponError('');
+    if (!couponCode.trim()) {
+      setCouponError('Please enter a coupon code');
+      return;
+    }
+    const validCoupons = ['MERAKI8', 'SAVE8', 'WELCOME8', 'DISCOUNT8'];
+    if (validCoupons.includes(couponCode.trim().toUpperCase())) {
+      setCouponApplied(true);
+      setCouponError('');
+      sessionStorage.setItem('meraki_couponApplied', 'true');
+      sessionStorage.setItem('meraki_couponCode', couponCode.trim().toUpperCase());
+    } else {
+      setCouponApplied(false);
+      setCouponError('Invalid coupon code. Try MERAKI8');
+    }
   };
 
-  const getDayName = (date) => {
-    if (!date) return '';
-    return date.toLocaleDateString('en-GB', { weekday: 'long' });
+  const handleRemoveCoupon = () => {
+    setCouponApplied(false);
+    setCouponCode('');
+    setCouponError('');
+    sessionStorage.removeItem('meraki_couponApplied');
+    sessionStorage.removeItem('meraki_couponCode');
   };
 
   const formatCardNumber = (value) => {
@@ -226,8 +230,6 @@ const Payment = ({ setCurrentPage, selectedRoomId = 1 }) => {
     if (selectedMethod === 'upi') {
       if (!upiId.trim()) {
         newErrors.upiId = 'Please enter your UPI ID';
-      } else if (!/^[a-zA-Z0-9._-]+@[a-zA-Z]+$/.test(upiId.trim())) {
-        newErrors.upiId = 'Please enter a valid UPI ID (e.g., name@upi)';
       }
     }
     if (selectedMethod === 'card') {
@@ -238,8 +240,7 @@ const Payment = ({ setCurrentPage, selectedRoomId = 1 }) => {
       if (!cardName.trim()) {
         newErrors.cardName = 'Please enter the name on card';
       }
-      const cleanExpiry = cardExpiry.replace(/\s/g, '').replace(/\//g, '');
-      if (!cleanExpiry || cleanExpiry.length < 4) {
+      if (cardExpiry.length < 4) {
         newErrors.cardExpiry = 'Please enter valid expiry (MM/YY)';
       }
       if (!cardCvv || cardCvv.length < 3) {
@@ -257,159 +258,100 @@ const Payment = ({ setCurrentPage, selectedRoomId = 1 }) => {
     }
     setErrors({});
     setIsProcessing(true);
+    
+    // Simulate brief network processing, then direct navigation to confirmation
     setTimeout(() => {
       setIsProcessing(false);
       if (setCurrentPage) setCurrentPage('confirmation');
-    }, 2000);
+    }, 1500);
   };
 
   const handleBack = () => {
-    const history = JSON.parse(sessionStorage.getItem('meraki_navHistory') || '[]');
-    const prevPage = history.length > 1 ? history[history.length - 2] : 'guest-details';
-    if (setCurrentPage) setCurrentPage(prevPage);
+    if (goBack) {
+      goBack('guest-details');
+    } else if (setCurrentPage) {
+      setCurrentPage('guest-details');
+    }
+  };
+
+  const handleUpiClick = (upi) => {
+    setSelectedUpi(upi.id);
+    if (window.innerWidth <= 768) {
+      window.location.href = upi.link;
+    }
   };
 
   const steps = [
-    { label: 'Your Stay', number: 1 },
-    { label: 'Guest Details', number: 2 },
-    { label: 'Payment', number: 3 },
-    { label: 'Confirmation', number: 4 }
+    { label: 'Your Stay', number: 1, icon: BedDoubleIcon },
+    { label: 'Guest Details', number: 2, icon: User03Icon },
+    { label: 'Payment', number: 3, icon: CreditCardPosIcon },
+    { label: 'Confirmation', number: 4, icon: SecurityValidationIcon }
   ];
 
   const renderProgressBar = () => (
     <div className="pay-steps">
-      {steps.map((step, idx) => (
-        <div key={step.number} className={`pay-step ${step.number <= currentStep ? 'active' : ''} ${step.number === currentStep ? 'current' : ''}`}>
-          <div className="pay-step-track">
-            {idx > 0 && <div className={`pay-step-track-line pay-step-track-left ${step.number <= currentStep ? 'filled' : ''}`}></div>}
-            <div className="pay-step-circle">
-              {step.number < currentStep ? (
-                <HugeiconsIcon icon={Tick02Icon} size={14} />
-              ) : (
-                <span>{step.number}</span>
+      {steps.map((step, idx) => {
+        const isActive = step.number <= currentStep;
+        const isCurrent = step.number === currentStep;
+        const isCompleted = step.number < currentStep;
+        return (
+          <div key={step.number} className={`pay-step ${isActive ? 'active' : ''} ${isCurrent ? 'current' : ''} ${isCompleted ? 'completed' : ''}`}>
+            <div className="pay-step-track">
+              {idx > 0 && (
+                <div className={`pay-step-track-line pay-step-track-left ${isActive ? 'filled' : ''}`}></div>
+              )}
+              <div className="pay-step-circle">
+                <HugeiconsIcon icon={step.icon} size={14} />
+              </div>
+              {idx < steps.length - 1 && (
+                <div className={`pay-step-track-line pay-step-track-right ${isCompleted ? 'filled' : ''}`}></div>
               )}
             </div>
-            {idx < steps.length - 1 && <div className={`pay-step-track-line pay-step-track-right ${step.number < currentStep ? 'filled' : ''}`}></div>}
+            <span className="pay-step-label">{step.label}</span>
           </div>
-          <span className="pay-step-label">{step.label}</span>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 
-  const renderRoomSummary = () => (
+  const renderGuestDetails = () => (
     <div className="pay-card pay-summary-card">
-      <div className="pay-summary-header">
-        <div className="pay-summary-room-image">
-          <img src={room.image} alt={room.title} loading="lazy" />
-        </div>
-        <div className="pay-summary-room-info">
-          <h3 className="pay-summary-room-title">{room.title}</h3>
-          <div className="pay-summary-room-meta">
-            <span className="pay-summary-tag">{room.tag}</span>
-            <div className="pay-summary-rating">
-              <HugeiconsIcon icon={StarIcon} size={14} />
-              <span>{room.rating}</span>
-              <span className="pay-rating-count">({room.reviews})</span>
-            </div>
+      <div className="pay-summary-header" style={{ marginBottom: '16px', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div className="pay-payment-icon" style={{ width: '36px', height: '36px' }}>
+            <HugeiconsIcon icon={User03Icon} size={18} />
           </div>
+          <h3 className="pay-payment-title">Guest Information</h3>
         </div>
+        <button className="pay-link-btn" onClick={handleBack} style={{ fontSize: '13px' }}>Edit Details</button>
       </div>
-      <div className="pay-summary-divider"></div>
+      
       <div className="pay-summary-details">
-        <div className="pay-summary-row">
-          <div className="pay-summary-item">
-            <HugeiconsIcon icon={Calendar01Icon} size={16} />
-            <div>
-              <span className="pay-summary-label">Check-in</span>
-              <span className="pay-summary-value">{formatDate(checkInDate)}</span>
-              <span className="pay-summary-sub">{getDayName(checkInDate)} &middot; After 12:00 PM</span>
+        <div className="pay-guest-premium-grid">
+          <div className="pay-guest-item">
+            <span className="pay-summary-label">Full Name</span>
+            <span className="pay-summary-value">
+              {guestData.firstName || guestData.lastName 
+                ? `${formatText(guestData.firstName)} ${formatText(guestData.lastName)}`
+                : '-'}
+            </span>
+          </div>
+          <div className="pay-guest-item">
+            <span className="pay-summary-label">Email Address</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <HugeiconsIcon icon={Mail01Icon} size={14} color="#888" />
+              <span className="pay-summary-value">{formatEmail(guestData.email) || '-'}</span>
             </div>
           </div>
-          <div className="pay-summary-item">
-            <HugeiconsIcon icon={Calendar01Icon} size={16} />
-            <div>
-              <span className="pay-summary-label">Check-out</span>
-              <span className="pay-summary-value">{formatDate(checkOutDate)}</span>
-              <span className="pay-summary-sub">{getDayName(checkOutDate)} &middot; Before 11:00 AM</span>
+          <div className="pay-guest-item">
+            <span className="pay-summary-label">Mobile Number</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <HugeiconsIcon icon={Call02Icon} size={14} color="#888" />
+              <span className="pay-summary-value">
+                {guestData.phone ? `${guestData.countryCode} ${guestData.phone}` : '-'}
+              </span>
             </div>
           </div>
-        </div>
-        <div className="pay-summary-row">
-          <div className="pay-summary-item">
-            <HugeiconsIcon icon={UserMultiple02Icon} size={16} />
-            <div>
-              <span className="pay-summary-label">Guests</span>
-              <span className="pay-summary-value">{guests.adults + guests.children} Guests</span>
-            </div>
-          </div>
-          <div className="pay-summary-item">
-            <HugeiconsIcon icon={BedDoubleIcon} size={16} />
-            <div>
-              <span className="pay-summary-label">Rooms</span>
-              <span className="pay-summary-value">{guests.rooms} Room{guests.rooms > 1 ? 's' : ''}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderPriceBreakdown = () => (
-    <div className="pay-card pay-price-card">
-      <h4 className="pay-price-title">Price Breakdown</h4>
-      <div className="pay-price-room">
-        <img src={room.image} alt={room.title} loading="lazy" />
-        <div>
-          <span className="pay-price-room-name">{room.title}</span>
-          <span className="pay-price-room-meta">{nights} night{nights > 1 ? 's' : ''} &middot; {guests.adults + guests.children} guests</span>
-        </div>
-      </div>
-      <div className="pay-price-divider"></div>
-      <div className="pay-price-breakdown">
-        <div className="pay-price-row">
-          <span>Rs.{room.price} x {nights} night{nights > 1 ? 's' : ''}</span>
-          <span>Rs.{subtotal.toLocaleString('en-IN')}</span>
-        </div>
-        {couponApplied && (
-          <div className="pay-price-row pay-discount">
-            <span>Coupon Discount ({couponCode.toUpperCase()})</span>
-            <span>-Rs.{discountAmount.toLocaleString('en-IN')}</span>
-          </div>
-        )}
-        <div className="pay-price-row">
-          <span>Taxes & Fees (5% GST)</span>
-          <span>Rs.{taxes.toLocaleString('en-IN')}</span>
-        </div>
-      </div>
-      <div className="pay-price-divider"></div>
-      <div className="pay-price-row pay-total-row">
-        <span>Total Amount</span>
-        <span>Rs.{totalAmount.toLocaleString('en-IN')}</span>
-      </div>
-      {couponApplied && (
-        <div className="pay-coupon-applied">
-          <div className="pay-coupon-applied-left">
-            <HugeiconsIcon icon={CheckmarkCircle01Icon} size={18} />
-            <div>
-              <span className="pay-coupon-code">{couponCode.toUpperCase()}</span>
-              <span className="pay-coupon-saved">You saved Rs.{discountAmount.toLocaleString('en-IN')}</span>
-            </div>
-          </div>
-        </div>
-      )}
-      <div className="pay-guarantees">
-        <div className="pay-guarantee-item">
-          <HugeiconsIcon icon={RupeeShieldIcon} size={16} />
-          <span>Best Price Guarantee</span>
-        </div>
-        <div className="pay-guarantee-item">
-          <HugeiconsIcon icon={SecurityValidationIcon} size={16} />
-          <span>Secure Booking</span>
-        </div>
-        <div className="pay-guarantee-item">
-          <HugeiconsIcon icon={BulbChargingIcon} size={16} />
-          <span>No Hidden Charges</span>
         </div>
       </div>
     </div>
@@ -423,7 +365,7 @@ const Payment = ({ setCurrentPage, selectedRoomId = 1 }) => {
         </div>
         <div>
           <h3 className="pay-payment-title">Select Payment Method</h3>
-          <p className="pay-payment-desc">Choose your preferred way to pay</p>
+          <p className="pay-payment-desc">All transactions are secure and encrypted.</p>
         </div>
       </div>
       <div className="pay-methods-list">
@@ -445,7 +387,7 @@ const Payment = ({ setCurrentPage, selectedRoomId = 1 }) => {
                 </div>
               </div>
               <div className="pay-method-icon">
-                {method.id === 'upi' || method.id === 'paylater' ? (
+                {method.id === 'upi' ? (
                   <IconComp />
                 ) : (
                   <HugeiconsIcon icon={IconComp} size={22} />
@@ -464,21 +406,18 @@ const Payment = ({ setCurrentPage, selectedRoomId = 1 }) => {
           );
         })}
       </div>
+
       {selectedMethod === 'upi' && (
-        <div className="pay-method-form">
+        <div className="pay-method-form animate-fade-in">
           <div className="pay-upi-options">
             {upiOptions.map((upi) => (
               <button
                 key={upi.id}
                 className={`pay-upi-option ${selectedUpi === upi.id ? 'active' : ''}`}
-                onClick={() => setSelectedUpi(upi.id)}
+                onClick={() => handleUpiClick(upi)}
               >
-                {upi.Icon ? (
-                  <upi.Icon size={16} style={{ color: upi.color, flexShrink: 0 }} />
-                ) : (
-                  <div className="pay-upi-dot" style={{ background: upi.color }}></div>
-                )}
-                <span>{upi.label}</span>
+                <img src={upi.image} alt={upi.label} className="pay-upi-img" />
+                <span className="pay-upi-name">{upi.label}</span>
               </button>
             ))}
           </div>
@@ -503,8 +442,9 @@ const Payment = ({ setCurrentPage, selectedRoomId = 1 }) => {
           </div>
         </div>
       )}
+
       {selectedMethod === 'card' && (
-        <div className="pay-method-form">
+        <div className="pay-method-form animate-fade-in">
           <div className="pay-card-networks">
             {cardNetworks.map((net) => (
               <button
@@ -516,163 +456,100 @@ const Payment = ({ setCurrentPage, selectedRoomId = 1 }) => {
               </button>
             ))}
           </div>
-          <div className={`pay-form-group ${errors.cardNumber ? 'error' : ''}`}>
-            <label className="pay-form-label">
-              Card Number <span className="pay-required">*</span>
-            </label>
-            <div className="pay-input-wrapper">
-              <input
-                type="text"
-                value={cardNumber}
-                onChange={(e) => {
-                  setCardNumber(formatCardNumber(e.target.value));
-                  if (errors.cardNumber) setErrors(prev => ({ ...prev, cardNumber: '' }));
-                }}
-                placeholder="0000 0000 0000 0000"
-                className="pay-input"
-                maxLength={19}
-              />
-            </div>
-            {errors.cardNumber && <span className="pay-error-text">{errors.cardNumber}</span>}
-          </div>
-          <div className={`pay-form-group ${errors.cardName ? 'error' : ''}`}>
-            <label className="pay-form-label">
-              Name on Card <span className="pay-required">*</span>
-            </label>
-            <div className="pay-input-wrapper">
-              <input
-                type="text"
-                value={cardName}
-                onChange={(e) => {
-                  setCardName(e.target.value);
-                  if (errors.cardName) setErrors(prev => ({ ...prev, cardName: '' }));
-                }}
-                placeholder="Full name as on card"
-                className="pay-input"
-              />
-            </div>
-            {errors.cardName && <span className="pay-error-text">{errors.cardName}</span>}
-          </div>
-          <div className="pay-form-row">
-            <div className={`pay-form-group ${errors.cardExpiry ? 'error' : ''}`}>
+          
+          <div className="pay-card-fields-container">
+            <div className={`pay-form-group ${errors.cardNumber ? 'error' : ''}`}>
               <label className="pay-form-label">
-                Expiry (MM/YY) <span className="pay-required">*</span>
+                Card Number <span className="pay-required">*</span>
               </label>
               <div className="pay-input-wrapper">
                 <input
                   type="text"
-                  value={cardExpiry}
+                  value={cardNumber}
                   onChange={(e) => {
-                    setCardExpiry(formatExpiry(e.target.value));
-                    if (errors.cardExpiry) setErrors(prev => ({ ...prev, cardExpiry: '' }));
+                    setCardNumber(formatCardNumber(e.target.value));
+                    if (errors.cardNumber) setErrors(prev => ({ ...prev, cardNumber: '' }));
                   }}
-                  placeholder="MM / YY"
+                  placeholder="0000 0000 0000 0000"
                   className="pay-input"
-                  maxLength={7}
+                  maxLength={19}
                 />
               </div>
-              {errors.cardExpiry && <span className="pay-error-text">{errors.cardExpiry}</span>}
+              {errors.cardNumber && <span className="pay-error-text">{errors.cardNumber}</span>}
             </div>
-            <div className={`pay-form-group ${errors.cardCvv ? 'error' : ''}`}>
+
+            <div className={`pay-form-group ${errors.cardName ? 'error' : ''}`}>
               <label className="pay-form-label">
-                CVV <span className="pay-required">*</span>
+                Name on Card <span className="pay-required">*</span>
               </label>
               <div className="pay-input-wrapper">
                 <input
-                  type="password"
-                  value={cardCvv}
+                  type="text"
+                  value={cardName}
                   onChange={(e) => {
-                    setCardCvv(e.target.value.replace(/\D/g, '').slice(0, 4));
-                    if (errors.cardCvv) setErrors(prev => ({ ...prev, cardCvv: '' }));
+                    setCardName(e.target.value);
+                    if (errors.cardName) setErrors(prev => ({ ...prev, cardName: '' }));
                   }}
-                  placeholder="123"
+                  placeholder="Full name as on card"
                   className="pay-input"
-                  maxLength={4}
                 />
               </div>
-              {errors.cardCvv && <span className="pay-error-text">{errors.cardCvv}</span>}
+              {errors.cardName && <span className="pay-error-text">{errors.cardName}</span>}
+            </div>
+
+            <div className="pay-form-row">
+              <div className={`pay-form-group ${errors.cardExpiry ? 'error' : ''}`}>
+                <label className="pay-form-label">
+                  Expiry (MM/YY) <span className="pay-required">*</span>
+                </label>
+                <div className="pay-input-wrapper">
+                  <input
+                    type="text"
+                    value={cardExpiry}
+                    onChange={(e) => {
+                      setCardExpiry(formatExpiry(e.target.value));
+                      if (errors.cardExpiry) setErrors(prev => ({ ...prev, cardExpiry: '' }));
+                    }}
+                    placeholder="MM / YY"
+                    className="pay-input"
+                    maxLength={7}
+                  />
+                </div>
+                {errors.cardExpiry && <span className="pay-error-text">{errors.cardExpiry}</span>}
+              </div>
+              <div className={`pay-form-group ${errors.cardCvv ? 'error' : ''}`}>
+                <label className="pay-form-label">
+                  CVV <span className="pay-required">*</span>
+                </label>
+                <div className="pay-input-wrapper">
+                  <input
+                    type="password"
+                    value={cardCvv}
+                    onChange={(e) => {
+                      setCardCvv(e.target.value.replace(/\D/g, '').slice(0, 4));
+                      if (errors.cardCvv) setErrors(prev => ({ ...prev, cardCvv: '' }));
+                    }}
+                    placeholder="123"
+                    className="pay-input"
+                    maxLength={4}
+                  />
+                </div>
+                {errors.cardCvv && <span className="pay-error-text">{errors.cardCvv}</span>}
+              </div>
             </div>
           </div>
         </div>
       )}
-      {selectedMethod === 'netbanking' && (
-        <div className="pay-method-form">
-          <div className="pay-netbanking-placeholder">
-            <HugeiconsIcon icon={BankIcon} size={32} />
-            <span className="pay-placeholder-title">Net Banking</span>
-            <span className="pay-placeholder-desc">You will be redirected to your bank's secure payment page to complete the transaction.</span>
-          </div>
-        </div>
-      )}
-      {selectedMethod === 'wallet' && (
-        <div className="pay-method-form">
-          <div className="pay-wallet-placeholder">
-            <HugeiconsIcon icon={Wallet02Icon} size={32} />
-            <span className="pay-placeholder-title">Wallets</span>
-            <span className="pay-placeholder-desc">Pay using your preferred wallet. Razorpay will handle the wallet selection at checkout.</span>
-          </div>
-        </div>
-      )}
-      {selectedMethod === 'paylater' && (
-        <div className="pay-method-form">
-          <div className="pay-paylater-placeholder">
-            <ClockIcon />
-            <span className="pay-placeholder-title">Pay Later</span>
-            <span className="pay-placeholder-desc">Buy now, pay later with your preferred provider. Razorpay will show available options at checkout.</span>
-          </div>
-        </div>
-      )}
-    </div>
-  );
 
-  const renderSecurityCard = () => (
-    <div className="pay-card pay-security-card">
-      <div className="pay-security-header">
-        <div className="pay-security-icon">
-          <HugeiconsIcon icon={LockIcon} size={24} />
+      {(selectedMethod === 'netbanking' || selectedMethod === 'wallet') && (
+        <div className="pay-method-form animate-fade-in">
+          <div className="pay-placeholder">
+            <HugeiconsIcon icon={selectedMethod === 'netbanking' ? BankIcon : Wallet02Icon} size={32} />
+            <span className="pay-placeholder-title">{selectedMethod === 'netbanking' ? 'Net Banking' : 'Wallets'}</span>
+            <span className="pay-placeholder-desc">You will be redirected to the secure payment page to complete the transaction.</span>
+          </div>
         </div>
-        <div>
-          <h3 className="pay-security-title">Secure Payment</h3>
-          <p className="pay-security-desc">Your payment is protected with 256-bit SSL encryption</p>
-        </div>
-      </div>
-      <div className="pay-security-badges">
-        <div className="pay-security-badge">
-          <ShieldTickIcon />
-          <span>PCI DSS Compliant</span>
-        </div>
-        <div className="pay-security-badge">
-          <HugeiconsIcon icon={LockIcon} size={16} />
-          <span>256-bit SSL</span>
-        </div>
-        <div className="pay-security-badge">
-          <HugeiconsIcon icon={RupeeShieldIcon} size={16} />
-          <span>Razorpay Secure</span>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderPolicyCard = () => (
-    <div className="pay-card pay-policy-card">
-      <div className="pay-policy-item">
-        <div className="pay-policy-icon">
-          <ShieldTickIcon />
-        </div>
-        <div className="pay-policy-text">
-          <span className="pay-policy-title">Free Cancellation</span>
-          <span className="pay-policy-desc">Cancel up to 24 hours before check-in for a full refund.</span>
-        </div>
-      </div>
-      <div className="pay-policy-item">
-        <div className="pay-policy-icon">
-          <ClockIcon />
-        </div>
-        <div className="pay-policy-text">
-          <span className="pay-policy-title">Check-in / Check-out</span>
-          <span className="pay-policy-desc">Check-in: 12:00 PM &middot; Check-out: 11:00 AM</span>
-        </div>
-      </div>
+      )}
     </div>
   );
 
@@ -697,7 +574,7 @@ const Payment = ({ setCurrentPage, selectedRoomId = 1 }) => {
             )}
           </span>
           <span className="pay-checkbox-text">
-            I agree to the <button type="button" className="pay-link-btn" onClick={() => setCurrentPage && setCurrentPage('terms-conditions')}>Terms & Conditions</button>, <button type="button" className="pay-link-btn" onClick={() => setCurrentPage && setCurrentPage('cancellation-policy')}>Cancellation Policy</button>, and authorize the payment of Rs.{totalAmount.toLocaleString('en-IN')} for this booking.
+            I agree to the <button type="button" className="pay-link-btn" onClick={() => setCurrentPage && setCurrentPage('terms-conditions')}>Terms & Conditions</button>, <button type="button" className="pay-link-btn" onClick={() => setCurrentPage && setCurrentPage('cancellation-policy')}>Cancellation Policy</button>, and authorize the payment.
           </span>
         </label>
         {errors.agreeTerms && <span className="pay-error-text">{errors.agreeTerms}</span>}
@@ -705,17 +582,77 @@ const Payment = ({ setCurrentPage, selectedRoomId = 1 }) => {
     </div>
   );
 
-  const renderPayButton = () => (
-    <div className="pay-card pay-action-card">
-      <div className="pay-action-summary">
-        <div className="pay-action-amount">
-          <span className="pay-action-label">Total Payable</span>
-          <span className="pay-action-value">Rs.{totalAmount.toLocaleString('en-IN')}</span>
-        </div>
-        <div className="pay-action-meta">
-          <span>{nights} night{nights > 1 ? 's' : ''} &middot; {guests.adults + guests.children} guests</span>
+  const renderPriceBreakdown = () => (
+    <div className="pay-card pay-price-card">
+      <h4 className="pay-price-title">Price Breakdown</h4>
+      <div className="pay-price-room">
+        <img src={room.image} alt={room.title} loading="lazy" />
+        <div>
+          <span className="pay-price-room-name">{room.title}</span>
+          <span className="pay-price-room-meta">{nights} nights &middot; {guests.adults + guests.children} guests</span>
         </div>
       </div>
+      <div className="pay-price-divider"></div>
+      
+      <div className="pay-price-breakdown">
+        <div className="pay-price-row">
+          <span>Rs.{room.price} x {nights} night{nights > 1 ? 's' : ''}</span>
+          <span>Rs.{subtotal.toLocaleString('en-IN')}</span>
+        </div>
+        <div className={`pay-price-row ${couponApplied ? 'pay-discount' : ''}`}>
+          <span>Coupon Discount</span>
+          <span>{couponApplied ? `-Rs.${discountAmount.toLocaleString('en-IN')}` : 'Rs.0'}</span>
+        </div>
+        <div className="pay-price-row">
+          <span>Taxes & Fees (5% GST)</span>
+          <span>Rs.{taxes.toLocaleString('en-IN')}</span>
+        </div>
+      </div>
+      <div className="pay-price-divider"></div>
+
+      <div className="pay-price-row pay-total-row">
+        <span>Total Amount</span>
+        <span>Rs.{totalAmount.toLocaleString('en-IN')}</span>
+      </div>
+
+      <div className="pay-coupon-section">
+        {!couponApplied ? (
+          <div className="pay-coupon-input-wrapper">
+            <div className="pay-coupon-input-box">
+              <HugeiconsIcon icon={DiscountIcon} size={18} />
+              <input
+                type="text"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value)}
+                placeholder="Enter coupon code"
+                className="pay-coupon-input"
+                onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
+              />
+            </div>
+            <button className="pay-coupon-btn" onClick={handleApplyCoupon}>
+              Apply
+            </button>
+          </div>
+        ) : (
+          <div className="pay-coupon-applied">
+            <div className="pay-coupon-applied-left">
+              <HugeiconsIcon icon={CheckmarkCircle01Icon} size={18} />
+              <div>
+                <span className="pay-coupon-code">{couponCode.toUpperCase()}</span>
+                <span className="pay-coupon-saved">You saved Rs.{discountAmount.toLocaleString('en-IN')}</span>
+              </div>
+            </div>
+            <button className="pay-coupon-remove" onClick={handleRemoveCoupon}>
+              Remove
+            </button>
+          </div>
+        )}
+        {couponError && <span className="pay-coupon-error">{couponError}</span>}
+      </div>
+      
+      <div className="pay-price-divider" style={{ marginTop: '20px' }}></div>
+
+      {/* Button directly below the divider */}
       <button
         className={`pay-btn-primary ${isProcessing ? 'processing' : ''}`}
         onClick={handlePayNow}
@@ -727,50 +664,27 @@ const Payment = ({ setCurrentPage, selectedRoomId = 1 }) => {
             <span>Processing...</span>
           </>
         ) : (
-          <>
-            <span>Pay Rs.{totalAmount.toLocaleString('en-IN')}</span>
-            <HugeiconsIcon icon={ArrowRight01Icon} size={18} />
-          </>
+          <span>Pay Rs.{totalAmount.toLocaleString('en-IN')}</span>
         )}
       </button>
-      <div className="pay-action-secure">
-        <HugeiconsIcon icon={LockIcon} size={14} />
-        <span>Secure payment powered by Razorpay</span>
-      </div>
-    </div>
-  );
-
-  const renderHelpCard = () => (
-    <div className="pay-card pay-help-card">
-      <div className="pay-help-header">
-        <div className="pay-help-icon">
-          <HugeiconsIcon icon={Call02Icon} size={24} />
-        </div>
-        <div>
-          <h4 className="pay-help-title">Need Help?</h4>
-          <p className="pay-help-desc">Our team is here to assist you</p>
-        </div>
-      </div>
-      <div className="pay-help-actions">
-        <a href="https://wa.me/917037189517" target="_blank" rel="noopener noreferrer" className="pay-help-btn pay-whatsapp-btn">
-          <FaWhatsapp size={18} />
-          <span>WhatsApp Us</span>
-        </a>
-        <a href="tel:+917037189517" className="pay-help-btn pay-call-btn">
-          <HugeiconsIcon icon={Call02Icon} size={18} />
-          <span>Call Now</span>
-        </a>
+      <div className="pay-secure-checkout" style={{ marginTop: '12px' }}>
+        <HugeiconsIcon icon={SecurityValidationIcon} size={14} />
+        <span>100% Safe & Secure Checkout</span>
       </div>
     </div>
   );
 
   return (
-    <section className="pay-section">
+    <section className={`pay-section ${animateIn ? 'pay-animate' : ''}`}>
       <div className="pay-container">
         <div className="pay-nav">
-          <button className="pay-back-btn" onClick={handleBack}>
+          <button
+            className="pay-back-btn"
+            onClick={handleBack}
+            aria-label="Back to Guest Details"
+            title="Back to Guest Details"
+          >
             <HugeiconsIcon icon={ArrowLeft02Icon} size={18} />
-            <span>Back to Guest Details</span>
           </button>
         </div>
 
@@ -783,30 +697,23 @@ const Payment = ({ setCurrentPage, selectedRoomId = 1 }) => {
 
         <div className="pay-layout">
           <div className="pay-left">
-            {renderRoomSummary()}
+            {renderGuestDetails()}
             {renderPaymentMethods()}
-            {renderSecurityCard()}
             {renderTermsSection()}
           </div>
+          
           <div className="pay-right">
             <div className="pay-sidebar-sticky">
               {renderPriceBreakdown()}
-              {renderPayButton()}
-              {renderPolicyCard()}
-              {renderHelpCard()}
             </div>
           </div>
         </div>
 
         <div className="pay-mobile-layout">
-          {renderRoomSummary()}
-          {renderPriceBreakdown()}
+          {renderGuestDetails()}
           {renderPaymentMethods()}
-          {renderSecurityCard()}
           {renderTermsSection()}
-          {renderPayButton()}
-          {renderPolicyCard()}
-          {renderHelpCard()}
+          {renderPriceBreakdown()}
         </div>
       </div>
     </section>
