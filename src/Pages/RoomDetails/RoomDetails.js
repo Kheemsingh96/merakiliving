@@ -274,7 +274,6 @@ const EyeIcon = ({ size }) => (
 
 function RoomDetails({ setCurrentPage, selectedRoomId }) {
   const room = ROOMS_DATA.find((r) => r.id === selectedRoomId) || ROOMS_DATA[0];
-  const [selectedImage, setSelectedImage] = useState(0);
   const [showAllAmenities, setShowAllAmenities] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
 
@@ -357,7 +356,7 @@ function RoomDetails({ setCurrentPage, selectedRoomId }) {
 
             <div className="rd-address">
               <MapPinIcon size={16} />
-              <span>Meraki Living Peora Mukteshwar</span>
+              <span>Meraki Living, Bhimtal, Uttarakhand</span>
               <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" className="rd-view-map">
                 View on Google map
               </a>
