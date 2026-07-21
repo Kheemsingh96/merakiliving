@@ -1,36 +1,36 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import './Explore.css';
 
-import luxuryMain from '../../assets/images/luxury-main.png';
-import luxury1 from '../../assets/images/luxury-1.png';
-import luxury2 from '../../assets/images/luxury-2.png';
-import luxury3 from '../../assets/images/luxury-3.png';
+import luxuryMain from '../../assets/images/luxury-main.webp';
+import luxury1 from '../../assets/images/luxury-1.webp';
+import luxury2 from '../../assets/images/luxury-2.webp';
+import luxury3 from '../../assets/images/luxury-3.webp';
 
-import exteriorMain from '../../assets/images/exterior-main.png';
-import exterior1 from '../../assets/images/exterior-1.png';
-import exterior2 from '../../assets/images/exterior-2.png';
+import exteriorMain from '../../assets/images/exterior-main.webp';
+import exterior1 from '../../assets/images/exterior-1.webp';
+import exterior2 from '../../assets/images/exterior-2.webp';
 
-import himalayanMain from '../../assets/images/himalayan-main.png';
-import himalayan1 from '../../assets/images/himalayan-1.png';
-import himalayan2 from '../../assets/images/himalayan-2.png';
-import himalayan3 from '../../assets/images/himalayan-3.png';
+import himalayanMain from '../../assets/images/himalayan-main.webp';
+import himalayan1 from '../../assets/images/himalayan-1.webp';
+import himalayan2 from '../../assets/images/himalayan-2.webp';
+import himalayan3 from '../../assets/images/himalayan-3.webp';
 
-import gardenMain from '../../assets/images/garden-main.png';
-import garden1 from '../../assets/images/garden-1.png';
-import garden2 from '../../assets/images/garden-2.png';
-import garden3 from '../../assets/images/garden-3.png';
-import garden4 from '../../assets/images/garden-4.png';
-import garden5 from '../../assets/images/garden-5.png';
-import garden6 from '../../assets/images/garden-6.png';
+import gardenMain from '../../assets/images/garden-main.webp';
+import garden1 from '../../assets/images/garden-1.webp';
+import garden2 from '../../assets/images/garden-2.webp';
+import garden3 from '../../assets/images/garden-3.webp';
+import garden4 from '../../assets/images/garden-4.webp';
+import garden5 from '../../assets/images/garden-5.webp';
+import garden6 from '../../assets/images/garden-6.webp';
 
-import cafeMain from '../../assets/images/cafe-main.png';
-import cafe1 from '../../assets/images/cafe-1.png';
-import cafe2 from '../../assets/images/cafe-2.png';
-import cafe3 from '../../assets/images/cafe-3.png';
-import cafe4 from '../../assets/images/cafe-4.png';
-import cafe5 from '../../assets/images/cafe-5.png';
-import cafe6 from '../../assets/images/cafe-6.png';
-import cafe7 from '../../assets/images/cafe-7.png';
+import cafeMain from '../../assets/images/cafe-main.webp';
+import cafe1 from '../../assets/images/cafe-1.webp';
+import cafe2 from '../../assets/images/cafe-2.webp';
+import cafe3 from '../../assets/images/cafe-3.webp';
+import cafe4 from '../../assets/images/cafe-4.webp';
+import cafe5 from '../../assets/images/cafe-5.webp';
+import cafe6 from '../../assets/images/cafe-6.webp';
+import cafe7 from '../../assets/images/cafe-7.webp';
 
 const EXPLORE_DATA = [
   {

@@ -6,7 +6,7 @@
 }
 
 .rooms-container {
-  max-width: 1280px;
+  max-width: 1300px;
   margin: 0 auto;
   width: 100%;
 }
@@ -36,8 +36,8 @@
 
 .rooms-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 30px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
 }
 
 .room-card {
@@ -46,12 +46,9 @@
   overflow: hidden;
   border: 1px solid #f0f0f0;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.room-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 20px 50px rgba(135, 0, 151, 0.1);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .room-image-box {
@@ -65,116 +62,29 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.5s ease;
-}
-
-.room-card:hover .room-image-box img {
-  transform: scale(1.05);
-}
-
-.room-tag {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  background: #870097;
-  color: #ffffff;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.3px;
-}
-
-.room-rating {
-  position: absolute;
-  bottom: 16px;
-  right: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-}
-
-.room-rating-stars {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: #ffffff;
-  padding: 6px 12px;
-  border-radius: 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
-}
-
-.room-rating-stars svg {
-  width: 14px;
-  height: 14px;
-  color: #F5A623;
-  flex-shrink: 0;
-}
-
-.room-rating-stars span {
-  font-size: 13px;
-  font-weight: 700;
-  color: #373737;
-}
-
-.room-rating-count {
-  font-size: 11px;
-  color: #ffffff;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-  font-weight: 500;
-  background: rgba(0, 0, 0, 0.35);
-  padding: 2px 8px;
-  border-radius: 10px;
 }
 
 .room-body {
   padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  flex: 1;
 }
 
 .room-title {
   font-size: 22px;
   color: #373737;
   font-weight: 600;
-  margin: 0;
+  margin: 0 0 12px 0;
   line-height: 30px;
 }
 
 .room-desc {
   font-size: 14px;
   color: #817F7F;
-  line-height: 22px;
-  margin: 0;
-}
-
-.room-amenities {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.room-amenity {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: #FAFAFA;
-  border: 1px solid #f0f0f0;
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-size: 12px;
-  color: #666666;
-  font-weight: 500;
-}
-
-.room-amenity svg {
-  width: 16px;
-  height: 16px;
-  color: #870097;
-  stroke-width: 1.5;
-  flex-shrink: 0;
+  line-height: 24px;
+  margin: 0 0 20px 0;
+  flex: 1;
 }
 
 .room-footer {
@@ -182,8 +92,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding-top: 16px;
+  padding-top: 20px;
   border-top: 1px solid #f5f5f5;
+  margin-top: auto;
 }
 
 .room-price {
@@ -192,10 +103,12 @@
   gap: 2px;
 }
 
-.room-price-label {
-  font-size: 12px;
+.room-price-original {
+  font-size: 14px;
   color: #999999;
-  font-weight: 400;
+  text-decoration: line-through;
+  font-weight: 500;
+  margin-bottom: 2px;
 }
 
 .room-price-value {
@@ -205,22 +118,16 @@
 }
 
 .room-price-symbol {
-  font-size: 18px;
+  font-size: 16px;
   color: #373737;
   font-weight: 600;
 }
 
 .room-price-amount {
-  font-size: 26px;
+  font-size: 20px;
   color: #373737;
   font-weight: 700;
   letter-spacing: -0.5px;
-}
-
-.room-price-unit {
-  font-size: 13px;
-  color: #999999;
-  font-weight: 400;
 }
 
 .room-btn {
@@ -229,14 +136,17 @@
   gap: 8px;
   background: #870097;
   color: #ffffff;
-  padding: 12px 22px;
+  padding: 12px 18px;
   border-radius: 10px;
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
-  transition: background 0.2s ease;
   box-shadow: 0 4px 12px rgba(135, 0, 151, 0.25);
   white-space: nowrap;
+  transition: background 0.2s ease;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
 }
 
 .room-btn:hover {
@@ -248,6 +158,45 @@
   height: 16px;
   stroke-width: 2.5;
   flex-shrink: 0;
+}
+
+@media (max-width: 1200px) {
+  .rooms-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .room-price {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .room-price-original {
+    font-size: 16px;
+    color: #999999;
+    text-decoration: line-through;
+    font-weight: 500;
+    margin-bottom: 0;
+    order: 2;
+  }
+
+  .room-price-value {
+    order: 1;
+    gap: 2px;
+  }
+
+  .room-price-symbol {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .room-price-amount {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
 }
 
 @media (max-width: 1024px) {
@@ -264,10 +213,6 @@
   .rooms-subtitle {
     font-size: 17px;
     line-height: 30px;
-  }
-  .rooms-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
   }
 }
 
@@ -294,8 +239,32 @@
     padding: 20px;
   }
   .room-title {
-    font-size: 20px;
+    font-size: 22px;
     line-height: 28px;
+  }
+
+  .room-price {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .room-price-original {
+    font-size: 16px;
+    margin-bottom: 0;
+    order: 2;
+  }
+
+  .room-price-value {
+    order: 1;
+  }
+
+  .room-price-symbol {
+    font-size: 16px;
+  }
+
+  .room-price-amount {
+    font-size: 16px;
   }
 }
 
@@ -323,41 +292,43 @@
   }
   .room-body {
     padding: 18px;
-    gap: 12px;
   }
   .room-title {
-    font-size: 18px;
-    line-height: 26px;
+    font-size: 22px;
+    line-height: 28px;
   }
   .room-desc {
-    font-size: 13px;
-    line-height: 20px;
-  }
-  .room-amenities {
-    gap: 8px;
-  }
-  .room-amenity {
-    padding: 6px 12px;
-    font-size: 11px;
-  }
-  .room-amenity svg {
-    width: 14px;
-    height: 14px;
+    font-size: 14px;
+    line-height: 22px;
+    margin-bottom: 14px;
   }
   .room-footer {
     flex-direction: column;
     align-items: flex-start;
     gap: 14px;
   }
+  .room-price {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .room-price-original {
+    font-size: 16px;
+    margin-bottom: 0;
+    order: 2;
+  }
+  .room-price-value {
+    order: 1;
+  }
+  .room-price-symbol {
+    font-size: 16px;
+  }
   .room-price-amount {
-    font-size: 22px;
+    font-size: 16px;
   }
   .room-btn {
     width: 100%;
     justify-content: center;
     padding: 14px 20px;
-  }
-  .room-rating-count {
-    display: none;
   }
 }

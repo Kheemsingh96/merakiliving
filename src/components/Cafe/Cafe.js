@@ -1,10 +1,10 @@
 import React from 'react';
 import './Cafe.css';
 
-import cafeMain from '../../assets/images/cafe-main.png';
-import cafeSide1 from '../../assets/images/cafe-side1.png';
-import cafeSide2 from '../../assets/images/cafe-side2.png';
-import bgMountain from '../../assets/images/mountain-bg.png';
+import cafeMain from '../../assets/images/cafe-main.webp';
+import cafeSide1 from '../../assets/images/cafe-side1.webp';
+import cafeSide2 from '../../assets/images/cafe-side2.webp';
+import bgMountain from '../../assets/images/mountain-bg.webp';
 
 const Cafe = () => {
   return (

@@ -1,6 +1,6 @@
 import React from 'react';
 import './CTA.css';
-import ctaBg from '../../assets/images/cta-bg.png';
+import ctaBg from '../../assets/images/cta-bg.webp';
 
 const CTA = () => {
   const handleWhatsAppClick = () => {

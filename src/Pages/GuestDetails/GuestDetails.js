@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import './GuestDetails.css';
 
-import room1 from '../../assets/images/room-1.png';
-import room2 from '../../assets/images/room-2.png';
-import room3 from '../../assets/images/room-3.png';
+import room1 from '../../assets/images/room-1.webp';
+import room2 from '../../assets/images/room-2.webp';
+import room3 from '../../assets/images/room-3.webp';
 
 import { HugeiconsIcon } from '@hugeicons/react';
 import {

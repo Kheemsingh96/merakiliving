@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import './Payment.css';
 
-import room1 from '../../assets/images/room-1.png';
-import room2 from '../../assets/images/room-2.png';
-import room3 from '../../assets/images/room-3.png';
-import gpayLogo from '../../assets/images/gpay.png';
-import phonepeLogo from '../../assets/images/phonepe.png';
-import paytmLogo from '../../assets/images/paytm.png';
-import bhimLogo from '../../assets/images/bhim.png';
+import room1 from '../../assets/images/room-1.webp';
+import room2 from '../../assets/images/room-2.webp';
+import room3 from '../../assets/images/room-3.webp';
+import gpayLogo from '../../assets/images/gpay.webp';
+import phonepeLogo from '../../assets/images/phonepe.webp';
+import paytmLogo from '../../assets/images/paytm.webp';
+import bhimLogo from '../../assets/images/bhim.webp';
 
 import { HugeiconsIcon } from '@hugeicons/react';
 import {

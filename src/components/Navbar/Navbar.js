@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import './Navbar.css';
-import logo from '../../assets/images/logo.png';
-import ventureLogo from '../../assets/images/pranay-matiyani-ventures.png';
+import logo from '../../assets/images/logo.webp';
+import ventureLogo from '../../assets/images/pranay-matiyani-ventures.webp';
 
 const NAV_ITEMS = [
   { id: 'home', label: 'Home' },

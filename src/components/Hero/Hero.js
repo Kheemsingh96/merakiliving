@@ -2,9 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Location01Icon } from 'hugeicons-react';
 import './Hero.css';
 
-import hero1 from '../../assets/images/hero1.png';
-import hero2 from '../../assets/images/hero2.png';
-import hero3 from '../../assets/images/hero3.png';
+import hero1 from '../../assets/images/hero1.webp';
+import hero2 from '../../assets/images/hero2.webp';
+import hero3 from '../../assets/images/hero3.webp';
 
 const SLIDES = [hero1, hero2, hero3];
 const SLIDE_INTERVAL = 4000;

@@ -1,12 +1,12 @@
 import React from 'react';
 import './Experience.css';
 
-import iconHimalayas from '../../assets/images/image (1).png';
-import iconForest from '../../assets/images/image (2).png';
-import iconBonfire from '../../assets/images/image (3).png';
-import iconCafe from '../../assets/images/image (4).png';
-import iconSunrise from '../../assets/images/image (5).png';
-import iconFood from '../../assets/images/image (6).png';
+import iconHimalayas from '../../assets/images/image (1).webp';
+import iconForest from '../../assets/images/image (2).webp';
+import iconBonfire from '../../assets/images/image (3).webp';
+import iconCafe from '../../assets/images/image (4).webp';
+import iconSunrise from '../../assets/images/image (5).webp';
+import iconFood from '../../assets/images/image (6).webp';
 
 const FEATURES = [
   { title: 'Himalayan Views', image: iconHimalayas },

@@ -1,6 +1,6 @@
 import React from 'react';
 import './Footer.css';
-import logo from '../../assets/images/logo.png';
+import logo from '../../assets/images/logo.webp';
 
 const Footer = ({ setCurrentPage }) => {
   const handleNav = (page) => {

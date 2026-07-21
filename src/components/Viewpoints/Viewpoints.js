@@ -1,13 +1,13 @@
 import React from 'react';
 import './Viewpoints.css';
 
-import imgKainchiDham from '../../assets/images/kainchidham.png';
-import imgMukteshwar from '../../assets/images/mukteshwar.png';
-import imgKapileshwar from '../../assets/images/kapileshwar.png';
-import imgKasarDevi from '../../assets/images/kasardevi.png';
-import imgKausani from '../../assets/images/kausani.png';
-import imgDolAshram from '../../assets/images/dolashram.png';
-import imgNainital from '../../assets/images/nainital.png';
+import imgKainchiDham from '../../assets/images/kainchidham.webp';
+import imgMukteshwar from '../../assets/images/mukteshwar.webp';
+import imgKapileshwar from '../../assets/images/kapileshwar.webp';
+import imgKasarDevi from '../../assets/images/kasardevi.webp';
+import imgKausani from '../../assets/images/kausani.webp';
+import imgDolAshram from '../../assets/images/dolashram.webp';
+import imgNainital from '../../assets/images/nainital.webp';
 
 const VIEWPOINTS_DATA = [
   {
