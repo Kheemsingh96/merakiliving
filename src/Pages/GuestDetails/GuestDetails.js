@@ -4,6 +4,7 @@ import './GuestDetails.css';
 import room1 from '../../assets/images/room-1.webp';
 import room2 from '../../assets/images/room-2.webp';
 import room3 from '../../assets/images/room-3.webp';
+import room4 from '../../assets/images/room-4.webp';
 
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
@@ -157,6 +158,22 @@ const roomsData = [
     size: '450 sq ft',
     amenities: ['Free WiFi', 'Free Parking', 'Breakfast Included', 'Kitchenette'],
     gallery: [room3, room3, room3, room3]
+  },
+  {
+    id: 4,
+    tag: 'Entire Property',
+    image: room4,
+    title: 'Entire Homestay',
+    desc: 'Book the entire Meraki Living homestay for complete privacy and a memorable stay with your loved ones.',
+    price: '22,000',
+    rating: 5.0,
+    reviews: 42,
+    guests: '8+ Guests',
+    bed: 'Multiple Rooms',
+    view: 'Panoramic View',
+    size: '1200 sq ft',
+    amenities: ['Free WiFi', 'Free Parking', 'Breakfast Included', 'Kitchen', 'Garden Access', 'Bonfire Area'],
+    gallery: [room4, room4, room4, room4]
   }
 ];
 
@@ -166,7 +183,10 @@ const amenityIcons = {
   'Breakfast Included': CoffeeIcon,
   'Room Heater': FireIcon,
   'Balcony': ViewIcon,
-  'Kitchenette': HomeIcon
+  'Kitchenette': HomeIcon,
+  'Kitchen': HomeIcon,
+  'Garden Access': ViewIcon,
+  'Bonfire Area': FireIcon
 };
 
 const EMPTY_GUEST_FORM = {
@@ -180,7 +200,6 @@ const EMPTY_GUEST_FORM = {
   agreePrivacy: false
 };
 
-// Detects whether the app was just loaded via a full page refresh
 const isPageReload = () => {
   try {
     const navEntries = performance.getEntriesByType('navigation');
@@ -193,14 +212,8 @@ const isPageReload = () => {
   }
 };
 
-// Stays true only until the first GuestDetails mount after a page refresh.
-// In-app navigation never resets this, so coming back from the Payment
-// page within the same session still restores the saved form data.
 let pendingReloadReset = isPageReload();
 
-// Saved guest details are restored only when the user arrives here by
-// navigating back from the Payment page - never after a page refresh
-// and never on a fresh forward navigation.
 const shouldRestoreGuestData = () =>
   !pendingReloadReset && sessionStorage.getItem('meraki_restoreGuestDetails') === 'true';
 
@@ -216,7 +229,6 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
           return { ...EMPTY_GUEST_FORM, ...JSON.parse(savedDetails) };
         }
       } catch (e) {
-        // corrupted data - fall through to the empty form
       }
     }
     return { ...EMPTY_GUEST_FORM };
@@ -244,7 +256,7 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
 
   const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
   const pricePerNight = parseInt(room.price.replace(/,/g, ''));
-  const subtotal = pricePerNight * nights;
+  const subtotal = pricePerNight * nights * guests.rooms;
   const discountAmount = couponApplied ? Math.round(subtotal * 0.08) : 0;
   const taxableAmount = subtotal - discountAmount;
   const taxes = Math.round(taxableAmount * 0.05);
@@ -255,8 +267,6 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Right after a page refresh, clear any previously saved guest details
-  // so the user always starts with a fresh form (runs once per page load).
   useEffect(() => {
     if (pendingReloadReset) {
       pendingReloadReset = false;
@@ -320,8 +330,6 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
     }
   };
 
-  // Back to the previous page (Rooms / Booking) using the shared
-  // pop-based back navigation, so it never re-opens the Payment page.
   const handleBackToBooking = () => {
     if (goBack) {
       goBack('booking');
@@ -496,7 +504,7 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
 
       <div className="gd-price-breakdown">
         <div className="gd-price-row">
-          <span>Rs.{room.price} x {nights} night{nights > 1 ? 's' : ''}</span>
+          <span>Rs.{room.price} x {nights} night{nights > 1 ? 's' : ''} x {guests.rooms} room{guests.rooms > 1 ? 's' : ''}</span>
           <span>Rs.{subtotal.toLocaleString('en-IN')}</span>
         </div>
         <div className={`gd-price-row ${couponApplied ? 'gd-discount' : ''}`}>
@@ -821,13 +829,6 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
   return (
     <section className={`gd-section ${animateIn ? 'gd-animate' : ''}`}>
       <div className="gd-container">
-
-        <div className="gd-nav">
-          <button className="gd-back-btn" onClick={handleBackToBooking}>
-            <HugeiconsIcon icon={ArrowLeft02Icon} size={18} />
-            <span>Back to Rooms</span>
-          </button>
-        </div>
 
         {renderProgressBar()}
 

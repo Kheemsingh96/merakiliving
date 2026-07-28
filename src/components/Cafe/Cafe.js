@@ -6,7 +6,7 @@ import cafeSide1 from '../../assets/images/cafe-side1.webp';
 import cafeSide2 from '../../assets/images/cafe-side2.webp';
 import bgMountain from '../../assets/images/mountain-bg.webp';
 
-const Cafe = () => {
+const Cafe = ({ setCurrentPage }) => {
   return (
     <section className="cafe-section" style={{ backgroundImage: `url(${bgMountain})` }}>
       <div className="cafe-overlay"></div>
@@ -86,11 +86,10 @@ const Cafe = () => {
           </ul>
 
           <a
-            href="https://wa.me/919456103445?text=Hi%20Meraki%20Mountain%20Cafe%2C%20I%20would%20like%20to%20know%20more%20about%20your%20cafe!"
-            target="_blank"
-            rel="noopener noreferrer"
+            onClick={() => setCurrentPage('cafe')}
             className="cafe-btn"
-            aria-label="Explore Meraki Mountain Cafe on WhatsApp"
+            aria-label="Explore Meraki Mountain Cafe"
+            style={{ cursor: 'pointer' }}
           >
             <span>Explore Cafe</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

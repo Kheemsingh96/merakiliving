@@ -6,7 +6,7 @@ import Experience from './components/Experience/Experience';
 import Viewpoints from './components/Viewpoints/Viewpoints';
 import Rooms from './components/Rooms/Rooms';
 import Explore from './components/Explore/Explore';
-import Cafe from './components/Cafe/Cafe';
+import CafeSection from './components/Cafe/Cafe';
 import Review from './components/Review/Review';
 import FAQ from './components/FAQ/FAQ';
 import CTA from './components/CTA/CTA';
@@ -20,25 +20,36 @@ import Confirmation from './Pages/Confirmation/Confirmation';
 import PrivacyPolicy from './Pages/PrivacyPolicy/PrivacyPolicy';
 import TermsConditions from './Pages/TermsConditions/TermsConditions';
 import CancellationPolicy from './Pages/CancellationPolicy/CancellationPolicy';
+import CafePage from './Pages/CafePage/CafePage';
 
 import './App.css';
 
-const HOME_PAGES = ['home', 'rooms', 'explore', 'cafe', 'faq'];
+const HOME_PAGES = ['home', 'rooms', 'explore', 'faq'];
 const LEGAL_PAGES = ['privacy-policy', 'terms-conditions', 'cancellation-policy'];
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('home');
-  const [selectedRoomId, setSelectedRoomId] = useState(1);
+  const [currentPage, setCurrentPage] = useState(() => {
+    return sessionStorage.getItem('meraki_currentPage') || 'home';
+  });
+  const [selectedRoomId, setSelectedRoomId] = useState(() => {
+    const stored = sessionStorage.getItem('meraki_selectedRoomId');
+    return stored ? parseInt(stored, 10) : 1;
+  });
 
   const handleNavigate = useCallback((page, roomId = null) => {
     setCurrentPage(page);
-    if (roomId) setSelectedRoomId(roomId);
+    sessionStorage.setItem('meraki_currentPage', page);
+    if (roomId) {
+      setSelectedRoomId(roomId);
+      sessionStorage.setItem('meraki_selectedRoomId', roomId);
+    }
 
     const history = JSON.parse(sessionStorage.getItem('meraki_navHistory') || '[]');
     history.push(page);
     if (history.length > 10) history.shift();
     sessionStorage.setItem('meraki_navHistory', JSON.stringify(history));
 
+    window.history.pushState({ page }, '', window.location.href);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
@@ -49,9 +60,11 @@ function App() {
         history.pop();
         const previousPage = history[history.length - 1];
         sessionStorage.setItem('meraki_navHistory', JSON.stringify(history));
+        sessionStorage.setItem('meraki_currentPage', previousPage);
         setCurrentPage(previousPage);
       } else {
         setCurrentPage('home');
+        sessionStorage.setItem('meraki_currentPage', 'home');
         sessionStorage.setItem('meraki_navHistory', JSON.stringify(['home']));
       }
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -67,7 +80,15 @@ function App() {
     }
   }, [currentPage]);
 
-  const renderPage = useCallback(() => {
+  useEffect(() => {
+    const history = JSON.parse(sessionStorage.getItem('meraki_navHistory') || '[]');
+    if (history.length === 0) {
+      history.push('home');
+      sessionStorage.setItem('meraki_navHistory', JSON.stringify(history));
+    }
+  }, []);
+
+  const renderPage = () => {
     if (HOME_PAGES.includes(currentPage)) {
       return (
         <>
@@ -76,7 +97,7 @@ function App() {
           <Viewpoints />
           <Rooms setCurrentPage={handleNavigate} />
           <Explore />
-          <Cafe />
+          <CafeSection setCurrentPage={handleNavigate} />
           <Review />
           <FAQ />
           <CTA setCurrentPage={handleNavigate} />
@@ -85,6 +106,8 @@ function App() {
     }
 
     switch (currentPage) {
+      case 'cafe':
+        return <CafePage setCurrentPage={handleNavigate} />;
       case 'room-details':
         return <RoomDetails setCurrentPage={handleNavigate} selectedRoomId={selectedRoomId} />;
       case 'booking':
@@ -109,22 +132,14 @@ function App() {
             <Viewpoints />
             <Rooms setCurrentPage={handleNavigate} />
             <Explore />
-            <Cafe />
+            <CafeSection setCurrentPage={handleNavigate} />
             <Review />
             <FAQ />
             <CTA setCurrentPage={handleNavigate} />
           </>
         );
     }
-  }, [currentPage, selectedRoomId, handleNavigate]);
-
-  useEffect(() => {
-    const history = JSON.parse(sessionStorage.getItem('meraki_navHistory') || '[]');
-    if (history.length === 0) {
-      history.push('home');
-      sessionStorage.setItem('meraki_navHistory', JSON.stringify(history));
-    }
-  }, []);
+  };
 
   return (
     <div className="app-container">

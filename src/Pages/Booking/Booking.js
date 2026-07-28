@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   Calendar01Icon,
@@ -11,7 +11,6 @@ import {
   PlusSignIcon,
   MinusSignIcon,
   Edit02Icon,
-  ArrowLeft02Icon,
   MapPinIcon,
   ViewIcon,
   MountainIcon,
@@ -21,8 +20,21 @@ import { FaWhatsapp } from 'react-icons/fa';
 import './Booking.css';
 
 import room1 from '../../assets/images/room-1.webp';
+import room1a from '../../assets/images/room-1a.webp';
+import room1b from '../../assets/images/room-1b.webp';
+import room1c from '../../assets/images/room-1c.webp';
 import room2 from '../../assets/images/room-2.webp';
+import room2a from '../../assets/images/room-2a.webp';
+import room2b from '../../assets/images/room-2b.webp';
+import room2c from '../../assets/images/room-2c.webp';
 import room3 from '../../assets/images/room-3.webp';
+import room3a from '../../assets/images/room-3a.webp';
+import room3b from '../../assets/images/room-3b.webp';
+import room3c from '../../assets/images/room-3c.webp';
+import room4 from '../../assets/images/room-4.webp';
+import room4a from '../../assets/images/room-4a.webp';
+import room4b from '../../assets/images/room-4b.webp';
+import room4c from '../../assets/images/room-4c.webp';
 
 const roomsData = [
   {
@@ -38,7 +50,7 @@ const roomsData = [
     view: 'Mountain View',
     size: '280 sq ft',
     amenities: ['Free WiFi', 'Free Parking', 'Breakfast Included', 'Room Heater'],
-    gallery: [room1, room1, room1, room1]
+    gallery: [room1, room1a, room1b, room1c]
   },
   {
     id: 2,
@@ -53,7 +65,7 @@ const roomsData = [
     view: 'Private Sitting Area',
     size: '320 sq ft',
     amenities: ['Free WiFi', 'Free Parking', 'Breakfast Included', 'Balcony'],
-    gallery: [room2, room2, room2, room2]
+    gallery: [room2, room2a, room2b, room2c]
   },
   {
     id: 3,
@@ -68,12 +80,33 @@ const roomsData = [
     view: 'Extra Space',
     size: '450 sq ft',
     amenities: ['Free WiFi', 'Free Parking', 'Breakfast Included', 'Kitchenette'],
-    gallery: [room3, room3, room3, room3]
+    gallery: [room3, room3a, room3b, room3c]
+  },
+  {
+    id: 4,
+    image: room4,
+    title: 'Entire Homestay',
+    desc: 'Book the entire Meraki Living homestay for complete privacy and a memorable stay with your loved ones. Perfect for large groups, family gatherings, or special occasions with exclusive access to all amenities and spaces.',
+    price: '22,000',
+    originalPrice: '30,000',
+    discount: '26',
+    guests: '8+ Guests',
+    bed: 'Multiple Rooms',
+    view: 'Panoramic View',
+    size: '1200 sq ft',
+    amenities: ['Free WiFi', 'Free Parking', 'Breakfast Included', 'Kitchen', 'Garden Access', 'Bonfire Area'],
+    gallery: [room4, room4a, room4b, room4c]
   }
 ];
 
-const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-const dayNames = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const dayNames = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+
+const getRoomViewIcon = (view) => {
+  if (view.includes('Mountain')) return MountainIcon;
+  if (view.includes('Sitting')) return ArmchairIcon;
+  return ViewIcon;
+};
 
 const Booking = ({ setCurrentPage }) => {
   const [selectedThumb, setSelectedThumb] = useState({});
@@ -101,8 +134,8 @@ const Booking = ({ setCurrentPage }) => {
         setActivePopup(null);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   useEffect(() => {
@@ -111,20 +144,21 @@ const Booking = ({ setCurrentPage }) => {
     sessionStorage.setItem('meraki_guests', JSON.stringify(guests));
   }, [checkInDate, checkOutDate, guests]);
 
-  const formatDate = (date) => {
-    if (!date) return "Add Dates";
-    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).replace(/ (\d{4})$/, ', $1');
-  };
+  const formatDate = useCallback((date) => {
+    if (!date) return 'Add Dates';
+    const str = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    const year = date.getFullYear();
+    return str.replace(' ' + year, ', ' + year);
+  }, []);
 
-  const getNights = () => {
+  const getNights = useCallback(() => {
     if (!checkInDate || !checkOutDate) return 0;
-    const diff = checkOutDate - checkInDate;
-    return Math.ceil(diff / (1000 * 60 * 60 * 24));
-  };
+    return Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+  }, [checkInDate, checkOutDate]);
 
-  const handleGuestChange = (type, operation) => {
-    setGuests(prev => {
-      let newGuests = { ...prev };
+  const handleGuestChange = useCallback((type, operation) => {
+    setGuests((prev) => {
+      const newGuests = { ...prev };
       if (operation === 'add') {
         newGuests[type] = prev[type] + 1;
       } else {
@@ -138,11 +172,12 @@ const Booking = ({ setCurrentPage }) => {
       }
       return newGuests;
     });
-  };
+  }, []);
 
-  const handleBookNow = (room) => {
+  const handleBookNow = useCallback((e, room) => {
+    e.stopPropagation();
     const nights = getNights();
-    const price = parseInt(room.price.replace(/,/g, ''));
+    const price = parseInt(room.price.split(',').join(''), 10);
     const totalPrice = price * nights * guests.rooms;
     const bookingData = {
       roomId: room.id,
@@ -162,23 +197,25 @@ const Booking = ({ setCurrentPage }) => {
     if (setCurrentPage) {
       setCurrentPage('guest-details', room.id);
     }
-  };
+  }, [getNights, guests, checkInDate, checkOutDate, setCurrentPage]);
 
-  const handleThumbClick = (roomId, thumbIndex) => {
-    setSelectedThumb({ ...selectedThumb, [roomId]: thumbIndex });
-  };
+  const handleViewDetails = useCallback((roomId) => {
+    if (setCurrentPage) {
+      setCurrentPage('room-details', roomId);
+    }
+  }, [setCurrentPage]);
 
-  const toggleDesc = (roomId) => {
-    setExpandedDesc(prev => ({ ...prev, [roomId]: !prev[roomId] }));
-  };
+  const handleThumbClick = useCallback((e, roomId, thumbIndex) => {
+    e.stopPropagation();
+    setSelectedThumb((prev) => ({ ...prev, [roomId]: thumbIndex }));
+  }, []);
 
-  const getRoomViewIcon = (view) => {
-    if (view.includes('Mountain')) return MountainIcon;
-    if (view.includes('Sitting')) return ArmchairIcon;
-    return ViewIcon;
-  };
+  const toggleDesc = useCallback((e, roomId) => {
+    e.stopPropagation();
+    setExpandedDesc((prev) => ({ ...prev, [roomId]: !prev[roomId] }));
+  }, []);
 
-  const renderCalendar = (alignRight = false) => {
+  const calendarDays = useMemo(() => {
     const year = currentCalendarMonth.getFullYear();
     const month = currentCalendarMonth.getMonth();
     const firstDay = new Date(year, month, 1).getDay();
@@ -188,7 +225,7 @@ const Booking = ({ setCurrentPage }) => {
 
     const days = [];
     for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="calendar-day empty"></div>);
+      days.push({ key: `empty-${i}`, empty: true });
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
@@ -203,30 +240,39 @@ const Booking = ({ setCurrentPage }) => {
       if (checkOutDate && date.getTime() === checkOutDate.getTime()) { isSelected = true; isCheckOut = true; }
       if (checkInDate && checkOutDate && date > checkInDate && date < checkOutDate) isInRange = true;
 
-      days.push(
-        <div
-          key={day}
-          className={`calendar-day ${isPast ? 'disabled' : ''} ${isSelected ? 'selected' : ''} ${isInRange ? 'in-range' : ''} ${isCheckIn ? 'check-in' : ''} ${isCheckOut ? 'check-out' : ''}`}
-          onClick={() => {
-            if (isPast) return;
-            if (activePopup === 'checkIn') {
-              setCheckInDate(date);
-              if (checkOutDate && date >= checkOutDate) setCheckOutDate(null);
-              setActivePopup('checkOut');
-            } else if (activePopup === 'checkOut') {
-              if (checkInDate && date <= checkInDate) {
-                setCheckInDate(date);
-              } else {
-                setCheckOutDate(date);
-                setActivePopup(null);
-              }
-            }
-          }}
-        >
-          {day}
-        </div>
-      );
+      days.push({
+        key: day,
+        day,
+        date,
+        isPast,
+        isSelected,
+        isInRange,
+        isCheckIn,
+        isCheckOut
+      });
     }
+    return days;
+  }, [currentCalendarMonth, checkInDate, checkOutDate]);
+
+  const handleCalendarDayClick = useCallback((date, isPast) => {
+    if (isPast) return;
+    if (activePopup === 'checkIn') {
+      setCheckInDate(date);
+      if (checkOutDate && date >= checkOutDate) setCheckOutDate(null);
+      setActivePopup('checkOut');
+    } else if (activePopup === 'checkOut') {
+      if (checkInDate && date <= checkInDate) {
+        setCheckInDate(date);
+      } else {
+        setCheckOutDate(date);
+        setActivePopup(null);
+      }
+    }
+  }, [activePopup, checkInDate, checkOutDate]);
+
+  const renderCalendar = useCallback((alignRight = false) => {
+    const year = currentCalendarMonth.getFullYear();
+    const month = currentCalendarMonth.getMonth();
 
     return (
       <div className={`dropdown-popup ${alignRight ? 'dropdown-right' : ''}`} onClick={(e) => e.stopPropagation()}>
@@ -246,16 +292,29 @@ const Booking = ({ setCurrentPage }) => {
           </button>
         </div>
         <div className="calendar-days-header">
-          {dayNames.map(day => <div key={day}>{day}</div>)}
+          {dayNames.map((day) => <div key={day}>{day}</div>)}
         </div>
         <div className="calendar-grid">
-          {days}
+          {calendarDays.map((item) => {
+            if (item.empty) {
+              return <div key={item.key} className="calendar-day empty"></div>;
+            }
+            return (
+              <div
+                key={item.key}
+                className={`calendar-day ${item.isPast ? 'disabled' : ''} ${item.isSelected ? 'selected' : ''} ${item.isInRange ? 'in-range' : ''} ${item.isCheckIn ? 'check-in' : ''} ${item.isCheckOut ? 'check-out' : ''}`}
+                onClick={() => handleCalendarDayClick(item.date, item.isPast)}
+              >
+                {item.day}
+              </div>
+            );
+          })}
         </div>
       </div>
     );
-  };
+  }, [currentCalendarMonth, calendarDays, handleCalendarDayClick]);
 
-  const renderGuestsDropdown = () => (
+  const renderGuestsDropdown = useCallback(() => (
     <div className="dropdown-popup guests-popup" onClick={(e) => e.stopPropagation()}>
       <div className="guest-row">
         <div className="guest-info">
@@ -294,24 +353,95 @@ const Booking = ({ setCurrentPage }) => {
         <button className="guest-done-btn" onClick={() => setActivePopup(null)}>Done</button>
       </div>
     </div>
-  );
+  ), [guests, handleGuestChange]);
 
   const nights = getNights();
+
+  const roomCards = useMemo(() => {
+    return roomsData.map((room) => (
+      <div className="booking-room-card" key={room.id} onClick={() => handleViewDetails(room.id)}>
+        <div className="booking-room-gallery">
+          <div className="booking-room-main-image">
+            <img
+              src={selectedThumb[room.id] !== undefined ? room.gallery[selectedThumb[room.id]] : room.image}
+              alt={room.title}
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+          <div className="booking-room-thumbs">
+            {room.gallery.map((thumb, idx) => (
+              <div
+                className={`booking-room-thumb ${selectedThumb[room.id] === idx ? 'active' : ''}`}
+                key={idx}
+                onClick={(e) => handleThumbClick(e, room.id, idx)}
+              >
+                <img src={thumb} alt={`${room.title} ${idx + 1}`} loading="lazy" decoding="async" />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="booking-room-details">
+          <div className="booking-room-header">
+            <h3 className="booking-room-title">{room.title}</h3>
+            <div className="booking-room-size">
+              <HugeiconsIcon icon={MapPinIcon} size={14} />
+              <span>{room.size}</span>
+            </div>
+          </div>
+          <div className="booking-room-desc-wrapper">
+            <p className={`booking-room-desc ${expandedDesc[room.id] ? 'expanded' : ''}`}>
+              {room.desc}
+            </p>
+            <span className="view-more-btn" onClick={(e) => toggleDesc(e, room.id)}>
+              {expandedDesc[room.id] ? 'Read Less' : 'Read More'}
+            </span>
+          </div>
+          <div className="booking-room-meta">
+            <div className="booking-meta-item">
+              <HugeiconsIcon icon={UserMultiple02Icon} size={16} variant="stroke" />
+              <span>{room.guests}</span>
+            </div>
+            <div className="booking-meta-item">
+              <HugeiconsIcon icon={BedDoubleIcon} size={16} variant="stroke" />
+              <span>{room.bed}</span>
+            </div>
+            <div className="booking-meta-item">
+              <HugeiconsIcon icon={getRoomViewIcon(room.view)} size={16} variant="stroke" />
+              <span>{room.view}</span>
+            </div>
+          </div>
+          <div className="booking-room-amenities">
+            {room.amenities.map((amenity, idx) => (
+              <div className="booking-amenity-tag" key={idx}>
+                <HugeiconsIcon icon={CheckmarkCircle01Icon} size={14} />
+                <span>{amenity}</span>
+              </div>
+            ))}
+          </div>
+          <div className="booking-room-footer">
+            <div className="booking-room-price">
+              <span className="booking-price-amount">&#8377;{room.price}</span>
+              <span className="booking-price-original">&#8377;{room.originalPrice}</span>
+              <span className="booking-price-discount">{room.discount}% OFF</span>
+            </div>
+            <div className="booking-footer-actions">
+              <button className="booking-btn-primary" onClick={(e) => handleBookNow(e, room)}>
+                <span>Book Now</span>
+                <HugeiconsIcon icon={ArrowRight01Icon} size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    ));
+  }, [selectedThumb, expandedDesc, handleThumbClick, toggleDesc, handleViewDetails, handleBookNow]);
 
   return (
     <section className="booking-section">
       <div className="booking-container">
-
-        <div className="booking-nav">
-          <button className="booking-back-btn" onClick={() => setCurrentPage && setCurrentPage('home')}>
-            <HugeiconsIcon icon={ArrowLeft02Icon} size={18} />
-            <span>Back to Home</span>
-          </button>
-        </div>
-
         <div className="booking-search-wrapper">
           <div className="booking-search-bar" ref={bookingRef}>
-
             <div
               className={`booking-search-item ${activePopup === 'checkIn' ? 'active' : ''}`}
               onClick={() => setActivePopup(activePopup === 'checkIn' ? null : 'checkIn')}
@@ -325,9 +455,7 @@ const Booking = ({ setCurrentPage }) => {
               </div>
               {activePopup === 'checkIn' && renderCalendar(false)}
             </div>
-
             <div className="booking-search-divider"></div>
-
             <div
               className={`booking-search-item ${activePopup === 'checkOut' ? 'active' : ''}`}
               onClick={() => setActivePopup(activePopup === 'checkOut' ? null : 'checkOut')}
@@ -341,9 +469,7 @@ const Booking = ({ setCurrentPage }) => {
               </div>
               {activePopup === 'checkOut' && renderCalendar(true)}
             </div>
-
             <div className="booking-search-divider"></div>
-
             <div
               className={`booking-search-item ${activePopup === 'guests' ? 'active' : ''}`}
               onClick={() => setActivePopup(activePopup === 'guests' ? null : 'guests')}
@@ -357,15 +483,12 @@ const Booking = ({ setCurrentPage }) => {
               </div>
               {activePopup === 'guests' && renderGuestsDropdown()}
             </div>
-
             <button className="booking-edit-btn" onClick={() => setActivePopup(null)}>
               <HugeiconsIcon icon={Edit02Icon} size={18} />
               <span>Update</span>
             </button>
-
           </div>
         </div>
-
         <div className="booking-results-header">
           <h2 className="booking-results-title">Available Rooms</h2>
           <p className="booking-results-subtitle">
@@ -380,88 +503,10 @@ const Booking = ({ setCurrentPage }) => {
             )}
           </p>
         </div>
-
         <div className="booking-layout">
           <div className="booking-rooms">
-            {roomsData.map((room) => (
-              <div className="booking-room-card" key={room.id}>
-                <div className="booking-room-gallery">
-                  <div className="booking-room-main-image">
-                    <img
-                      src={selectedThumb[room.id] !== undefined ? room.gallery[selectedThumb[room.id]] : room.image}
-                      alt={room.title}
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="booking-room-thumbs">
-                    {room.gallery.map((thumb, idx) => (
-                      <div
-                        className={`booking-room-thumb ${selectedThumb[room.id] === idx ? 'active' : ''}`}
-                        key={idx}
-                        onClick={() => handleThumbClick(room.id, idx)}
-                      >
-                        <img src={thumb} alt={`${room.title} ${idx + 1}`} loading="lazy" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="booking-room-details">
-                  <div className="booking-room-header">
-                    <h3 className="booking-room-title">{room.title}</h3>
-                    <div className="booking-room-size">
-                      <HugeiconsIcon icon={MapPinIcon} size={14} />
-                      <span>{room.size}</span>
-                    </div>
-                  </div>
-                  <div className="booking-room-desc-wrapper">
-                    <p className={`booking-room-desc ${expandedDesc[room.id] ? 'expanded' : ''}`}>
-                      {room.desc}
-                    </p>
-                    <span className="view-more-btn" onClick={() => toggleDesc(room.id)}>
-                      {expandedDesc[room.id] ? 'Read Less' : 'Read More'}
-                    </span>
-                  </div>
-                  <div className="booking-room-meta">
-                    <div className="booking-meta-item">
-                      <HugeiconsIcon icon={UserMultiple02Icon} size={16} variant="stroke" />
-                      <span>{room.guests}</span>
-                    </div>
-                    <div className="booking-meta-item">
-                      <HugeiconsIcon icon={BedDoubleIcon} size={16} variant="stroke" />
-                      <span>{room.bed}</span>
-                    </div>
-                    <div className="booking-meta-item">
-                      <HugeiconsIcon icon={getRoomViewIcon(room.view)} size={16} variant="stroke" />
-                      <span>{room.view}</span>
-                    </div>
-                  </div>
-                  <div className="booking-room-amenities">
-                    {room.amenities.map((amenity, idx) => (
-                      <div className="booking-amenity-tag" key={idx}>
-                        <HugeiconsIcon icon={CheckmarkCircle01Icon} size={14} />
-                        <span>{amenity}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="booking-room-footer">
-                    <div className="booking-room-price">
-                      <span className="booking-price-amount">&#8377;{room.price}</span>
-                      <span className="booking-price-original">&#8377;{room.originalPrice}</span>
-                      <span className="booking-price-discount">{room.discount}% OFF</span>
-                    </div>
-                    <button
-                      className="booking-btn-primary"
-                      onClick={() => handleBookNow(room)}
-                    >
-                      <span>Book Now</span>
-                      <HugeiconsIcon icon={ArrowRight01Icon} size={16} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+            {roomCards}
           </div>
-
           <div className="booking-sidebar">
             <div className="booking-help-card">
               <div className="booking-help-icon">
@@ -479,10 +524,7 @@ const Booking = ({ setCurrentPage }) => {
                   <FaWhatsapp size={18} />
                   <span>WhatsApp Us</span>
                 </a>
-                <a
-                  href="tel:+919456103445"
-                  className="booking-help-btn-secondary"
-                >
+                <a href="tel:+919456103445" className="booking-help-btn-secondary">
                   <HugeiconsIcon icon={Call02Icon} size={18} variant="stroke" />
                   <span>Call Now</span>
                 </a>

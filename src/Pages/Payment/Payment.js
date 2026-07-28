@@ -4,6 +4,7 @@ import './Payment.css';
 import room1 from '../../assets/images/room-1.webp';
 import room2 from '../../assets/images/room-2.webp';
 import room3 from '../../assets/images/room-3.webp';
+import room4 from '../../assets/images/room-4.webp';
 import gpayLogo from '../../assets/images/gpay.webp';
 import phonepeLogo from '../../assets/images/phonepe.webp';
 import paytmLogo from '../../assets/images/paytm.webp';
@@ -11,7 +12,6 @@ import bhimLogo from '../../assets/images/bhim.webp';
 
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
-  ArrowLeft02Icon,
   BedDoubleIcon,
   SecurityValidationIcon,
   CreditCardPosIcon,
@@ -65,6 +65,15 @@ const roomsData = [
     price: '6,000',
     rating: 5.0,
     reviews: 84
+  },
+  {
+    id: 4,
+    tag: 'Entire Property',
+    image: room4,
+    title: 'Entire Homestay',
+    price: '22,000',
+    rating: 5.0,
+    reviews: 42
   }
 ];
 
@@ -166,7 +175,7 @@ const Payment = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
   
   const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
   const pricePerNight = parseInt(room.price.replace(/,/g, ''));
-  const subtotal = pricePerNight * nights;
+  const subtotal = pricePerNight * nights * guests.rooms;
   const discountAmount = couponApplied ? Math.round(subtotal * 0.08) : 0;
   const taxableAmount = subtotal - discountAmount;
   const taxes = Math.round(taxableAmount * 0.05);
@@ -590,7 +599,7 @@ const Payment = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
       
       <div className="pay-price-breakdown">
         <div className="pay-price-row">
-          <span>Rs.{room.price} x {nights} night{nights > 1 ? 's' : ''}</span>
+          <span>Rs.{room.price} x {nights} night{nights > 1 ? 's' : ''} x {guests.rooms} room{guests.rooms > 1 ? 's' : ''}</span>
           <span>Rs.{subtotal.toLocaleString('en-IN')}</span>
         </div>
         <div className={`pay-price-row ${couponApplied ? 'pay-discount' : ''}`}>
@@ -670,16 +679,6 @@ const Payment = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
   return (
     <section className={`pay-section ${animateIn ? 'pay-animate' : ''}`}>
       <div className="pay-container">
-        <div className="pay-nav">
-          <button
-            className="pay-back-btn"
-            onClick={handleBack}
-            aria-label="Back to Guest Details"
-            title="Back to Guest Details"
-          >
-            <HugeiconsIcon icon={ArrowLeft02Icon} size={18} />
-          </button>
-        </div>
 
         {renderProgressBar()}
 

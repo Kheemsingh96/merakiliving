@@ -1,7 +1,7 @@
 .booking-section {
   width: 100%;
   background: #FFFFFF;
-  padding: 120px 48px 80px;
+  padding: 160px 48px 80px;
   box-sizing: border-box;
   min-height: 100vh;
 }
@@ -10,33 +10,6 @@
   max-width: 1280px;
   margin: 0 auto;
   width: 100%;
-}
-
-.booking-nav {
-  margin-bottom: 28px;
-}
-
-.booking-back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: transparent;
-  border: none;
-  color: #870097;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 8px 0;
-  transition: opacity 0.2s ease;
-}
-
-.booking-back-btn:hover {
-  opacity: 0.7;
-}
-
-.booking-back-btn svg {
-  width: 18px;
-  height: 18px;
 }
 
 .booking-search-wrapper {
@@ -200,6 +173,14 @@
   overflow: hidden;
   border: 1px solid #f0f0f0;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  content-visibility: auto;
+}
+
+.booking-room-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(135, 0, 151, 0.08);
 }
 
 .booking-room-gallery {
@@ -369,33 +350,36 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: 12px;
   padding-top: 20px;
   border-top: 1px solid #f0f0f0;
   margin-top: 2px;
+  flex-wrap: nowrap;
 }
 
 .booking-room-price {
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 8px;
+  flex-wrap: nowrap;
 }
 
 .booking-price-amount {
-  font-size: 22px;
+  font-size: 20px;
   color: #373737;
   font-weight: 700;
   letter-spacing: -0.5px;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .booking-price-original {
-  font-size: 22px;
+  font-size: 16px;
   color: #999999;
   font-weight: 500;
   text-decoration: line-through;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .booking-price-discount {
@@ -403,10 +387,18 @@
   color: #870097;
   font-weight: 700;
   background: rgba(135, 0, 151, 0.08);
-  padding: 5px 12px;
+  padding: 4px 10px;
   border-radius: 8px;
   line-height: 1;
   letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.booking-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
 .booking-btn-primary {
@@ -417,7 +409,7 @@
   background: #870097;
   color: #ffffff;
   border: none;
-  padding: 14px 32px;
+  padding: 12px 20px;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 600;
@@ -780,7 +772,6 @@
   background: #6B007A;
 }
 
-/* Tablet (1024px and below) */
 @media (max-width: 1024px) {
   .booking-section {
     padding: 100px 40px 60px;
@@ -835,7 +826,6 @@
   }
 }
 
-/* Tablet (768px and below) */
 @media (max-width: 768px) {
   .booking-section {
     padding: 90px 24px 40px;
@@ -947,21 +937,31 @@
   .booking-room-footer {
     flex-direction: column;
     align-items: stretch;
+    justify-content: center;
     gap: 16px;
     padding-top: 18px;
     margin-top: 4px;
   }
   .booking-room-price {
+    display: flex;
+    align-items: center;
     justify-content: flex-start;
+    gap: 8px;
+    width: 100%;
   }
-  .booking-price-amount,
-  .booking-price-original {
+  .booking-price-amount {
     font-size: 20px;
+  }
+  .booking-price-original {
+    font-size: 16px;
+  }
+  .booking-footer-actions {
+    width: 100%;
   }
   .booking-btn-primary {
     width: 100%;
     justify-content: center;
-    padding: 16px;
+    padding: 14px;
     font-size: 15px;
   }
   .booking-help-card {
@@ -975,13 +975,9 @@
   }
 }
 
-/* Mobile (480px and below) */
 @media (max-width: 480px) {
   .booking-section {
     padding: 100px 16px 32px;
-  }
-  .booking-nav {
-    margin-bottom: 20px;
   }
   .booking-search-bar {
     padding: 12px;
@@ -1076,17 +1072,35 @@
     font-size: 13px;
     padding: 7px 12px;
   }
-  .booking-price-amount,
-  .booking-price-original {
-    font-size: 18px;
-  }
   .booking-room-footer {
-    gap: 20px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
     padding-top: 16px;
   }
-  .booking-btn-primary {
-    padding: 14px;
+  .booking-room-price {
+    justify-content: flex-start;
+    gap: 6px;
+  }
+  .booking-price-amount {
+    font-size: 18px;
+  }
+  .booking-price-original {
     font-size: 14px;
+  }
+  .booking-price-discount {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+  .booking-footer-actions {
+    width: 100%;
+  }
+  .booking-btn-primary {
+    width: 100%;
+    justify-content: center;
+    padding: 15px 14px;
+    font-size: 14px;
+    margin-top: 10px;
   }
   .booking-help-card {
     padding: 24px;
