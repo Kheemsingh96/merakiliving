@@ -640,11 +640,11 @@ function RoomDetails({ setCurrentPage, selectedRoomId }) {
             <ArrowLeftIcon size={24} />
           </button>
           <div className="rd-modal-content" onClick={(e) => e.stopPropagation()}>
-            <img 
-              className="rd-modal-main-image" 
-              src={room.gallery[currentImageIndex]} 
-              alt={`Gallery image ${currentImageIndex + 1}`} 
-            />
+           <img
+  className="rd-modal-main-image" 
+  src={room.gallery[currentImageIndex]} 
+  alt={`Gallery ${currentImageIndex + 1}`} 
+/>
           </div>
           <button className="rd-modal-nav rd-modal-next" onClick={nextImage}>
             <ArrowRightIcon size={24} />

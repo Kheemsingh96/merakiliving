@@ -10,7 +10,6 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import {
   ArrowLeft01Icon,
   ArrowRight01Icon,
-  ArrowLeft02Icon,
   BedDoubleIcon,
   Calendar01Icon,
   Call02Icon,
