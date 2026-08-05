@@ -12,6 +12,7 @@ import FAQ from './components/FAQ/FAQ';
 import CTA from './components/CTA/CTA';
 import Footer from './components/Footer/Footer';
 
+import AboutUs from './components/AboutUs/AboutUs';
 import Booking from './Pages/Booking/Booking';
 import RoomDetails from './Pages/RoomDetails/RoomDetails';
 import GuestDetails from './Pages/GuestDetails/GuestDetails';
@@ -50,6 +51,9 @@ function App() {
     sessionStorage.setItem('meraki_navHistory', JSON.stringify(history));
 
     window.history.pushState({ page }, '', window.location.href);
+    
+    // Yahan humne scroll-to-top ko thoda delay diya hai agar kisi ID par jana ho
+    // Lekin default navigation par top par jayega.
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
@@ -92,11 +96,16 @@ function App() {
     if (HOME_PAGES.includes(currentPage)) {
       return (
         <>
-          <Hero setCurrentPage={handleNavigate} />
-          <Experience />
+          <div id="home"><Hero setCurrentPage={handleNavigate} /></div>
+          <div id="experiences"><Experience /></div>
           <Viewpoints />
-          <Rooms setCurrentPage={handleNavigate} />
-          <Explore />
+          <div id="stay"><Rooms setCurrentPage={handleNavigate} /></div>
+          
+          {/* Gallery Navbar link par click hone par is section par scroll hoga */}
+          <div id="gallery">
+            <Explore />
+          </div>
+          
           <CafeSection setCurrentPage={handleNavigate} />
           <Review />
           <FAQ />
@@ -106,6 +115,10 @@ function App() {
     }
 
     switch (currentPage) {
+      case 'about-us':
+        return <AboutUs setCurrentPage={handleNavigate} />;
+      // Gallery ka case yahan se hata diya gaya hai, taaki wo separate page ki tarah nahi, 
+      // balki home page ke section ki tarah render ho.
       case 'cafe':
         return <CafePage setCurrentPage={handleNavigate} />;
       case 'room-details':
@@ -127,11 +140,15 @@ function App() {
       default:
         return (
           <>
-            <Hero setCurrentPage={handleNavigate} />
-            <Experience />
+            <div id="home"><Hero setCurrentPage={handleNavigate} /></div>
+            <div id="experiences"><Experience /></div>
             <Viewpoints />
-            <Rooms setCurrentPage={handleNavigate} />
-            <Explore />
+            <div id="stay"><Rooms setCurrentPage={handleNavigate} /></div>
+            
+            <div id="gallery">
+              <Explore />
+            </div>
+            
             <CafeSection setCurrentPage={handleNavigate} />
             <Review />
             <FAQ />
@@ -145,7 +162,7 @@ function App() {
     <div className="app-container">
       <Navbar setCurrentPage={handleNavigate} currentPage={currentPage} />
       {renderPage()}
-      <Footer setCurrentPage={handleNavigate} />
+      <div id="contact"><Footer setCurrentPage={handleNavigate} /></div>
     </div>
   );
 }

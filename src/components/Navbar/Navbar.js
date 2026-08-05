@@ -14,6 +14,27 @@ const NAV_ITEMS = [
   { id: 'contact', label: 'Contact' },
 ];
 
+// Map nav item IDs to actual App.js page names
+const PAGE_MAP = {
+  'home': 'home',
+  'stay': 'rooms',
+  'own-villa': 'home',
+  'experiences': 'home',
+  'cafe': 'cafe',
+  'gallery': 'home', // Updated: Gallery ab 'home' page par open hoga
+  'about': 'about-us',
+  'contact': 'home',
+};
+
+// Reverse map to check active state
+const REVERSE_PAGE_MAP = {
+  'home': 'home',
+  'rooms': 'stay',
+  'cafe': 'cafe',
+  'about-us': 'about',
+  // Gallery yahan se hata diya gaya hai kyunki ab wo home ka part hai
+};
+
 function Navbar({ setCurrentPage, currentPage }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -21,10 +42,19 @@ function Navbar({ setCurrentPage, currentPage }) {
     setIsMenuOpen((prev) => !prev);
   }, []);
 
-  const handleNavClick = useCallback((page) => {
+  const handleNavClick = useCallback((navId) => {
     setIsMenuOpen(false);
     if (setCurrentPage) {
-      setCurrentPage(page);
+      const targetPage = PAGE_MAP[navId] || navId;
+      setCurrentPage(targetPage);
+      
+      // Optional: Agar aap chahte hain ki page change hone ke baad section par smooth scroll ho
+      setTimeout(() => {
+        const element = document.getElementById(navId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
     }
   }, [setCurrentPage]);
 
@@ -35,6 +65,20 @@ function Navbar({ setCurrentPage, currentPage }) {
   const handleOverlayClick = useCallback(() => {
     setIsMenuOpen(false);
   }, []);
+
+  const isActive = (navId) => {
+    // Agar item ka id aur current page home hai toh usko highlight karne ka logic
+    if (PAGE_MAP[navId] === 'home' && currentPage === 'home') {
+      // '#' URL mein check kar sakte hain specific section highlight ke liye
+      // Default behavior mein hum home map use kar rahe hain
+      const hash = window.location.hash.replace('#', '');
+      if (hash) return hash === navId;
+      return navId === 'home';
+    }
+    
+    const mappedPage = PAGE_MAP[navId];
+    return currentPage === mappedPage || REVERSE_PAGE_MAP[currentPage] === navId;
+  };
 
   useEffect(() => {
     if (!isMenuOpen) return;
@@ -69,8 +113,12 @@ function Navbar({ setCurrentPage, currentPage }) {
               <a
                 href={`#${item.id}`}
                 role="menuitem"
-                onClick={(e) => { e.preventDefault(); handleNavClick(item.id); }}
-                className={currentPage === item.id ? 'active-link' : ''}
+                onClick={(e) => { 
+                  // Default link behavior hatane ke liye
+                  if(PAGE_MAP[item.id] !== currentPage) e.preventDefault(); 
+                  handleNavClick(item.id); 
+                }}
+                className={isActive(item.id) ? 'active-link' : ''}
               >
                 {item.label}
               </a>
@@ -119,8 +167,11 @@ function Navbar({ setCurrentPage, currentPage }) {
               <a
                 href={`#${item.id}`}
                 role="menuitem"
-                onClick={(e) => { e.preventDefault(); handleNavClick(item.id); }}
-                className={currentPage === item.id ? 'active-link' : ''}
+                onClick={(e) => { 
+                  if(PAGE_MAP[item.id] !== currentPage) e.preventDefault(); 
+                  handleNavClick(item.id); 
+                }}
+                className={isActive(item.id) ? 'active-link' : ''}
               >
                 {item.label}
               </a>

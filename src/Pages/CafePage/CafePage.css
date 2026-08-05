@@ -14,10 +14,6 @@
   position: relative;
 }
 
-/* =====================================================================
-   ANIMATIONS — Content always visible. Desktop gets subtle fade.
-   Mobile/Tablet: ZERO animation overhead for instant loading.
-   ===================================================================== */
 .mcf-animate {
   opacity: 1;
   transform: translateY(0);
@@ -28,7 +24,6 @@
   transform: translateY(0);
 }
 
-/* Desktop only: subtle entrance enhancement */
 @media (min-width: 1025px) and (prefers-reduced-motion: no-preference) {
   .mcf-animate {
     opacity: 0.96;
@@ -39,7 +34,6 @@
     opacity: 1;
     transform: translateY(0);
   }
-
   .mcf-stagger-children > * {
     opacity: 0.96;
     transform: translateY(8px);
@@ -51,9 +45,6 @@
   }
 }
 
-/* =====================================================================
-   HERO
-   ===================================================================== */
 .mcf-hero-wrapper {
   position: relative;
   display: flex;
@@ -79,8 +70,10 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   opacity: 0;
-  transition: opacity 1.2s ease;
+  transition: opacity 1.8s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: opacity;
 }
 
 .mcf-hero-bg-wrapper img.active {
@@ -91,7 +84,14 @@
   position: absolute;
   inset: 0;
   width: 65%;
-  background: linear-gradient(90deg, rgba(5, 5, 7, 0.95) 0%, rgba(5, 5, 7, 0.85) 20%, rgba(5, 5, 7, 0.5) 50%, rgba(5, 5, 7, 0.1) 80%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    rgba(5, 5, 7, 0.95) 0%,
+    rgba(5, 5, 7, 0.85) 20%,
+    rgba(5, 5, 7, 0.5) 50%,
+    rgba(5, 5, 7, 0.1) 80%,
+    transparent 100%
+  );
   z-index: 1;
   pointer-events: none;
 }
@@ -102,7 +102,12 @@
   left: 0;
   width: 100%;
   height: 40%;
-  background: linear-gradient(to top, rgba(5, 5, 7, 0.9) 0%, rgba(5, 5, 7, 0.4) 40%, transparent 100%);
+  background: linear-gradient(
+    to top,
+    rgba(5, 5, 7, 0.9) 0%,
+    rgba(5, 5, 7, 0.4) 40%,
+    transparent 100%
+  );
   z-index: 1;
   pointer-events: none;
 }
@@ -124,6 +129,16 @@
   align-items: flex-start;
   gap: 36px;
   padding: 80px 0;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 1.4s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 1.4s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.mcf-hero-content.mcf-hero-loaded {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .mcf-hero-text-wrapper {
@@ -219,12 +234,14 @@
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
+  transition: background-color 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  letter-spacing: 0.5px;
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  gap: 8px;
-  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-  letter-spacing: 0.5px;
 }
 
 .mcf-hero-btn {
@@ -264,9 +281,6 @@
   }
 }
 
-/* =====================================================================
-   ABOUT
-   ===================================================================== */
 .mcf-about {
   padding: 70px 48px;
   background: #ffffff;
@@ -372,9 +386,6 @@
   line-height: 22px;
 }
 
-/* =====================================================================
-   FEATURES STRIP
-   ===================================================================== */
 .mcf-features-strip {
   padding: 70px 48px;
   background: linear-gradient(180deg, #ffffff 0%, #faf8fb 40%, #f5f0f6 50%, #faf8fb 60%, #ffffff 100%);
@@ -496,9 +507,6 @@
   transition: color 0.4s ease;
 }
 
-/* =====================================================================
-   PREMIUM MENU
-   ===================================================================== */
 .mcf-premium-menu-section {
   padding: 70px 48px;
   background: #F8F3F8;
@@ -873,7 +881,6 @@
   border-top: 1px solid rgba(0,0,0,0.06);
 }
 
-/* Board Features — LEFT ALIGNED as per screenshot */
 .mcf-board-features {
   display: flex;
   gap: 40px;
@@ -950,9 +957,6 @@
   margin: 0;
 }
 
-/* =====================================================================
-   AMBIANCE
-   ===================================================================== */
 .mcf-ambiance {
   padding: 70px 48px;
   background: #ffffff;
@@ -1065,9 +1069,6 @@
   box-shadow: 0 8px 24px rgba(135, 0, 151, 0.35);
 }
 
-/* =====================================================================
-   GALLERY
-   ===================================================================== */
 .mcf-gallery {
   padding: 70px 48px;
   background: #FAFAFA;
@@ -1156,9 +1157,6 @@
   }
 }
 
-/* =====================================================================
-   REVIEWS
-   ===================================================================== */
 .review-section {
   padding: 70px 48px;
   background-color: #ffffff;
@@ -1299,9 +1297,6 @@
   height: 16px;
 }
 
-/* =====================================================================
-   CONTACT
-   ===================================================================== */
 .mcf-contact {
   padding: 70px 48px;
   background: #2D002E;
@@ -1406,9 +1401,6 @@
   color: #C78D3A;
 }
 
-/* =====================================================================
-   LIGHTBOX
-   ===================================================================== */
 .mcf-lightbox {
   position: fixed;
   inset: 0;
@@ -1444,9 +1436,6 @@
   cursor: pointer;
 }
 
-/* =====================================================================
-   MENU MODAL
-   ===================================================================== */
 .mcf-menu-modal-overlay {
   position: fixed;
   top: 0;
@@ -1788,10 +1777,6 @@
   transform: translateY(-2px);
 }
 
-/* =====================================================================
-   MEDIA QUERIES
-   ===================================================================== */
-
 @media (min-width: 1025px) {
   .mcf-features-grid {
     flex-wrap: nowrap;
@@ -1815,6 +1800,11 @@
 
   .mcf-hero-hindi {
     font-size: 54px;
+  }
+
+  .mcf-hero-desc {
+    font-size: 15px;
+    max-width: 480px;
   }
 
   .mcf-about,
@@ -1875,7 +1865,6 @@
     gap: 20px;
   }
 
-  /* Board features: LEFT ALIGNED on tablet too */
   .mcf-board-footer-bottom {
     flex-direction: column;
     align-items: center;
@@ -1906,7 +1895,6 @@
     gap: 20px;
   }
 
-  /* Filter button: centered below title on tablet */
   .mcf-menu-header-wrapper {
     display: flex;
     flex-direction: column;
@@ -1963,7 +1951,13 @@
 
   .mcf-hero-overlay-main {
     width: 100%;
-    background: linear-gradient(180deg, rgba(5, 5, 7, 0.15) 0%, rgba(5, 5, 7, 0.5) 40%, rgba(5, 5, 7, 0.88) 80%, rgba(5, 5, 7, 0.95) 100%);
+    background: linear-gradient(
+      180deg,
+      rgba(5, 5, 7, 0.15) 0%,
+      rgba(5, 5, 7, 0.5) 40%,
+      rgba(5, 5, 7, 0.88) 80%,
+      rgba(5, 5, 7, 0.95) 100%
+    );
   }
 
   .mcf-hero-overlay-bottom {
@@ -1986,6 +1980,11 @@
     gap: 12px;
   }
 
+  .mcf-hero-pre-title {
+    font-size: 12px;
+    letter-spacing: 4px;
+  }
+
   .mcf-hero-title {
     font-size: 48px;
     justify-content: center;
@@ -1994,6 +1993,21 @@
 
   .mcf-hero-hindi {
     font-size: 44px;
+  }
+
+  .mcf-hero-subtitle {
+    font-size: 13px;
+    letter-spacing: 3px;
+  }
+
+  .mcf-hero-tagline {
+    font-size: 19px;
+  }
+
+  .mcf-hero-desc {
+    font-size: 15px;
+    line-height: 1.6;
+    max-width: 90%;
   }
 
   .mcf-hero-btn-group {
@@ -2006,6 +2020,7 @@
     width: 100%;
     min-width: 240px;
     padding: 15px 32px;
+    font-size: 14px;
   }
 
   .mcf-about-container {
@@ -2105,7 +2120,6 @@
     gap: 16px;
   }
 
-  /* Board features: left aligned, centered container */
   .mcf-board-features {
     flex-direction: column;
     gap: 20px;
@@ -2168,7 +2182,6 @@
     align-items: center;
   }
 
-  /* Filter panel full width on mobile */
   .mcf-filter-panel {
     width: 100vw;
     max-width: 360px;
@@ -2190,6 +2203,19 @@
 
   .mcf-hero-hindi {
     font-size: 40px;
+  }
+
+  .mcf-hero-subtitle {
+    font-size: 14px;
+    letter-spacing: 2.5px;
+  }
+
+  .mcf-hero-tagline {
+    font-size: 17px;
+  }
+
+  .mcf-hero-desc {
+    font-size: 16px;
   }
 
   .mcf-hero-btn,

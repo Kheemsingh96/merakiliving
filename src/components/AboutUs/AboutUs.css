@@ -1,0 +1,960 @@
+.mcf-ab-page-wrapper {
+  width: 100%;
+  background-color: #FFFFFF;
+  overflow-x: hidden;
+  font-family: inherit;
+}
+
+.mcf-ab-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ================================================================
+   Animation System — matches Cafe Page exactly
+   ================================================================ */
+
+.mcf-animate {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mcf-stagger-children > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (min-width: 1025px) and (prefers-reduced-motion: no-preference) {
+  .mcf-animate {
+    opacity: 0.96;
+    transform: translateY(8px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .mcf-animate.mcf-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .mcf-stagger-children > * {
+    opacity: 0.96;
+    transform: translateY(8px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  .mcf-stagger-children.mcf-visible > * {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ================================================================
+   Hero Section
+   ================================================================ */
+
+.mcf-ab-hero {
+  background-color: #F8F3F8;
+  padding: 150px 48px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mcf-ab-hero-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto 1fr;
+  gap: 32px 56px;
+  align-items: stretch;
+}
+
+.mcf-ab-hero-text-wrap {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.mcf-ab-hero-title {
+  font-size: 38px;
+  font-weight: 600;
+  color: #373737;
+  line-height: 65px;
+  margin: 0 0 15px 0;
+  letter-spacing: -0.5px;
+}
+
+.mcf-ab-hero-desc {
+  font-size: 16px;
+  font-weight: 400;
+  color: #666666;
+  line-height: 1.7;
+  margin: 0 0 10px 0;
+  max-width: 540px;
+}
+
+.mcf-ab-hero-boxes-wrapper {
+  grid-column: 1;
+  grid-row: 2;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  width: 100%;
+  align-content: start;
+}
+
+.mcf-ab-hero-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 24px;
+  background: #FFFFFF;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  border: 1px solid rgba(135, 0, 151, 0.02);
+}
+
+.mcf-ab-hero-box:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px rgba(135, 0, 151, 0.08);
+  border-color: rgba(135, 0, 151, 0.1);
+}
+
+.mcf-ab-hero-box-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: rgba(135, 0, 151, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.4s ease, background 0.4s ease;
+}
+
+.mcf-ab-hero-box:hover .mcf-ab-hero-box-icon {
+  transform: scale(1.08);
+  background: rgba(135, 0, 151, 0.1);
+}
+
+.mcf-ab-hero-box-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mcf-ab-hero-box-text h4 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #373737;
+  margin: 0;
+}
+
+.mcf-ab-hero-box-text p {
+  font-size: 14px;
+  color: #666666;
+  line-height: 22px;
+  margin: 0;
+}
+
+.mcf-ab-hero-right {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  height: 100%;
+}
+
+.mcf-ab-hero-img-top-wrap {
+  flex: 1.2;
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  min-height: 320px;
+}
+
+.mcf-ab-hero-img-top-wrap img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.7s ease;
+}
+
+.mcf-ab-hero-img-top-wrap:hover img {
+  transform: scale(1.04);
+}
+
+.mcf-ab-hero-img-bottom-wrap {
+  flex: 0.8;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  min-height: 240px;
+}
+
+.mcf-ab-img-inner {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+}
+
+.mcf-ab-img-inner img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.7s ease;
+}
+
+.mcf-ab-img-inner:hover img {
+  transform: scale(1.04);
+}
+
+/* ================================================================
+   Highlights Section — Premium Centered Design
+   ================================================================ */
+
+.mcf-ab-highlights {
+  padding: 70px 48px;
+  background: linear-gradient(180deg, #ffffff 0%, #faf8fb 40%, #f5f0f6 50%, #faf8fb 60%, #ffffff 100%);
+  border-top: 1px solid rgba(135, 0, 151, 0.06);
+  border-bottom: 1px solid rgba(135, 0, 151, 0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.mcf-ab-highlights::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, rgba(135, 0, 151, 0.2) 50%, transparent 100%);
+}
+
+.mcf-ab-highlights-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.mcf-ab-highlights-grid {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.mcf-ab-highlight {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 18px;
+  padding: 24px 16px;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  flex: 1 1 180px;
+  max-width: 260px;
+}
+
+.mcf-ab-highlight::after {
+  content: '';
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 50px;
+  background: linear-gradient(180deg, transparent 0%, rgba(135, 0, 151, 0.1) 50%, transparent 100%);
+}
+
+.mcf-ab-highlight:last-child::after {
+  display: none;
+}
+
+.mcf-ab-highlight-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(135, 0, 151, 0.1) 0%, rgba(135, 0, 151, 0.04) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+}
+
+.mcf-ab-highlight-icon::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid rgba(135, 0, 151, 0.08);
+  opacity: 0;
+  transform: scale(0.9);
+  transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mcf-ab-highlight:hover .mcf-ab-highlight-icon {
+  background: linear-gradient(135deg, rgba(135, 0, 151, 0.15) 0%, rgba(135, 0, 151, 0.06) 100%);
+  transform: scale(1.1);
+}
+
+.mcf-ab-highlight:hover .mcf-ab-highlight-icon::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.mcf-ab-highlight-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #373737;
+  transition: color 0.4s ease;
+  letter-spacing: 0.2px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.mcf-ab-highlight:hover .mcf-ab-highlight-title {
+  color: #870097;
+}
+
+.mcf-ab-highlight-number {
+  color: #870097;
+}
+
+.mcf-ab-highlight-desc {
+  font-size: 13px;
+  color: #888888;
+  line-height: 1.6;
+  max-width: 200px;
+  margin: 0;
+  transition: color 0.4s ease;
+}
+
+.mcf-ab-highlight:hover .mcf-ab-highlight-desc {
+  color: #666666;
+}
+
+/* ================================================================
+   Story Section
+   ================================================================ */
+
+.mcf-ab-story {
+  padding: 70px 48px;
+  background-color: #F8F3F8;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mcf-ab-story-card {
+  background-color: #FFFFFF;
+  border-radius: 20px;
+  box-shadow: 0 8px 48px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(135, 0, 151, 0.04);
+  padding: 40px;
+  transition: box-shadow 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mcf-ab-story-card:hover {
+  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(135, 0, 151, 0.06);
+}
+
+.mcf-mobile-title {
+  display: none;
+}
+
+.mcf-desktop-title {
+  display: block;
+}
+
+.mcf-ab-story-title {
+  font-size: 32px;
+  font-weight: 600;
+  color: #373737;
+  line-height: 65px;
+  margin: 0 0 15px 0;
+  letter-spacing: -0.5px;
+}
+
+.mcf-ab-story-split {
+  display: grid;
+  grid-template-columns: 3.8fr 6.2fr;
+  gap: 48px;
+  align-items: stretch;
+}
+
+.mcf-ab-story-left {
+  width: 100%;
+  height: 100%;
+}
+
+.mcf-ab-story-img-wrap {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  height: 100%;
+  background: #1e1423;
+  display: flex;
+}
+
+.mcf-ab-story-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mcf-ab-story-img-wrap:hover img {
+  transform: scale(1.03);
+}
+
+.mcf-ab-story-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 60px 24px 20px;
+  background: linear-gradient(
+    to top,
+    rgba(30, 20, 35, 0.95) 0%,
+    rgba(30, 20, 35, 0.8) 40%,
+    transparent 100%
+  );
+}
+
+.mcf-ab-story-admin {
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.95);
+  line-height: 1.6;
+  margin: 0;
+  text-align: center;
+  position: relative;
+}
+
+.mcf-ab-story-qmark {
+  font-family: Georgia, 'Times New Roman', serif;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1;
+}
+
+.mcf-ab-story-qmark.open {
+  font-size: 24px;
+  margin-right: 4px;
+  vertical-align: text-top;
+}
+
+.mcf-ab-story-qmark.close {
+  font-size: 24px;
+  margin-left: 4px;
+  vertical-align: text-bottom;
+}
+
+.mcf-ab-story-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.mcf-ab-story-body {
+  margin-bottom: 24px;
+}
+
+.mcf-ab-story-body p {
+  font-size: 16px;
+  font-weight: 400;
+  color: #666666;
+  line-height: 32px;
+  margin: 0;
+}
+
+.mcf-ab-story-signature-wrap {
+  margin-top: auto;
+  padding-top: 32px;
+  border-top: 1px solid rgba(135, 0, 151, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mcf-ab-story-signature-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #373737;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.mcf-ab-story-signature-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #870097;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/* ================================================================
+   CTA Section
+   ================================================================ */
+
+.mcf-ab-cta {
+  padding: 70px 48px;
+  background-color: #FFFFFF;
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+}
+
+.mcf-ab-cta-inner {
+  position: relative;
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  z-index: 2;
+}
+
+.mcf-ab-cta-accent-line {
+  width: 56px;
+  height: 3px;
+  background: linear-gradient(90deg, rgba(135, 0, 151, 0.2) 0%, #870097 50%, rgba(135, 0, 151, 0.2) 100%);
+  border-radius: 2px;
+  margin-bottom: 32px;
+}
+
+.mcf-ab-cta-label {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #870097;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  margin-bottom: 20px;
+}
+
+.mcf-ab-cta-title {
+  font-size: 38px;
+  font-weight: 600;
+  color: #373737;
+  line-height: 65px;
+  margin: 0 0 24px 0;
+  letter-spacing: -0.5px;
+}
+
+.mcf-ab-cta-desc {
+  font-size: 16px;
+  font-weight: 400;
+  color: #666666;
+  line-height: 32px;
+  margin: 0 0 40px 0;
+  max-width: 540px;
+}
+
+.mcf-ab-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 36px;
+  background: #870097;
+  color: #FFFFFF;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  border-radius: 50px;
+  box-shadow: 0 8px 28px rgba(135, 0, 151, 0.25), 0 2px 6px rgba(135, 0, 151, 0.15);
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.mcf-ab-cta-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.15) 50%, transparent 100%);
+  transition: left 0.6s ease;
+}
+
+.mcf-ab-cta-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 40px rgba(135, 0, 151, 0.35), 0 4px 10px rgba(135, 0, 151, 0.2);
+}
+
+.mcf-ab-cta-btn:hover::before {
+  left: 100%;
+}
+
+.mcf-ab-cta-btn:active {
+  transform: translateY(-1px);
+}
+
+/* Floating Orbs */
+.mcf-ab-cta-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.mcf-ab-cta-orb.orb-1 {
+  width: 320px;
+  height: 320px;
+  background: rgba(135, 0, 151, 0.05);
+  top: -80px;
+  right: -60px;
+  animation: mcf-ab-float-1 10s ease-in-out infinite;
+}
+
+.mcf-ab-cta-orb.orb-2 {
+  width: 240px;
+  height: 240px;
+  background: rgba(135, 0, 151, 0.04);
+  bottom: -60px;
+  left: -40px;
+  animation: mcf-ab-float-2 12s ease-in-out infinite;
+}
+
+.mcf-ab-cta-orb.orb-3 {
+  width: 160px;
+  height: 160px;
+  background: rgba(135, 0, 151, 0.03);
+  top: 50%;
+  right: 10%;
+  animation: mcf-ab-float-3 8s ease-in-out infinite;
+}
+
+.mcf-ab-cta-orb.orb-4 {
+  width: 200px;
+  height: 200px;
+  background: rgba(135, 0, 151, 0.025);
+  top: 20%;
+  left: 5%;
+  animation: mcf-ab-float-1 14s ease-in-out infinite reverse;
+}
+
+@keyframes mcf-ab-float-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(20px, -30px) scale(1.05); }
+  66% { transform: translate(-10px, 15px) scale(0.95); }
+}
+
+@keyframes mcf-ab-float-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-25px, -20px) scale(1.08); }
+}
+
+@keyframes mcf-ab-float-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(15px, 25px) scale(0.92); }
+  66% { transform: translate(-20px, -10px) scale(1.03); }
+}
+
+/* ================================================================
+   Responsive — matches Cafe Page breakpoints exactly
+   ================================================================ */
+
+@media (max-width: 1024px) {
+  .mcf-ab-hero {
+    padding: 140px 40px;
+  }
+
+  .mcf-ab-highlights,
+  .mcf-ab-story,
+  .mcf-ab-cta {
+    padding: 65px 40px;
+  }
+
+  .mcf-ab-hero-split {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .mcf-ab-hero-text-wrap {
+    order: 1;
+    text-align: center;
+    align-items: center;
+  }
+
+  .mcf-ab-hero-title {
+    font-size: 38px;
+    line-height: 48px;
+  }
+
+  .mcf-ab-hero-desc {
+    font-size: 17px;
+    line-height: 30px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .mcf-ab-hero-right {
+    order: 2;
+    min-height: auto;
+  }
+
+  .mcf-ab-hero-boxes-wrapper {
+    order: 3;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .mcf-ab-highlights-grid {
+    gap: 24px;
+  }
+
+  .mcf-ab-highlight {
+    flex: 1 1 calc(50% - 24px);
+    max-width: 300px;
+  }
+
+  .mcf-ab-highlight::after {
+    display: none;
+  }
+
+  .mcf-ab-story-card {
+    padding: 32px;
+  }
+
+  .mcf-mobile-title {
+    display: block;
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  .mcf-desktop-title {
+    display: none;
+  }
+
+  .mcf-ab-story-split {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .mcf-ab-story-title {
+    font-size: 38px;
+    line-height: 48px;
+  }
+
+  .mcf-ab-story-left {
+    width: 100%;
+    max-width: 450px;
+    margin: 0 auto;
+  }
+
+  .mcf-ab-story-img-wrap {
+    aspect-ratio: 4 / 5;
+  }
+
+  .mcf-ab-story-text {
+    text-align: center;
+    align-items: center;
+  }
+
+  .mcf-ab-story-body p {
+    font-size: 17px;
+    line-height: 30px;
+  }
+
+  .mcf-ab-story-signature-wrap {
+    align-items: center;
+    margin-top: 10px;
+  }
+
+  .mcf-ab-cta-title {
+    font-size: 38px;
+    line-height: 48px;
+  }
+
+  .mcf-ab-cta-desc {
+    font-size: 17px;
+    line-height: 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .mcf-ab-hero-right {
+    gap: 16px;
+  }
+
+  .mcf-ab-hero-img-top-wrap {
+    min-height: 240px;
+    aspect-ratio: 16 / 10;
+  }
+
+  .mcf-ab-hero-img-bottom-wrap {
+    min-height: 180px;
+    gap: 16px;
+  }
+
+  .mcf-ab-hero-boxes-wrapper {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .mcf-ab-hero-box {
+    padding: 20px;
+  }
+
+  .mcf-ab-highlight {
+    flex: 1 1 calc(50% - 16px);
+    padding: 20px 12px;
+  }
+
+  .mcf-ab-highlight-icon {
+    width: 56px;
+    height: 56px;
+  }
+
+  .mcf-ab-story-card {
+    padding: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mcf-ab-hero {
+    padding: 100px 24px;
+  }
+
+  .mcf-ab-highlights,
+  .mcf-ab-story,
+  .mcf-ab-cta {
+    padding: 45px 24px;
+  }
+
+  .mcf-ab-hero-title,
+  .mcf-ab-story-title,
+  .mcf-ab-cta-title {
+    font-size: 26px;
+    line-height: 38px;
+    margin-bottom: 14px;
+  }
+
+  .mcf-ab-hero-desc,
+  .mcf-ab-story-body p,
+  .mcf-ab-cta-desc {
+    font-size: 16px;
+    line-height: 26px;
+  }
+
+  .mcf-ab-hero-boxes-wrapper {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .mcf-ab-hero-box {
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .mcf-ab-highlights-grid {
+    gap: 12px;
+  }
+
+  .mcf-ab-highlight {
+    padding: 16px 8px;
+    gap: 12px;
+  }
+
+  .mcf-ab-highlight-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .mcf-ab-highlight-title {
+    font-size: 14px;
+  }
+
+  .mcf-ab-highlight-desc {
+    font-size: 12px;
+    max-width: 160px;
+  }
+
+  .mcf-ab-story-card {
+    padding: 24px;
+    border-radius: 16px;
+  }
+
+  .mcf-ab-story-body {
+    margin-bottom: 18px;
+  }
+
+  .mcf-ab-story-overlay {
+    padding: 40px 20px 16px;
+  }
+
+  .mcf-ab-story-admin {
+    font-size: 13px;
+  }
+
+  .mcf-ab-story-qmark.open,
+  .mcf-ab-story-qmark.close {
+    font-size: 20px;
+  }
+
+  .mcf-ab-story-signature-name {
+    font-size: 15px;
+  }
+
+  .mcf-ab-cta-accent-line {
+    width: 40px;
+    margin-bottom: 24px;
+  }
+
+  .mcf-ab-cta-label {
+    font-size: 12px;
+    margin-bottom: 16px;
+  }
+
+  .mcf-ab-cta-title {
+    margin-bottom: 18px;
+  }
+
+  .mcf-ab-cta-desc {
+    margin-bottom: 32px;
+  }
+
+  .mcf-ab-cta-btn {
+    padding: 14px 28px;
+    font-size: 14px;
+    gap: 10px;
+  }
+
+  .mcf-ab-cta-orb.orb-1 {
+    width: 200px;
+    height: 200px;
+  }
+
+  .mcf-ab-cta-orb.orb-2 {
+    width: 160px;
+    height: 160px;
+  }
+}

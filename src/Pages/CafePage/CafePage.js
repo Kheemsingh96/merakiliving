@@ -254,6 +254,7 @@ const CafePage = () => {
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
   const [currentMenuPage, setCurrentMenuPage] = useState(0);
   const [showFilter, setShowFilter] = useState(false);
+  const [isHeroLoaded, setIsHeroLoaded] = useState(false);
 
   const categories = [
     { name: "All", icon: <FaStar size={16} /> },
@@ -294,8 +295,12 @@ const CafePage = () => {
   }, []);
 
   useEffect(() => {
+    const loadTimer = setTimeout(() => setIsHeroLoaded(true), 200);
     const intervalId = setInterval(nextSlide, SLIDE_INTERVAL);
-    return () => clearInterval(intervalId);
+    return () => {
+      clearTimeout(loadTimer);
+      clearInterval(intervalId);
+    };
   }, [nextSlide]);
 
   useEffect(() => {
@@ -357,11 +362,11 @@ const CafePage = () => {
         <div className="mcf-hero-overlay-main" aria-hidden="true" />
         <div className="mcf-hero-overlay-bottom" aria-hidden="true" />
         <div className="mcf-hero-container">
-          <div className="mcf-hero-content">
+          <div className={isHeroLoaded ? 'mcf-hero-content mcf-hero-loaded' : 'mcf-hero-content'}>
             <div className="mcf-hero-text-wrapper">
               <p className="mcf-hero-pre-title">Meraki Living</p>
               <h1 className="mcf-hero-title">
-                Meraki <span className="mcf-hero-hindi">Cafe</span>
+                Cafe <span className="mcf-hero-hindi">Meraki</span>
               </h1>
               <h2 className="mcf-hero-subtitle">Artisanal Mountain Cafe & Kitchen</h2>
               <div className="mcf-hero-location">
@@ -375,11 +380,10 @@ const CafePage = () => {
             </div>
             <div className="mcf-hero-btn-group">
               <button className="mcf-hero-btn" onClick={() => setIsMenuModalOpen(true)}>
-                <span>View Full Menu</span>
-                <FiArrowRight size={18} />
+                View Full Menu
               </button>
               <button className="mcf-hero-btn-outline" onClick={() => scrollToSection('about')}>
-                <span>Our Story</span>
+                Our Story
               </button>
             </div>
           </div>
