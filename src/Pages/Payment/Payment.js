@@ -132,7 +132,8 @@ const Payment = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
     lastName: '',
     email: '',
     phone: '',
-    countryCode: '+91'
+    countryCode: '+91',
+    bookingId: ''
   });
 
   const room = roomsData.find(r => r.id === selectedRoomId) || roomsData[0];
@@ -142,6 +143,7 @@ const Payment = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
     
     try {
       const savedDetails = sessionStorage.getItem('meraki_guestDetails');
+      const savedBookingId = sessionStorage.getItem('meraki_bookingId') || '';
       if (savedDetails) {
         const parsed = JSON.parse(savedDetails);
         setGuestData({
@@ -149,8 +151,11 @@ const Payment = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
           lastName: parsed.lastName || '',
           email: parsed.email || '',
           phone: parsed.phone || '',
-          countryCode: parsed.countryCode || '+91'
+          countryCode: parsed.countryCode || '+91',
+          bookingId: savedBookingId
         });
+      } else if (savedBookingId) {
+        setGuestData(prev => ({ ...prev, bookingId: savedBookingId }));
       }
       
       const savedCoupon = sessionStorage.getItem('meraki_couponCode');
@@ -331,6 +336,14 @@ const Payment = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
       
       <div className="pay-summary-details">
         <div className="pay-guest-premium-grid">
+          {guestData.bookingId && (
+            <div className="pay-guest-item">
+              <span className="pay-summary-label">Booking ID</span>
+              <span className="pay-summary-value" style={{ fontWeight: '600', color: '#870097' }}>
+                {guestData.bookingId}
+              </span>
+            </div>
+          )}
           <div className="pay-guest-item">
             <span className="pay-summary-label">Full Name</span>
             <span className="pay-summary-value">

@@ -14,71 +14,95 @@ const NAV_ITEMS = [
   { id: 'contact', label: 'Contact' },
 ];
 
-// Map nav item IDs to actual App.js page names
 const PAGE_MAP = {
-  'home': 'home',
-  'stay': 'rooms',
+  home: 'home',
+  stay: 'rooms',
   'own-villa': 'home',
-  'experiences': 'home',
-  'cafe': 'cafe',
-  'gallery': 'home', // Updated: Gallery ab 'home' page par open hoga
-  'about': 'about-us',
-  'contact': 'home',
+  experiences: 'home',
+  cafe: 'cafe',
+  gallery: 'home',
+  about: 'about-us',
+  contact: 'home',
 };
 
-// Reverse map to check active state
 const REVERSE_PAGE_MAP = {
-  'home': 'home',
-  'rooms': 'stay',
-  'cafe': 'cafe',
+  home: 'home',
+  rooms: 'stay',
+  cafe: 'cafe',
   'about-us': 'about',
-  // Gallery yahan se hata diya gaya hai kyunki ab wo home ka part hai
 };
 
 function Navbar({ setCurrentPage, currentPage }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [activeHash, setActiveHash] = useState(
+    window.location.hash.replace('#', '')
+  );
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const toggleMenu = useCallback(() => {
     setIsMenuOpen((prev) => !prev);
   }, []);
 
-  const handleNavClick = useCallback((navId) => {
-    setIsMenuOpen(false);
-    if (setCurrentPage) {
-      const targetPage = PAGE_MAP[navId] || navId;
-      setCurrentPage(targetPage);
-      
-      // Optional: Agar aap chahte hain ki page change hone ke baad section par smooth scroll ho
-      setTimeout(() => {
-        const element = document.getElementById(navId);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
-    }
-  }, [setCurrentPage]);
-
-  const handleLogoClick = useCallback(() => {
-    handleNavClick('home');
-  }, [handleNavClick]);
-
-  const handleOverlayClick = useCallback(() => {
+  const closeMenu = useCallback(() => {
     setIsMenuOpen(false);
   }, []);
 
-  const isActive = (navId) => {
-    // Agar item ka id aur current page home hai toh usko highlight karne ka logic
-    if (PAGE_MAP[navId] === 'home' && currentPage === 'home') {
-      // '#' URL mein check kar sakte hain specific section highlight ke liye
-      // Default behavior mein hum home map use kar rahe hain
-      const hash = window.location.hash.replace('#', '');
-      if (hash) return hash === navId;
-      return navId === 'home';
-    }
-    
-    const mappedPage = PAGE_MAP[navId];
-    return currentPage === mappedPage || REVERSE_PAGE_MAP[currentPage] === navId;
-  };
+  const handleNavClick = useCallback(
+    (navId, e) => {
+      if (e) e.preventDefault();
+      setIsMenuOpen(false);
+
+      if (!setCurrentPage) return;
+
+      const targetPage = PAGE_MAP[navId] || navId;
+      const isSwitchingPage = currentPage !== targetPage;
+
+      if (isSwitchingPage) {
+        setCurrentPage(targetPage);
+      }
+
+      setTimeout(() => {
+        const element = document.getElementById(navId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          window.history.pushState(null, '', `#${navId}`);
+          setActiveHash(navId);
+        } else if (navId === 'home') {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          window.history.pushState(null, '', window.location.pathname);
+          setActiveHash('home');
+        }
+      }, isSwitchingPage ? 300 : 50);
+    },
+    [currentPage, setCurrentPage]
+  );
+
+  const handleLogoClick = useCallback(
+    (e) => {
+      handleNavClick('home', e);
+    },
+    [handleNavClick]
+  );
+
+  const isActive = useCallback(
+    (navId) => {
+      if (PAGE_MAP[navId] === 'home' && currentPage === 'home') {
+        if (activeHash) return activeHash === navId;
+        return navId === 'home';
+      }
+      const mappedPage = PAGE_MAP[navId];
+      return (
+        currentPage === mappedPage || REVERSE_PAGE_MAP[currentPage] === navId
+      );
+    },
+    [activeHash, currentPage]
+  );
 
   useEffect(() => {
     if (!isMenuOpen) return;
@@ -93,8 +117,18 @@ function Navbar({ setCurrentPage, currentPage }) {
     };
   }, [isMenuOpen]);
 
+  useEffect(() => {
+    const handleHashChange = () =>
+      setActiveHash(window.location.hash.replace('#', ''));
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
   return (
-    <header className="navbar-wrapper" role="banner">
+    <header
+      className={`navbar-wrapper ${scrolled ? 'navbar-scrolled' : ''}`}
+      role="banner"
+    >
       <nav className="navbar-container" aria-label="Main Navigation">
         <div
           className="navbar-logo"
@@ -102,9 +136,18 @@ function Navbar({ setCurrentPage, currentPage }) {
           role="button"
           tabIndex={0}
           aria-label="Go to Home"
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleLogoClick(); }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') handleLogoClick(e);
+          }}
         >
-          <img src={logo} alt="Meraki Living" className="logo-img" width="150" height="50" loading="eager" />
+          <img
+            src={logo}
+            alt="Meraki Living"
+            className="logo-img"
+            width="150"
+            height="50"
+            loading="eager"
+          />
         </div>
 
         <ul className="navbar-links" role="menubar">
@@ -113,11 +156,7 @@ function Navbar({ setCurrentPage, currentPage }) {
               <a
                 href={`#${item.id}`}
                 role="menuitem"
-                onClick={(e) => { 
-                  // Default link behavior hatane ke liye
-                  if(PAGE_MAP[item.id] !== currentPage) e.preventDefault(); 
-                  handleNavClick(item.id); 
-                }}
+                onClick={(e) => handleNavClick(item.id, e)}
                 className={isActive(item.id) ? 'active-link' : ''}
               >
                 {item.label}
@@ -127,11 +166,20 @@ function Navbar({ setCurrentPage, currentPage }) {
         </ul>
 
         <div className="navbar-right">
-          <img src={ventureLogo} alt="Pranay Matiyani Ventures" className="venture-logo" width="150" height="50" loading="eager" />
+          <img
+            src={ventureLogo}
+            alt="Pranay Matiyani Ventures"
+            className="venture-logo"
+            width="150"
+            height="50"
+            loading="eager"
+          />
           <button
             className={`hamburger-btn ${isMenuOpen ? 'active' : ''}`}
             onClick={toggleMenu}
-            aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-label={
+              isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'
+            }
             aria-expanded={isMenuOpen}
             aria-controls="mobile-menu"
             type="button"
@@ -145,7 +193,7 @@ function Navbar({ setCurrentPage, currentPage }) {
 
       <div
         className={`mobile-menu-overlay ${isMenuOpen ? 'active' : ''}`}
-        onClick={handleOverlayClick}
+        onClick={closeMenu}
         role="presentation"
         aria-hidden="true"
       />
@@ -158,7 +206,22 @@ function Navbar({ setCurrentPage, currentPage }) {
         aria-label="Mobile Navigation"
       >
         <div className="mobile-menu-header">
-          <img src={logo} alt="Meraki Living" className="mobile-logo-img" width="120" height="40" loading="eager" />
+          <img
+            src={logo}
+            alt="Meraki Living"
+            className="mobile-logo-img"
+            width="120"
+            height="40"
+            loading="eager"
+          />
+          <button
+            className="mobile-close-btn"
+            onClick={closeMenu}
+            aria-label="Close menu"
+            type="button"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
 
         <ul className="mobile-navbar-links" role="menu">
@@ -167,10 +230,7 @@ function Navbar({ setCurrentPage, currentPage }) {
               <a
                 href={`#${item.id}`}
                 role="menuitem"
-                onClick={(e) => { 
-                  if(PAGE_MAP[item.id] !== currentPage) e.preventDefault(); 
-                  handleNavClick(item.id); 
-                }}
+                onClick={(e) => handleNavClick(item.id, e)}
                 className={isActive(item.id) ? 'active-link' : ''}
               >
                 {item.label}
@@ -178,7 +238,6 @@ function Navbar({ setCurrentPage, currentPage }) {
             </li>
           ))}
         </ul>
-
       </div>
     </header>
   );

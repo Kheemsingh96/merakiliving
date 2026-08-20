@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef, memo } from 'react';
 import { Location01Icon } from 'hugeicons-react';
 import './Hero.css';
 
@@ -12,29 +12,34 @@ const SLIDE_INTERVAL = 4000;
 function Hero({ setCurrentPage }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
-
-  const nextSlide = useCallback(() => {
-    setActiveIndex((prev) => (prev + 1) % SLIDES.length);
-  }, []);
+  const intervalRef = useRef(null);
 
   useEffect(() => {
     const loadTimer = setTimeout(() => setIsLoaded(true), 200);
-    const intervalId = setInterval(nextSlide, SLIDE_INTERVAL);
+    intervalRef.current = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % SLIDES.length);
+    }, SLIDE_INTERVAL);
 
     return () => {
       clearTimeout(loadTimer);
-      clearInterval(intervalId);
+      clearInterval(intervalRef.current);
     };
-  }, [nextSlide]);
+  }, []);
 
   return (
     <section className="hero-section">
       <div className="hero-bg-wrapper">
         {SLIDES.map((slide, index) => (
-          <div
+          <img
             key={index}
+            src={slide}
+            alt=""
             className={index === activeIndex ? 'hero-bg active' : 'hero-bg'}
-            style={{ backgroundImage: `url(${slide})` }}
+            width="1920"
+            height="1080"
+            fetchPriority={index === activeIndex ? 'high' : 'low'}
+            decoding="async"
+            draggable="false"
             aria-hidden="true"
           />
         ))}
@@ -68,14 +73,18 @@ function Hero({ setCurrentPage }) {
 
           <div className="hero-btn-group">
             <button
+              type="button"
               className="hero-btn"
               onClick={() => setCurrentPage('booking')}
+              aria-label="Book your stay at SROT"
             >
               Book Your Stay
             </button>
             <button
+              type="button"
               className="hero-btn-outline"
               onClick={() => setCurrentPage('explore')}
+              aria-label="Explore SROT retreat"
             >
               Explore स्रोत
             </button>
@@ -86,4 +95,4 @@ function Hero({ setCurrentPage }) {
   );
 }
 
-export default Hero;
+export default memo(Hero);

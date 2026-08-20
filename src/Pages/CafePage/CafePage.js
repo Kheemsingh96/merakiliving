@@ -28,6 +28,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { SaladIcon, PieIcon, HandPlatterIcon, TeaIcon, FilterIcon } from '@hugeicons/core-free-icons';
 
 import './CafePage.css';
+import '../../components/Review/Review.css';
 
 import cafeHeroImg1 from "../../assets/images/cafe-hero-1.webp";
 import cafeHeroImg2 from "../../assets/images/cafe-hero-2.webp";
@@ -255,6 +256,34 @@ const CafePage = () => {
   const [currentMenuPage, setCurrentMenuPage] = useState(0);
   const [showFilter, setShowFilter] = useState(false);
   const [isHeroLoaded, setIsHeroLoaded] = useState(false);
+
+  // Review section state
+  const [activeReviewIndex, setActiveReviewIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveReviewIndex((current) => (current + 1) % reviewData.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, []);
+
+  const getPositionClass = (index) => {
+    const length = reviewData.length;
+    let dist = (index - activeReviewIndex + length) % length;
+    
+    if (dist > Math.floor(length / 2)) {
+      dist -= length;
+    }
+
+    if (dist === 0) return 'pos-center';
+    if (dist === -1) return 'pos-left';
+    if (dist === 1) return 'pos-right';
+    if (dist === -2) return 'pos-far-left';
+    if (dist === 2) return 'pos-far-right';
+    return 'pos-hidden';
+  };
+
+  const activeReview = reviewData[activeReviewIndex];
 
   const categories = [
     { name: "All", icon: <FaStar size={16} /> },
@@ -638,7 +667,7 @@ const CafePage = () => {
           <div className="mcf-gallery-grid mcf-stagger-children">
             {galleryImages.map((img, idx) => (
               <div
-                className={`mcf-gallery-item ${idx === 0 || idx === 3 ? 'large' : ''}`}
+                className="mcf-gallery-item"
                 key={idx}
                 onClick={() => setSelectedImage(img)}
               >
@@ -652,44 +681,54 @@ const CafePage = () => {
         </div>
       </div>
 
-      <div id="reviews" className="review-section">
-        <div className="review-wrapper mcf-animate">
+      <div id="reviews" className="premium-review-section">
+        <div className="review-container mcf-animate">
           <header className="review-header">
-            <h2 className="review-title">What Our Guests <span className="review-highlight">Say</span></h2>
-            <p className="review-subtitle">Read through genuine experiences shared by our wonderful guests on Google.</p>
+            <h2 className="review-title">
+              What Our Guests <span className="review-highlight">Say</span>
+            </h2>
+            <p className="review-subtitle">
+              Read through genuine experiences shared by our wonderful guests on Google.
+            </p>
           </header>
-          <div className="review-grid mcf-stagger-children">
-            {reviewData.map((review) => (
-              <article className="review-card" key={review.id}>
-                <div className="review-card-top">
-                  <div className="review-user">
-                    <div className="review-avatar">
-                      <img src={review.avatar} alt={review.name} width="52" height="52" loading="lazy" decoding="async" />
-                    </div>
-                    <div className="review-user-info">
-                      <h3 className="review-name">{review.name}</h3>
-                      <time className="review-date">{review.date}</time>
-                    </div>
+
+          <div className="premium-review-box">
+            <div className="review-content">
+              <div className="review-stars">
+                {[...Array(5)].map((_, i) => (
+                  <svg key={i} viewBox="0 0 24 24" fill="#F79D00">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                  </svg>
+                ))}
+              </div>
+
+              <h3 className="review-quote-text">
+                “{activeReview.text}”
+              </h3>
+              
+              <div className="review-author-info">
+                <h4 className="author-name">{activeReview.name}</h4>
+                <p className="author-date">{activeReview.date}</p>
+              </div>
+            </div>
+
+            <div className="avatar-carousel">
+              <svg className="carousel-arc" viewBox="0 0 340 70" preserveAspectRatio="xMidYMid meet">
+                <path d="M 20 60 Q 170 -10 320 60" stroke="#E2E8F0" strokeWidth="2" fill="none" />
+              </svg>
+
+              {reviewData.map((review, index) => (
+                <div 
+                  key={review.id} 
+                  className={`avatar-item ${getPositionClass(index)}`}
+                  onClick={() => setActiveReviewIndex(index)}
+                >
+                  <div className="avatar-circle">
+                    {review.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
                   </div>
                 </div>
-                <div className="review-stars" aria-label="5 star rating">
-                  {[...Array(5)].map((_, i) => (
-                    <svg key={i} viewBox="0 0 24 24" fill="#F79D00" aria-hidden="true">
-                      <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-                    </svg>
-                  ))}
-                </div>
-                <blockquote className="review-text">"{review.text}"</blockquote>
-              </article>
-            ))}
-          </div>
-          <div className="review-action">
-            <a href="https://maps.app.goo.gl/3MwF3m2SSRsEr4pu5?g_st=aw" className="review-btn" target="_blank" rel="noopener noreferrer">
-              <span>Read All Reviews on Google</span>
-              <svg className="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
-              </svg>
-            </a>
+              ))}
+            </div>
           </div>
         </div>
       </div>

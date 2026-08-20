@@ -44,9 +44,7 @@
   transition: background 0.2s ease;
 }
 
-.booking-search-item:hover {
-  background: rgba(135, 0, 151, 0.03);
-}
+
 
 .booking-search-item.active {
   background: rgba(135, 0, 151, 0.06);

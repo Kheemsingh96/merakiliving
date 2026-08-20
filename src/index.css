@@ -14,4 +14,162 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}/* ================================================================
+   GLOBAL ALIGNMENT, SPACING & TYPOGRAPHY FIX 
+   ================================================================ */
+
+/* 1. HORIZONTAL ALIGNMENT */
+/* Zero out horizontal padding on section wrappers */
+.mcf-ab-hero, .mcf-ab-highlights, .mcf-ab-story, .mcf-ab-cta,
+.cta-section, .cafe-section, .faq-section, .footer-wrapper,
+.rooms-section, .booking-section, .gd-section, .pay-section, .room-details-section,
+.mcf-about, .mcf-premium-menu-section, .mcf-ambiance, .mcf-gallery, .mcf-contact,
+.explore-section, .experience-section, .viewpoints-section, .review-section,
+.privacy-policy-wrapper, .terms-conditions-wrapper, .cancellation-policy-wrapper {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Apply Navbar horizontal alignment to inner containers & heroes */
+.hero-container,
+.mcf-ab-container, .cta-container, .cafe-container, .faq-container, .faq-header, .footer-container,
+.rooms-container, .booking-container, .gd-container, .pay-container, .room-details-container,
+.mcf-hero-container, .mcf-about-container, .mcf-menu-container, .mcf-ambiance-container, .mcf-gallery-container, .mcf-contact-container,
+.explore-header, .explore-grid, .experience-header, .experience-row, .viewpoints-header, .viewpoints-grid, .review-header, .review-grid,
+.privacy-policy-outer, .terms-conditions-outer, .cancellation-policy-outer {
+  width: 100% !important;
+  max-width: 1440px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-left: 48px !important;
+  padding-right: 48px !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 1100px) {
+  .hero-container, .mcf-ab-container, .cta-container, .cafe-container, .faq-container, .faq-header, .footer-container,
+  .rooms-container, .booking-container, .gd-container, .pay-container, .room-details-container,
+  .mcf-hero-container, .mcf-about-container, .mcf-menu-container, .mcf-ambiance-container, .mcf-gallery-container, .mcf-contact-container,
+  .explore-header, .explore-grid, .experience-header, .experience-row, .viewpoints-header, .viewpoints-grid, .review-header, .review-grid,
+  .privacy-policy-outer, .terms-conditions-outer, .cancellation-policy-outer {
+    padding-left: 32px !important;
+    padding-right: 32px !important;
+  }
+}
+
+@media (max-width: 950px) {
+  .hero-container, .mcf-ab-container, .cta-container, .cafe-container, .faq-container, .faq-header, .footer-container,
+  .rooms-container, .booking-container, .gd-container, .pay-container, .room-details-container,
+  .mcf-hero-container, .mcf-about-container, .mcf-menu-container, .mcf-ambiance-container, .mcf-gallery-container, .mcf-contact-container,
+  .explore-header, .explore-grid, .experience-header, .experience-row, .viewpoints-header, .viewpoints-grid, .review-header, .review-grid,
+  .privacy-policy-outer, .terms-conditions-outer, .cancellation-policy-outer {
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-container, .mcf-ab-container, .cta-container, .cafe-container, .faq-container, .faq-header, .footer-container,
+  .rooms-container, .booking-container, .gd-container, .pay-container, .room-details-container,
+  .mcf-hero-container, .mcf-about-container, .mcf-menu-container, .mcf-ambiance-container, .mcf-gallery-container, .mcf-contact-container,
+  .explore-header, .explore-grid, .experience-header, .experience-row, .viewpoints-header, .viewpoints-grid, .review-header, .review-grid,
+  .privacy-policy-outer, .terms-conditions-outer, .cancellation-policy-outer {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .hero-container, .mcf-ab-container, .cta-container, .cafe-container, .faq-container, .faq-header, .footer-container,
+  .rooms-container, .booking-container, .gd-container, .pay-container, .room-details-container,
+  .mcf-hero-container, .mcf-about-container, .mcf-menu-container, .mcf-ambiance-container, .mcf-gallery-container, .mcf-contact-container,
+  .explore-header, .explore-grid, .experience-header, .experience-row, .viewpoints-header, .viewpoints-grid, .review-header, .review-grid,
+  .privacy-policy-outer, .terms-conditions-outer, .cancellation-policy-outer {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
+
+/* 2. VERTICAL SPACING (TOP & BOTTOM GAP) */
+/* Standard sections: Reduce excessive 80px+ gaps to a balanced 60px */
+.explore-section, .experience-section, .viewpoints-section, .review-section, .cta-section,
+.cafe-section, .faq-section, .mcf-about, .mcf-premium-menu-section, .mcf-ambiance, .mcf-gallery, .mcf-contact {
+  padding-top: 60px !important;
+  padding-bottom: 60px !important;
+}
+
+/* Top-level pages (excluding Heroes) that have excessive 150px+ gaps */
+.rooms-section, .booking-section, .gd-section, .pay-section, .room-details-section,
+.privacy-policy-wrapper, .terms-conditions-wrapper, .cancellation-policy-wrapper {
+  padding-top: 100px !important;
+  padding-bottom: 60px !important;
+}
+
+/* About Us Hero and CafePage Hero */
+.mcf-ab-hero {
+  padding-top: 120px !important;
+  padding-bottom: 80px !important;
+}
+
+.mcf-hero-container {
+  padding-top: 44px !important;
+  padding-bottom: 80px !important;
+}
+
+/* Mobile scaling for vertical spacing */
+@media (max-width: 768px) {
+  .explore-section, .experience-section, .viewpoints-section, .review-section, .cta-section,
+  .cafe-section, .faq-section, .mcf-about, .mcf-premium-menu-section, .mcf-ambiance, .mcf-gallery, .mcf-contact {
+    padding-top: 40px !important;
+    padding-bottom: 40px !important;
+  }
+  .rooms-section, .booking-section, .gd-section, .pay-section, .room-details-section,
+  .privacy-policy-wrapper, .terms-conditions-wrapper, .cancellation-policy-wrapper {
+    padding-top: 80px !important;
+    padding-bottom: 40px !important;
+  }
+  .mcf-ab-hero {
+    padding-top: 100px !important;
+    padding-bottom: 60px !important;
+  }
+  .mcf-hero-container {
+    padding-top: 24px !important; /* 100 - 76 */
+    padding-bottom: 60px !important;
+  }
+}
+
+/* 3. HEADING TO PARAGRAPH GAP */
+/* Ensure consistent 16px gap between section heading and its subtitle/paragraph */
+.explore-title, .experience-title, .viewpoints-title, .review-title, .faq-title,
+.rooms-title, .mcf-ab-hero-title, .mcf-ab-story-title, .mcf-ab-cta-title,
+.mcf-about-title, .mcf-menu-title, .mcf-ambiance-title, .mcf-gallery-title, .mcf-contact-title,
+.cafe-title, .cta-title {
+  margin-bottom: 16px !important;
+}
+
+/* 4. GALLERY SIZING FIXES */
+/* Reduce Explore grid auto-rows from 100px to 80px to make it more compact and premium */
+.explore-grid {
+  grid-auto-rows: 80px !important;
+}
+
+/* Reduce CafePage Gallery grid auto-rows from 240px to 180px */
+.mcf-gallery-grid {
+  grid-auto-rows: 180px !important;
+}
+
+@media (max-width: 768px) {
+  .explore-grid {
+    grid-auto-rows: 60px !important;
+  }
+  .mcf-gallery-grid {
+    grid-auto-rows: 140px !important;
+  }
+}
+
+/* 5. IMAGE FITTING AND UI BUGS */
+/* Global responsive image fix to prevent overflow and stretching */
+img {
+  max-width: 100%;
+  height: auto;
 }

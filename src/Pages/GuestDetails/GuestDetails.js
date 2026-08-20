@@ -321,6 +321,14 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
       setErrors(validationErrors);
       return;
     }
+    
+    // Generate Booking ID if not exists
+    let bookingId = sessionStorage.getItem('meraki_bookingId');
+    if (!bookingId) {
+      bookingId = 'ML-' + Math.random().toString(36).substr(2, 6).toUpperCase() + '-' + Date.now().toString().slice(-4);
+      sessionStorage.setItem('meraki_bookingId', bookingId);
+    }
+
     sessionStorage.setItem('meraki_guestDetails', JSON.stringify(formData));
     sessionStorage.setItem('meraki_couponApplied', couponApplied.toString());
     sessionStorage.setItem('meraki_couponCode', couponCode);

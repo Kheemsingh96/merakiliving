@@ -54,8 +54,8 @@ const FAQ = () => {
 
       <div className="faq-container">
         <div className="faq-column">
-          {faqs.filter((_, i) => i % 2 === 0).map((faq, colIndex) => {
-            const originalIndex = colIndex * 2;
+          {faqs.slice(0, 4).map((faq, colIndex) => {
+            const originalIndex = colIndex;
             return (
               <div
                 key={originalIndex}
@@ -94,8 +94,8 @@ const FAQ = () => {
         </div>
 
         <div className="faq-column">
-          {faqs.filter((_, i) => i % 2 === 1).map((faq, colIndex) => {
-            const originalIndex = colIndex * 2 + 1;
+          {faqs.slice(4, 8).map((faq, colIndex) => {
+            const originalIndex = colIndex + 4;
             return (
               <div
                 key={originalIndex}

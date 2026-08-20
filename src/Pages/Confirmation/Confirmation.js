@@ -4,7 +4,8 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { 
   CreditCardPosIcon, 
   CheckmarkBadge01Icon, 
-  Shield01Icon 
+  Shield01Icon,
+  Home07Icon 
 } from '@hugeicons/core-free-icons';
 
 // Minimal Custom Smartphone Icon for UPI
@@ -18,8 +19,21 @@ const SmartphoneIcon = () => (
 const Confirmation = ({ setCurrentPage }) => {
   const [status, setStatus] = useState('processing');
   const [loadingText, setLoadingText] = useState('Initiating secure connection...');
+  const [bookingDetails, setBookingDetails] = useState({ id: '', name: '' });
 
   useEffect(() => {
+    try {
+      const savedBookingId = sessionStorage.getItem('meraki_bookingId');
+      const savedGuestDetails = sessionStorage.getItem('meraki_guestDetails');
+      if (savedBookingId && savedGuestDetails) {
+        const guest = JSON.parse(savedGuestDetails);
+        setBookingDetails({
+          id: savedBookingId,
+          name: guest.firstName ? `${guest.firstName} ${guest.lastName}` : ''
+        });
+      }
+    } catch (e) {}
+
     // Elegant text transitions
     const textTimer1 = setTimeout(() => setLoadingText('Verifying payment details...'), 1500);
     const textTimer2 = setTimeout(() => setLoadingText('Confirming with your bank...'), 3500);
@@ -27,11 +41,6 @@ const Confirmation = ({ setCurrentPage }) => {
     // 6 seconds total of processing animation, then switch to success
     const successTimer = setTimeout(() => {
       setStatus('success');
-      
-      // 2 seconds of success animation, then redirect back to home automatically
-      setTimeout(() => {
-        if (setCurrentPage) setCurrentPage('home');
-      }, 2000);
     }, 6000);
 
     return () => {
@@ -39,7 +48,7 @@ const Confirmation = ({ setCurrentPage }) => {
       clearTimeout(textTimer2);
       clearTimeout(successTimer);
     };
-  }, [setCurrentPage]);
+  }, []);
 
   return (
     <section className="conf-section">
@@ -72,7 +81,7 @@ const Confirmation = ({ setCurrentPage }) => {
             
           </div>
         ) : (
-          <div className="conf-content animate-pop">
+          <div className="conf-content animate-pop" style={{ width: '100%' }}>
             
             {/* Subtle Success Ripple */}
             <div className="conf-success-ripple">
@@ -81,8 +90,33 @@ const Confirmation = ({ setCurrentPage }) => {
               </div>
             </div>
 
-            <h2 className="conf-title">Payment Successful</h2>
-            <p className="conf-desc">Your booking is confirmed. Redirecting you home...</p>
+            <h2 className="conf-title" style={{ marginBottom: '4px' }}>Payment Successful</h2>
+            <p className="conf-desc" style={{ marginBottom: '24px' }}>Your booking has been confirmed.</p>
+            
+            <div className="conf-booking-status-box" style={{ background: '#FDF5FF', border: '1px solid #F3E0F5', borderRadius: '12px', padding: '16px', width: '100%', marginBottom: '28px', textAlign: 'left' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span style={{ fontSize: '13px', color: '#666' }}>Booking ID</span>
+                <span style={{ fontSize: '14px', fontWeight: '600', color: '#870097' }}>{bookingDetails.id || 'ML-CONFIRMED'}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span style={{ fontSize: '13px', color: '#666' }}>Status</span>
+                <span style={{ fontSize: '13px', fontWeight: '500', color: '#2E7D32', display: 'flex', alignItems: 'center', gap: '4px' }}><div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#2E7D32' }}></div> Confirmed</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '13px', color: '#666' }}>Guest</span>
+                <span style={{ fontSize: '14px', fontWeight: '500', color: '#333' }}>{bookingDetails.name || 'Guest'}</span>
+              </div>
+            </div>
+
+            <button 
+              className="conf-home-btn" 
+              onClick={() => { if (setCurrentPage) setCurrentPage('home'); }}
+              style={{ background: '#870097', color: 'white', border: 'none', padding: '14px 24px', borderRadius: '8px', fontSize: '15px', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', width: '100%', justifyContent: 'center', transition: 'background 0.2s' }}
+              onMouseOver={(e) => e.currentTarget.style.background = '#6B007A'}
+              onMouseOut={(e) => e.currentTarget.style.background = '#870097'}
+            >
+              <HugeiconsIcon icon={Home07Icon} size={18} /> Return Home
+            </button>
             
           </div>
         )}

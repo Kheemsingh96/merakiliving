@@ -2,8 +2,6 @@ import React from 'react';
 import './Cafe.css';
 
 import cafeMain from '../../assets/images/cafe-main.webp';
-import cafeSide1 from '../../assets/images/cafe-side1.webp';
-import cafeSide2 from '../../assets/images/cafe-side2.webp';
 import bgMountain from '../../assets/images/mountain-bg.webp';
 
 const Cafe = ({ setCurrentPage }) => {
@@ -12,18 +10,9 @@ const Cafe = ({ setCurrentPage }) => {
       <div className="cafe-overlay"></div>
 
       <div className="cafe-container">
-
         <div className="cafe-visuals">
           <div className="cafe-main-image">
             <img src={cafeMain} alt="Meraki Mountain Cafe exterior with Himalayan mountain views" width="640" height="480" loading="lazy" />
-          </div>
-          <div className="cafe-side-images">
-            <div className="cafe-side-image-wrapper">
-              <img src={cafeSide1} alt="Handcrafted coffee being prepared at Meraki Mountain Cafe" width="640" height="480" loading="lazy" />
-            </div>
-            <div className="cafe-side-image-wrapper">
-              <img src={cafeSide2} alt="Scenic outdoor dining area with mountain views" width="640" height="480" loading="lazy" />
-            </div>
           </div>
         </div>
 
@@ -86,18 +75,16 @@ const Cafe = ({ setCurrentPage }) => {
           </ul>
 
           <button
-  onClick={() => setCurrentPage('cafe')}
-  className="cafe-btn"
-  aria-label="Explore Meraki Mountain Cafe"
-  style={{ cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}
->
-  <span>Explore Cafe</span>
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M5 12h14M12 5l7 7-7 7"/>
-  </svg>
-</button>
+            onClick={() => setCurrentPage('cafe')}
+            className="cafe-explore-btn" 
+            aria-label="Explore Meraki Mountain Cafe"
+          >
+            <span>Explore Cafe</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
         </div>
-
       </div>
     </section>
   );

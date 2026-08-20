@@ -49,14 +49,12 @@
   position: relative;
   display: flex;
   align-items: center;
-  width: 100vw;
-  min-height: 100vh;
-  min-height: 100svh;
+  width: 100%;
+  margin-top: 76px;
+  min-height: calc(100vh - 76px);
+  min-height: calc(100svh - 76px);
   overflow: hidden;
   background-color: #0a0a0a;
-  margin-left: calc(-50vw + 50%);
-  margin-top: -100px;
-  padding-top: 100px;
 }
 
 .mcf-hero-bg-wrapper {
@@ -325,7 +323,7 @@
 }
 
 .mcf-about-title {
-  font-size: 38px;
+  font-size: 30px;
   font-weight: 600;
   color: #373737;
   line-height: 65px;
@@ -530,7 +528,7 @@
 }
 
 .mcf-menu-title {
-  font-size: 38px;
+  font-size: 30px;
   font-weight: 600;
   color: #373737;
   margin: 0 0 15px 0;
@@ -998,7 +996,7 @@
 }
 
 .mcf-ambiance-title {
-  font-size: 38px;
+  font-size: 30px;
   font-weight: 600;
   color: #373737;
   line-height: 65px;
@@ -1085,7 +1083,7 @@
 }
 
 .mcf-gallery-title {
-  font-size: 38px;
+  font-size: 30px;
   font-weight: 600;
   color: #373737;
   margin: 0;
@@ -1094,9 +1092,9 @@
 }
 
 .mcf-gallery-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: 240px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 16px;
 }
 
@@ -1106,11 +1104,8 @@
   overflow: hidden;
   cursor: pointer;
   background: #f0f0f0;
-}
-
-.mcf-gallery-item.large {
-  grid-column: span 2;
-  grid-row: span 2;
+  width: calc(25% - 12px);
+  aspect-ratio: 1;
 }
 
 .mcf-gallery-item img {
@@ -1157,146 +1152,6 @@
   }
 }
 
-.review-section {
-  padding: 70px 48px;
-  background-color: #ffffff;
-}
-
-.review-wrapper {
-  max-width: 1280px;
-  margin: 0 auto;
-}
-
-.review-header {
-  text-align: center;
-  margin-bottom: 72px;
-}
-
-.review-title {
-  font-size: 38px;
-  color: #373737;
-  font-weight: 600;
-  margin: 0 0 15px 0;
-  line-height: 65px;
-  letter-spacing: -0.5px;
-}
-
-.review-highlight {
-  color: #870097;
-}
-
-.review-subtitle {
-  font-size: 16px;
-  color: #817F7F;
-  margin: 0 auto;
-  max-width: 700px;
-  line-height: 32px;
-  font-weight: 400;
-}
-
-.review-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-}
-
-.review-card {
-  background: #ffffff;
-  border-radius: 20px;
-  padding: 28px;
-  border: 1px solid #f0f0f0;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-  transition: transform 0.3s ease;
-  display: flex;
-  flex-direction: column;
-}
-
-.review-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 20px 50px rgba(135, 0, 151, 0.1);
-}
-
-.review-user {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 16px;
-}
-
-.review-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  overflow: hidden;
-}
-
-.review-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.review-name {
-  margin: 0;
-  font-size: 17px;
-  font-weight: 600;
-  color: #373737;
-}
-
-.review-date {
-  font-size: 13px;
-  color: #999999;
-}
-
-.review-stars {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 16px;
-}
-
-.review-stars svg {
-  width: 16px;
-  height: 16px;
-}
-
-.review-text {
-  font-size: 14.5px;
-  line-height: 1.7;
-  color: #666666;
-  margin: 0;
-  flex-grow: 1;
-}
-
-.review-action {
-  display: flex;
-  justify-content: center;
-  margin-top: 32px;
-}
-
-.review-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #870097;
-  color: #ffffff;
-  padding: 12px 22px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: background 0.2s ease;
-  box-shadow: 0 4px 12px rgba(135, 0, 151, 0.25);
-}
-
-.review-btn:hover {
-  background: #6B007A;
-}
-
-.review-btn svg {
-  width: 16px;
-  height: 16px;
-}
-
 .mcf-contact {
   padding: 70px 48px;
   background: #2D002E;
@@ -1313,7 +1168,7 @@
 }
 
 .mcf-contact-title {
-  font-size: 38px;
+  font-size: 30px;
   font-weight: 600;
   color: #ffffff;
   margin: 0 0 15px 0;
@@ -1812,7 +1667,6 @@
   .mcf-premium-menu-section,
   .mcf-ambiance,
   .mcf-gallery,
-  .review-section,
   .mcf-contact {
     padding: 65px 40px;
   }
@@ -1826,29 +1680,14 @@
   .mcf-menu-title,
   .mcf-ambiance-title,
   .mcf-gallery-title,
-  .mcf-contact-title,
-  .review-title {
-    font-size: 38px;
+  .mcf-contact-title {
+    font-size: 30px;
     line-height: 48px;
   }
 
-  .mcf-about-desc,
-  .mcf-menu-subtitle,
-  .mcf-ambiance-desc,
-  .mcf-contact-desc,
-  .review-subtitle {
-    font-size: 17px;
-    line-height: 30px;
-  }
-
   .mcf-menu-header-wrapper,
-  .mcf-gallery-header,
-  .review-header {
+  .mcf-gallery-header {
     margin-bottom: 60px;
-  }
-
-  .mcf-features-grid {
-    gap: 24px;
   }
 
   .mcf-feature-card {
@@ -1886,13 +1725,10 @@
   }
 
   .mcf-gallery-grid {
-    grid-template-columns: repeat(3, 1fr);
-    grid-auto-rows: 220px;
+    gap: 16px;
   }
-
-  .review-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+  .mcf-gallery-item {
+    width: calc(33.333% - 11px);
   }
 
   .mcf-menu-header-wrapper {
@@ -1944,9 +1780,7 @@
   }
 
   .mcf-hero-wrapper {
-    min-height: 100svh;
-    margin-top: -80px;
-    padding-top: 80px;
+    min-height: calc(100svh - 76px);
   }
 
   .mcf-hero-overlay-main {
@@ -2131,9 +1965,10 @@
   }
 
   .mcf-gallery-grid {
-    grid-template-columns: repeat(2, 1fr);
-    grid-auto-rows: 180px;
     gap: 12px;
+  }
+  .mcf-gallery-item {
+    width: calc(50% - 6px);
   }
 
   .mcf-contact-actions {
@@ -2146,11 +1981,6 @@
     width: 100%;
     max-width: 320px;
     justify-content: center;
-  }
-
-  .review-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
   }
 
   .mcf-menu-modal-overlay {
@@ -2191,10 +2021,7 @@
 }
 
 @media (max-width: 480px) {
-  .mcf-hero-wrapper {
-    margin-top: -70px;
-    padding-top: 70px;
-  }
+
 
   .mcf-hero-title {
     font-size: 40px;
@@ -2229,7 +2056,6 @@
   .mcf-premium-menu-section,
   .mcf-ambiance,
   .mcf-gallery,
-  .review-section,
   .mcf-contact {
     padding: 45px 24px;
   }
@@ -2238,8 +2064,7 @@
   .mcf-menu-title,
   .mcf-ambiance-title,
   .mcf-gallery-title,
-  .mcf-contact-title,
-  .review-title {
+  .mcf-contact-title {
     font-size: 26px;
     line-height: 38px;
     margin-bottom: 14px;
@@ -2248,15 +2073,13 @@
   .mcf-about-desc,
   .mcf-menu-subtitle,
   .mcf-ambiance-desc,
-  .mcf-contact-desc,
-  .review-subtitle {
+  .mcf-contact-desc {
     font-size: 16px;
     line-height: 26px;
   }
 
   .mcf-menu-header-wrapper,
-  .mcf-gallery-header,
-  .review-header {
+  .mcf-gallery-header {
     margin-bottom: 48px;
   }
 
@@ -2294,12 +2117,9 @@
   }
 
   .mcf-gallery-grid {
-    grid-template-columns: 1fr;
-    grid-auto-rows: 200px;
+    gap: 12px;
   }
-
-  .mcf-gallery-item.large {
-    grid-column: span 1;
-    grid-row: span 1;
+  .mcf-gallery-item {
+    width: 100%;
   }
 }

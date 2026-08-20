@@ -12,7 +12,7 @@
 }
 
 .faq-title {
-  font-size: 38px;
+  font-size: 30px;
   color: #373737;
   font-weight: 600;
   margin: 0 0 15px 0;
@@ -133,6 +133,7 @@
 
 .faq-answer-content {
   overflow: hidden;
+  min-height: 0;
 }
 
 .faq-answer-content p {
@@ -152,7 +153,7 @@
     margin-bottom: 60px;
   }
   .faq-title {
-    font-size: 38px;
+    font-size: 30px;
     line-height: 48px;
   }
   .faq-subtitle {
