@@ -69,14 +69,14 @@ const AboutPage = () => {
             </div>
             <div className="mcf-ab-hero-right">
               <div className="mcf-ab-hero-img-top-wrap">
-                <img src={heroTopImg} alt="Meraki Main View" loading="lazy" decoding="async" />
+                <img src={heroTopImg} alt="Meraki Main View" loading="eager" fetchPriority="high" decoding="async" />
               </div>
               <div className="mcf-ab-hero-img-bottom-wrap">
                 <div className="mcf-ab-img-inner">
-                  <img src={heroBottomLeftImg} alt="Meraki Details" loading="lazy" decoding="async" />
+                  <img src={heroBottomLeftImg} alt="Meraki Details" loading="eager" fetchPriority="high" decoding="async" />
                 </div>
                 <div className="mcf-ab-img-inner">
-                  <img src={heroBottomRightImg} alt="Meraki Ambiance" loading="lazy" decoding="async" />
+                  <img src={heroBottomRightImg} alt="Meraki Ambiance" loading="eager" fetchPriority="high" decoding="async" />
                 </div>
               </div>
             </div>

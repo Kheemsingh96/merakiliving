@@ -12,18 +12,18 @@ import FAQ from './components/FAQ/FAQ';
 import CTA from './components/CTA/CTA';
 import Footer from './components/Footer/Footer';
 
-import AboutUs from './components/AboutUs/AboutUs';
-import Booking from './Pages/Booking/Booking';
-import RoomDetails from './Pages/RoomDetails/RoomDetails';
-import GuestDetails from './Pages/GuestDetails/GuestDetails';
-import Payment from './Pages/Payment/Payment';
-import Confirmation from './Pages/Confirmation/Confirmation';
-import PrivacyPolicy from './Pages/PrivacyPolicy/PrivacyPolicy';
-import TermsConditions from './Pages/TermsConditions/TermsConditions';
-import CancellationPolicy from './Pages/CancellationPolicy/CancellationPolicy';
-import CafePage from './Pages/CafePage/CafePage';
-
 import './App.css';
+
+const AboutUs = React.lazy(() => import('./components/AboutUs/AboutUs'));
+const Booking = React.lazy(() => import('./Pages/Booking/Booking'));
+const RoomDetails = React.lazy(() => import('./Pages/RoomDetails/RoomDetails'));
+const GuestDetails = React.lazy(() => import('./Pages/GuestDetails/GuestDetails'));
+const Payment = React.lazy(() => import('./Pages/Payment/Payment'));
+const Confirmation = React.lazy(() => import('./Pages/Confirmation/Confirmation'));
+const PrivacyPolicy = React.lazy(() => import('./Pages/PrivacyPolicy/PrivacyPolicy'));
+const TermsConditions = React.lazy(() => import('./Pages/TermsConditions/TermsConditions'));
+const CancellationPolicy = React.lazy(() => import('./Pages/CancellationPolicy/CancellationPolicy'));
+const CafePage = React.lazy(() => import('./Pages/CafePage/CafePage'));
 
 const HOME_PAGES = ['home', 'rooms', 'explore', 'faq'];
 const LEGAL_PAGES = ['privacy-policy', 'terms-conditions', 'cancellation-policy'];
@@ -37,7 +37,7 @@ function App() {
     return stored ? parseInt(stored, 10) : 1;
   });
 
-  const handleNavigate = useCallback((page, roomId = null) => {
+  const handleNavigate = useCallback((page, roomId = null, scrollToId = null) => {
     setCurrentPage(page);
     sessionStorage.setItem('meraki_currentPage', page);
     if (roomId) {
@@ -52,9 +52,18 @@ function App() {
 
     window.history.pushState({ page }, '', window.location.href);
     
-    // Yahan humne scroll-to-top ko thoda delay diya hai agar kisi ID par jana ho
-    // Lekin default navigation par top par jayega.
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (scrollToId) {
+      setTimeout(() => {
+        const element = document.getElementById(scrollToId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }, 100);
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }, []);
 
   useEffect(() => {
@@ -161,7 +170,9 @@ function App() {
   return (
     <div className="app-container">
       <Navbar setCurrentPage={handleNavigate} currentPage={currentPage} />
-      {renderPage()}
+      <React.Suspense fallback={<div className="suspense-loader"><div className="suspense-spinner"></div></div>}>
+        {renderPage()}
+      </React.Suspense>
       <div id="contact"><Footer setCurrentPage={handleNavigate} /></div>
     </div>
   );

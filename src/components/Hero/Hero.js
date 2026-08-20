@@ -33,10 +33,11 @@ function Hero({ setCurrentPage }) {
           <img
             key={index}
             src={slide}
-            alt=""
+            alt={`Hero Background ${index + 1}`}
             className={index === activeIndex ? 'hero-bg active' : 'hero-bg'}
             width="1920"
             height="1080"
+            loading="eager"
             fetchPriority={index === activeIndex ? 'high' : 'low'}
             decoding="async"
             draggable="false"

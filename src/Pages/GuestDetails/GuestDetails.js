@@ -432,7 +432,7 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
     <div className="gd-card gd-summary-card">
       <div className="gd-summary-header">
         <div className="gd-summary-room-image">
-          <img src={room.image} alt={room.title} loading="lazy" />
+          <img src={room.image} alt={room.title} loading="eager" decoding="async" />
         </div>
         <div className="gd-summary-room-info">
           <h3 className="gd-summary-room-title">{room.title}</h3>
@@ -500,7 +500,7 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
       <h4 className="gd-price-title">Price Breakdown</h4>
 
       <div className="gd-price-room">
-        <img src={room.image} alt={room.title} loading="lazy" />
+        <img src={room.image} alt={room.title} loading="eager" decoding="async" />
         <div>
           <span className="gd-price-room-name">{room.title}</span>
           <span className="gd-price-room-meta">{nights} nights &middot; {guests.adults + guests.children} guests</span>

@@ -316,14 +316,14 @@ function RoomDetails({ setCurrentPage, selectedRoomId }) {
 
               <div className="rd-gallery-desktop">
                 <div className="rd-gallery-main" onClick={() => openGallery(0)}>
-                  <img src={room.gallery[0]} alt={room.title} />
+                  <img src={room.gallery[0]} alt={room.title} loading="eager" fetchPriority="high" decoding="async" />
                 </div>
                 <div className="rd-gallery-side">
                   <div className="rd-gallery-side-top" onClick={() => openGallery(1)}>
-                    <img src={room.gallery[1] || room.image} alt={`${room.title} 2`} />
+                    <img src={room.gallery[1] || room.image} alt={`${room.title} 2`} loading="eager" fetchPriority="high" decoding="async" />
                   </div>
                   <div className="rd-gallery-side-bottom" onClick={() => openGallery(2)}>
-                    <img src={room.gallery[2] || room.image} alt={`${room.title} 3`} />
+                    <img src={room.gallery[2] || room.image} alt={`${room.title} 3`} loading="eager" fetchPriority="high" decoding="async" />
                     <div className="rd-gallery-overlay" onClick={(e) => { e.stopPropagation(); openGallery(0); }}>
                       <span>See All Photos</span>
                       <ArrowRightIcon size={14} />
@@ -334,7 +334,7 @@ function RoomDetails({ setCurrentPage, selectedRoomId }) {
 
               <div className="rd-gallery-mobile">
                 <div className="rd-gallery-mobile-main" onClick={() => openGallery(0)}>
-                  <img src={room.gallery[0]} alt={room.title} />
+                  <img src={room.gallery[0]} alt={room.title} loading="eager" fetchPriority="high" decoding="async" />
                   <div className="rd-gallery-see-all-mobile">
                     <span>See All Photos</span>
                   </div>
@@ -644,6 +644,7 @@ function RoomDetails({ setCurrentPage, selectedRoomId }) {
   className="rd-modal-main-image" 
   src={room.gallery[currentImageIndex]} 
   alt={`Gallery ${currentImageIndex + 1}`} 
+  loading="lazy" decoding="async"
 />
           </div>
           <button className="rd-modal-nav rd-modal-next" onClick={nextImage}>
@@ -657,6 +658,7 @@ function RoomDetails({ setCurrentPage, selectedRoomId }) {
                 alt={`Thumbnail ${idx + 1}`}
                 className={`rd-modal-thumb ${currentImageIndex === idx ? 'active' : ''}`}
                 onClick={() => setCurrentImageIndex(idx)}
+                loading="lazy" decoding="async"
               />
             ))}
           </div>

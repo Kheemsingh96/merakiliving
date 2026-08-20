@@ -3,10 +3,9 @@ import './Footer.css';
 import logo from '../../assets/images/logo.webp';
 
 const Footer = ({ setCurrentPage }) => {
-  const handleNav = (page) => {
+  const handleNav = (page, scrollToId = null) => {
     if (setCurrentPage) {
-      setCurrentPage(page);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setCurrentPage(page, null, scrollToId);
     }
   };
 
@@ -15,7 +14,7 @@ const Footer = ({ setCurrentPage }) => {
       <div className="footer-container">
 
         <div className="footer-brand">
-          <img src={logo} alt="Meraki Living Logo" className="footer-logo" width="170" height="auto" loading="lazy" />
+          <img src={logo} alt="Meraki Living Logo" className="footer-logo" width="170" height="auto" loading="lazy" decoding="async" />
           <p className="footer-story">
             A peaceful mountain retreat in Mukteshwar offering comfortable stays,
             authentic Kumaoni hospitality, and scenic Himalayan views.
@@ -45,10 +44,10 @@ const Footer = ({ setCurrentPage }) => {
         <div className="footer-column">
           <h4 className="footer-heading">Quick Links</h4>
           <ul className="footer-list">
-            <li><button onClick={() => handleNav('home')}>Home</button></li>
-            <li><button onClick={() => handleNav('rooms')}>Our Rooms</button></li>
+            <li><button onClick={() => handleNav('home', 'home')}>Home</button></li>
+            <li><button onClick={() => handleNav('home', 'stay')}>Our Rooms</button></li>
             <li><button onClick={() => handleNav('cafe')}>Mountain Cafe</button></li>
-            <li><button onClick={() => handleNav('explore')}>Explore Nearby</button></li>
+            <li><button onClick={() => handleNav('home', 'gallery')}>Explore Nearby</button></li>
             <li><button onClick={() => handleNav('booking')}>Book a Stay</button></li>
           </ul>
         </div>
@@ -59,7 +58,7 @@ const Footer = ({ setCurrentPage }) => {
             <li><button onClick={() => handleNav('privacy-policy')}>Privacy Policy</button></li>
             <li><button onClick={() => handleNav('terms-conditions')}>Terms & Conditions</button></li>
             <li><button onClick={() => handleNav('cancellation-policy')}>Cancellation Policy</button></li>
-            <li><button onClick={() => handleNav('faq')}>FAQs</button></li>
+            <li><button onClick={() => handleNav('home', 'faq')}>FAQs</button></li>
           </ul>
         </div>
 

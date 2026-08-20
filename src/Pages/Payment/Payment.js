@@ -432,7 +432,7 @@ const Payment = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
                 className={`pay-upi-option ${selectedUpi === upi.id ? 'active' : ''}`}
                 onClick={() => handleUpiClick(upi)}
               >
-                <img src={upi.image} alt={upi.label} className="pay-upi-img" />
+                <img src={upi.image} alt={upi.label} className="pay-upi-img" loading="eager" decoding="async" />
                 <span className="pay-upi-name">{upi.label}</span>
               </button>
             ))}
@@ -602,7 +602,7 @@ const Payment = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
     <div className="pay-card pay-price-card">
       <h4 className="pay-price-title">Price Breakdown</h4>
       <div className="pay-price-room">
-        <img src={room.image} alt={room.title} loading="lazy" />
+        <img src={room.image} alt={room.title} loading="eager" decoding="async" />
         <div>
           <span className="pay-price-room-name">{room.title}</span>
           <span className="pay-price-room-meta">{nights} nights &middot; {guests.adults + guests.children} guests</span>

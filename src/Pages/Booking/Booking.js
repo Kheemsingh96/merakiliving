@@ -365,7 +365,7 @@ const Booking = ({ setCurrentPage }) => {
             <img
               src={selectedThumb[room.id] !== undefined ? room.gallery[selectedThumb[room.id]] : room.image}
               alt={room.title}
-              loading="lazy"
+              loading="eager"
               decoding="async"
             />
           </div>
@@ -376,7 +376,7 @@ const Booking = ({ setCurrentPage }) => {
                 key={idx}
                 onClick={(e) => handleThumbClick(e, room.id, idx)}
               >
-                <img src={thumb} alt={`${room.title} ${idx + 1}`} loading="lazy" decoding="async" />
+                <img src={thumb} alt={`${room.title} ${idx + 1}`} loading="eager" decoding="async" />
               </div>
             ))}
           </div>

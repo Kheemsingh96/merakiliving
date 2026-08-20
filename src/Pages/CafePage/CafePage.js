@@ -379,9 +379,10 @@ const CafePage = () => {
             <img
               key={index}
               src={slide}
-              alt=""
+              alt={`Cafe Hero ${index + 1}`}
               className={index === activeSlide ? 'active' : ''}
-              {...(index === activeSlide ? { fetchPriority: "high" } : { loading: "lazy" })}
+              loading="eager"
+              fetchPriority={index === activeSlide ? "high" : "low"}
               decoding="async"
               width="1920"
               height="1080"
@@ -422,10 +423,10 @@ const CafePage = () => {
       <div id="about" className="mcf-about">
         <div className="mcf-about-container mcf-animate">
           <div className="mcf-about-image mobile-only">
-            <img src={cafeAboutImg} alt="Cozy cafe interior with mountain views" loading="lazy" decoding="async" width="640" height="480" />
+            <img src={cafeAboutImg} alt="Cozy cafe interior with mountain views" loading="eager" decoding="async" width="640" height="480" />
           </div>
           <div className="mcf-about-image desktop-only">
-            <img src={cafeAboutImg} alt="Cozy cafe interior with mountain views" loading="lazy" decoding="async" width="640" height="480" />
+            <img src={cafeAboutImg} alt="Cozy cafe interior with mountain views" loading="eager" decoding="async" width="640" height="480" />
           </div>
           <div className="mcf-about-text-header">
             <h2 className="mcf-about-title">Experience the Soul of Café Meraki</h2>

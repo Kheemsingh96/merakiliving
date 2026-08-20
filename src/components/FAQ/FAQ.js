@@ -44,7 +44,7 @@ const FAQ = () => {
   };
 
   return (
-    <section className="faq-section" aria-label="Frequently Asked Questions">
+    <section id="faq" className="faq-section" aria-label="Frequently Asked Questions">
       <header className="faq-header">
         <h2 className="faq-title">Everything You Need to Know</h2>
         <p className="faq-subtitle">

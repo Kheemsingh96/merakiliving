@@ -37,7 +37,8 @@ function Experience() {
                 className="experience-icon"
                 width="110"
                 height="100"
-                loading="lazy"
+                loading="eager"
+                decoding="async"
               />
             </div>
             <h3 className="experience-card-title">{feature.title}</h3>

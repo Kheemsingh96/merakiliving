@@ -147,7 +147,7 @@ function Explore() {
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleOpenGallery(item); }}
           >
             <div className="explore-image-wrapper">
-              <img src={item.coverImage} alt={item.title} className="explore-image" loading="lazy" />
+              <img src={item.coverImage} alt={item.title} className="explore-image" width="600" height="400" loading="lazy" decoding="async" />
               <div className="explore-overlay" />
             </div>
             
@@ -186,7 +186,7 @@ function Explore() {
               <div className="gallery-grid">
                 {activeGallery.gallery.map((photo, index) => (
                   <div className="gallery-card" key={index}>
-                    <img src={photo.src} alt={`${activeGallery.title} - ${index + 1}`} loading="lazy" />
+                    <img src={photo.src} alt={`${activeGallery.title} - ${index + 1}`} width="800" height="600" loading="lazy" decoding="async" />
                   </div>
                 ))}
               </div>

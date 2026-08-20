@@ -66,7 +66,7 @@ function Rooms({ setCurrentPage }) {
           {ROOMS_DATA.map((room) => (
             <article className="room-card" key={room.id}>
               <div className="room-image-box">
-                <img src={room.image} alt={room.title} width="640" height="480" loading="lazy" />
+                <img src={room.image} alt={room.title} width="640" height="480" loading="lazy" decoding="async" />
               </div>
               <div className="room-body">
                 <h3 className="room-title">{room.title}</h3>

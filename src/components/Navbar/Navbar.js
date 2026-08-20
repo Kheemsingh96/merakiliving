@@ -147,6 +147,7 @@ function Navbar({ setCurrentPage, currentPage }) {
             width="150"
             height="50"
             loading="eager"
+            fetchPriority="high"
           />
         </div>
 
@@ -173,6 +174,7 @@ function Navbar({ setCurrentPage, currentPage }) {
             width="150"
             height="50"
             loading="eager"
+            fetchPriority="high"
           />
           <button
             className={`hamburger-btn ${isMenuOpen ? 'active' : ''}`}
