@@ -37,8 +37,8 @@ function Hero({ setCurrentPage }) {
             className={index === activeIndex ? 'hero-bg active' : 'hero-bg'}
             width="1920"
             height="1080"
-            loading="eager"
-            fetchPriority={index === activeIndex ? 'high' : 'low'}
+            loading={index === 0 ? 'eager' : 'lazy'}
+            fetchPriority={index === 0 ? 'high' : 'low'}
             decoding="async"
             draggable="false"
             aria-hidden="true"

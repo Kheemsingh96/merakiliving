@@ -1,7 +1,7 @@
 .room-details-section {
   width: 100%;
   background: #FFFFFF;
-  padding: 160px 48px 80px;
+  padding: 120px 48px 60px;
   box-sizing: border-box;
   min-height: 100vh;
 }
@@ -154,13 +154,52 @@
   font-weight: 500;
 }
 
-.rd-title {
-  font-size: 30px;
+.rd-title-block {
+  display: flex;
+  flex-direction: column;
+  margin: 0 0 14px 0;
+  gap: 4px;
+}
+
+.rd-title-primary-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.rd-title-main {
+  font-size: 26px;
   color: #373737;
   font-weight: 600;
-  margin: 0 0 16px 0;
-  line-height: 1.2;
-  letter-spacing: -0.5px;
+  margin: 0;
+  line-height: 1.25;
+  letter-spacing: -0.4px;
+}
+
+.rd-title-sub {
+  font-size: 15px;
+  font-style: italic;
+  color: #870097;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.rd-title-type {
+  font-size: 16px;
+  font-weight: 600;
+  color: #373737;
+  line-height: 1.35;
+  letter-spacing: -0.2px;
+}
+
+.rd-title {
+  font-size: 26px;
+  color: #373737;
+  font-weight: 600;
+  margin: 0 0 14px 0;
+  line-height: 1.25;
+  letter-spacing: -0.4px;
 }
 
 .rd-rating-row {
@@ -242,7 +281,7 @@
 
 .rd-section-text {
   font-size: 15px;
-  color: #666666;
+  color: #817F8F;
   line-height: 26px;
   margin: 0;
 }
@@ -446,19 +485,62 @@
   opacity: 0.7;
 }
 
+.rd-amenities-categorized {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.rd-amenities-category-block {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.rd-amenities-category-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #373737;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.rd-category-emoji {
+  font-size: 16px;
+  line-height: 1;
+}
+
 .rd-amenities-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: 14px 28px;
 }
 
 .rd-amenity-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   font-size: 14px;
   color: #555555;
   font-weight: 500;
+  line-height: 1.5;
+}
+
+.rd-amenity-item svg {
+  margin-top: 2px;
+  flex-shrink: 0;
+  color: #870097;
+}
+
+@media (max-width: 560px) {
+  .rd-amenities-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 }
 
 .rd-important-grid {
@@ -642,40 +724,50 @@
 .rd-book-price-row {
   display: flex;
   align-items: baseline;
-  gap: 18px;
-  margin-bottom: 10px;
+  gap: 12px;
+  margin-bottom: 6px;
+  flex-wrap: nowrap;
 }
 
 .rd-book-price-current {
   display: flex;
   align-items: baseline;
-  gap: 4px;
+  gap: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .rd-book-currency {
-  font-size: 18px;
+  font-size: 16px;
   color: #373737;
   font-weight: 600;
+  line-height: 1;
 }
 
 .rd-book-amount {
-  font-size: 28px;
+  font-size: 26px;
   color: #373737;
   font-weight: 700;
   letter-spacing: -0.5px;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .rd-book-price-old {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .rd-book-original {
-  font-size: 18px;
+  font-size: 16px;
   color: #999999;
   text-decoration: line-through;
   font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .rd-book-discount {
@@ -683,8 +775,11 @@
   color: #870097;
   font-weight: 700;
   background: rgba(135, 0, 151, 0.08);
-  padding: 4px 10px;
+  padding: 4px 8px;
   border-radius: 8px;
+  line-height: 1;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
 }
 
 .rd-book-tax {

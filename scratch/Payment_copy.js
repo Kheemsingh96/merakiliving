@@ -175,7 +175,7 @@ const Payment = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
   const storedGuests = sessionStorage.getItem('meraki_guests');
 
   const checkInDate = storedCheckIn ? new Date(storedCheckIn) : new Date();
-  const checkOutDate = storedCheckOut ? new Date(storedCheckOut) : new Date(new Date().setDate(new Date().getDate() + 2));
+  const checkOutDate = storedCheckOut ? new Date(storedCheckOut) : new Date(new Date().setDate(new Date().getDate() + 1));
   const guests = storedGuests ? JSON.parse(storedGuests) : { adults: 2, children: 0, rooms: 1 };
   
   const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));

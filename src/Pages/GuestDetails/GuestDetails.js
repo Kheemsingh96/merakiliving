@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './GuestDetails.css';
+import { parseRoomTitle } from '../../components/Rooms/Rooms';
 
 import room1 from '../../assets/images/room-1.webp';
 import room2 from '../../assets/images/room-2.webp';
@@ -14,10 +15,10 @@ import {
   Calendar01Icon,
   Call02Icon,
   CheckmarkCircle01Icon,
+  CheckmarkBadge01Icon,
   Edit02Icon,
   StarIcon,
   UserMultiple02Icon,
-  Comment01Icon,
   RupeeShieldIcon,
   User03Icon,
   Mail01Icon,
@@ -27,7 +28,6 @@ import {
   ViewIcon,
   DiscountIcon,
   WhatsappIcon,
-  CreditCardPosIcon,
 } from '@hugeicons/core-free-icons';
 
 const ArrowDownIcon = () => (
@@ -86,15 +86,6 @@ const CarIcon = () => (
   </svg>
 );
 
-const CoffeeIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 8h1a4 4 0 0 1 0 8h-1"/>
-    <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
-    <line x1="6" y1="1" x2="6" y2="4"/>
-    <line x1="10" y1="1" x2="10" y2="4"/>
-    <line x1="14" y1="1" x2="14" y2="4"/>
-  </svg>
-);
 
 const FireIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -109,22 +100,44 @@ const HomeIcon = () => (
   </svg>
 );
 
+const PowerIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+  </svg>
+);
+
 const roomsData = [
   {
-    id: 1,
-    tag: 'Mountain View',
-    image: room1,
-    title: 'Himalayan View Room',
-    desc: 'Peaceful mountain-facing room designed for couples and relaxing escapes.',
-    price: '3,500',
-    rating: 4.9,
-    reviews: 128,
+    id: 4,
+    tag: 'Entire Property',
+    image: room4,
+    title: 'Entire Homestay',
+    desc: 'Book the entire Meraki Living homestay for complete privacy and a memorable stay with your loved ones.',
+    price: '22,000',
+    rating: 5.0,
+    reviews: 42,
+    guests: '14 Guests',
+    bed: 'Multiple Rooms',
+    view: 'Panoramic View',
+    size: '1200 sq ft',
+    amenities: ['Free WiFi', 'Free Parking', 'Power Backup', 'Kitchen', 'Garden Access', 'Bonfire Area'],
+    gallery: [room4, room4, room4, room4]
+  },
+  {
+    id: 3,
+    tag: 'Family Comfort',
+    image: room3,
+    title: 'Luxury Family Suite',
+    desc: 'Spacious comfort designed for families and memorable mountain stays.',
+    price: '6,000',
+    rating: 5.0,
+    reviews: 84,
     guests: '2 Guests',
-    bed: 'King Bed',
-    view: 'Mountain View',
-    size: '280 sq ft',
-    amenities: ['Free WiFi', 'Free Parking', 'Breakfast Included', 'Room Heater'],
-    gallery: [room1, room1, room1, room1]
+    bed: 'Premium Room',
+    view: 'Extra Space',
+    size: '450 sq ft',
+    amenities: ['Free WiFi', 'Free Parking', 'Power Backup', 'Kitchenette'],
+    gallery: [room3, room3, room3, room3]
   },
   {
     id: 2,
@@ -139,47 +152,31 @@ const roomsData = [
     bed: 'Queen Bed',
     view: 'Private Sitting Area',
     size: '320 sq ft',
-    amenities: ['Free WiFi', 'Free Parking', 'Breakfast Included', 'Balcony'],
+    amenities: ['Free WiFi', 'Free Parking', 'Power Backup', 'Balcony'],
     gallery: [room2, room2, room2, room2]
   },
   {
-    id: 3,
-    tag: 'Family Comfort',
-    image: room3,
-    title: 'Luxury Family Suite',
-    desc: 'Spacious comfort designed for families and memorable mountain stays.',
-    price: '6,000',
-    rating: 5.0,
-    reviews: 84,
-    guests: '4 Guests',
-    bed: 'Premium Room',
-    view: 'Extra Space',
-    size: '450 sq ft',
-    amenities: ['Free WiFi', 'Free Parking', 'Breakfast Included', 'Kitchenette'],
-    gallery: [room3, room3, room3, room3]
-  },
-  {
-    id: 4,
-    tag: 'Entire Property',
-    image: room4,
-    title: 'Entire Homestay',
-    desc: 'Book the entire Meraki Living homestay for complete privacy and a memorable stay with your loved ones.',
-    price: '22,000',
-    rating: 5.0,
-    reviews: 42,
-    guests: '8+ Guests',
-    bed: 'Multiple Rooms',
-    view: 'Panoramic View',
-    size: '1200 sq ft',
-    amenities: ['Free WiFi', 'Free Parking', 'Breakfast Included', 'Kitchen', 'Garden Access', 'Bonfire Area'],
-    gallery: [room4, room4, room4, room4]
+    id: 1,
+    tag: 'Peaceful Stay',
+    image: room1,
+    title: 'Himalayan View Room',
+    desc: 'Peaceful room surrounded by nature, designed for couples and relaxing escapes.',
+    price: '3,500',
+    rating: 4.9,
+    reviews: 128,
+    guests: '2 Guests',
+    bed: 'King Bed',
+    view: 'Nature View',
+    size: '280 sq ft',
+    amenities: ['Free WiFi', 'Free Parking', 'Power Backup', 'Room Heater'],
+    gallery: [room1, room1, room1, room1]
   }
 ];
 
 const amenityIcons = {
   'Free WiFi': WifiIcon,
   'Free Parking': CarIcon,
-  'Breakfast Included': CoffeeIcon,
+  'Power Backup': PowerIcon,
   'Room Heater': FireIcon,
   'Balcony': ViewIcon,
   'Kitchenette': HomeIcon,
@@ -194,7 +191,6 @@ const EMPTY_GUEST_FORM = {
   email: '',
   phone: '',
   countryCode: '+91',
-  specialRequests: '',
   agreeTerms: false,
   agreePrivacy: false
 };
@@ -216,9 +212,21 @@ let pendingReloadReset = isPageReload();
 const shouldRestoreGuestData = () =>
   !pendingReloadReset && sessionStorage.getItem('meraki_restoreGuestDetails') === 'true';
 
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
   const [animateIn, setAnimateIn] = useState(false);
-  const [currentStep] = useState(2);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [confirmedBooking, setConfirmedBooking] = useState(null);
+  const sentEmailBookingsRef = useRef(new Set());
 
   const [formData, setFormData] = useState(() => {
     if (shouldRestoreGuestData()) {
@@ -241,22 +249,101 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
   const [couponApplied, setCouponApplied] = useState(() =>
     shouldRestoreGuestData() && sessionStorage.getItem('meraki_couponApplied') === 'true'
   );
+  const [couponDiscountPercent, setCouponDiscountPercent] = useState(() => {
+    const stored = shouldRestoreGuestData() ? sessionStorage.getItem('meraki_couponDiscount') : null;
+    return stored ? parseFloat(stored) : 0;
+  });
   const [couponError, setCouponError] = useState('');
+  const [availableCoupons, setAvailableCoupons] = useState([]);
 
-  const room = roomsData.find(r => r.id === selectedRoomId) || roomsData[0];
+  useEffect(() => {
+    fetch('http://localhost/merakiliving_backend/api_coupons.php')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.status === 'success') {
+          setAvailableCoupons(data.data.filter(c => c.status === 'Active'));
+        }
+      })
+      .catch(err => console.error("Error fetching coupons:", err));
+  }, []);
+
+  const [rooms, setRooms] = useState(roomsData);
+  const room = rooms.find(r => r.id === selectedRoomId) || rooms[0];
+
+  useEffect(() => {
+    fetch('http://localhost/merakiliving_backend/api_rooms.php')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.status === 'success' && data.data) {
+          const merged = roomsData.map(localRoom => {
+            const backendRoom = data.data.find(r => r.id === localRoom.id);
+            if (backendRoom) {
+              return {
+                ...localRoom,
+                title: backendRoom.name || localRoom.title,
+                desc: backendRoom.description || localRoom.desc,
+                price: backendRoom.price?.toLocaleString() || localRoom.price,
+                originalPrice: backendRoom.original_price?.toLocaleString() || localRoom.originalPrice,
+                image: backendRoom.image_url || localRoom.image,
+                gallery: backendRoom.image_url ? [backendRoom.image_url, ...localRoom.gallery.slice(1)] : localRoom.gallery,
+                status: backendRoom.status
+              };
+            }
+            return localRoom;
+          });
+          setRooms(merged);
+        }
+      })
+      .catch(err => console.error(err));
+  }, []);
 
   const storedCheckIn = sessionStorage.getItem('meraki_checkIn');
   const storedCheckOut = sessionStorage.getItem('meraki_checkOut');
   const storedGuests = sessionStorage.getItem('meraki_guests');
 
-  const checkInDate = storedCheckIn ? new Date(storedCheckIn) : new Date();
-  const checkOutDate = storedCheckOut ? new Date(storedCheckOut) : new Date(new Date().setDate(new Date().getDate() + 2));
-  const guests = storedGuests ? JSON.parse(storedGuests) : { adults: 2, children: 0, rooms: 1 };
+  const parseSafeDate = (dateStr, fallbackDays = 0) => {
+    if (!dateStr) return new Date(new Date().setDate(new Date().getDate() + fallbackDays));
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? new Date(new Date().setDate(new Date().getDate() + fallbackDays)) : d;
+  };
 
-  const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
-  const pricePerNight = parseInt(room.price.replace(/,/g, ''));
-  const subtotal = pricePerNight * nights * guests.rooms;
-  const discountAmount = couponApplied ? Math.round(subtotal * 0.08) : 0;
+  const checkInDate = parseSafeDate(storedCheckIn, 0);
+  const checkOutDate = parseSafeDate(storedCheckOut, 1);
+
+  let guests = { adults: 2, children: 0, rooms: 1 };
+  try {
+    if (storedGuests) {
+      const parsed = JSON.parse(storedGuests);
+      guests = {
+        adults: parsed.adults || 2,
+        children: parsed.children || 0,
+        rooms: parsed.rooms || 1
+      };
+    }
+  } catch (e) { }
+
+  let nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+  if (isNaN(nights) || nights < 1) nights = 1;
+
+  const priceString = String(room.price).replace(/,/g, '');
+  let pricePerNight = parseInt(priceString) || 3500;
+  let extraChargePerNight = 0;
+
+  if (room.id === 2 || room.id === 3) {
+    const adultsPerRoom = Math.ceil(guests.adults / guests.rooms);
+    const kidsPerRoom = Math.ceil(guests.children / guests.rooms);
+    const extraAdults = Math.max(0, adultsPerRoom - 2);
+    const extraKids = Math.max(0, kidsPerRoom - 2);
+    extraChargePerNight = (extraAdults * 1000) + (extraKids * 500);
+  } else if (room.id === 4) {
+    const extraAdults = Math.max(0, guests.adults - 12);
+    const extraKids = Math.max(0, (guests.children || 0) - 2);
+    extraChargePerNight = (extraAdults * 1000) + (extraKids * 500);
+  }
+  
+  const multiplier = room.id === 4 ? 1 : guests.rooms;
+  const subtotal = (pricePerNight + extraChargePerNight) * nights * multiplier;
+  const discountAmount = couponApplied ? Math.round(subtotal * (couponDiscountPercent / 100)) : 0;
   const taxableAmount = subtotal - discountAmount;
   const taxes = Math.round(taxableAmount * 0.05);
   const totalAmount = taxableAmount + taxes;
@@ -267,16 +354,32 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
   }, []);
 
   useEffect(() => {
+    sessionStorage.removeItem('meraki_bookingId');
+    sessionStorage.removeItem('meraki_paymentAmount');
+    sessionStorage.removeItem('meraki_paymentMethod');
     if (pendingReloadReset) {
       pendingReloadReset = false;
       sessionStorage.removeItem('meraki_guestDetails');
       sessionStorage.removeItem('meraki_restoreGuestDetails');
+      sessionStorage.removeItem('meraki_couponCode');
+      sessionStorage.removeItem('meraki_couponApplied');
+      sessionStorage.removeItem('meraki_couponDiscount');
     }
   }, []);
 
   const formatDate = (date) => {
     if (!date) return 'Add Dates';
     return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).replace(/ (\d{4})$/, ', $1');
+  };
+
+  const formatDateForDB = (date) => {
+    const d = new Date(date);
+    let month = '' + (d.getMonth() + 1);
+    let day = '' + d.getDate();
+    const year = d.getFullYear();
+    if (month.length < 2) month = '0' + month;
+    if (day.length < 2) day = '0' + day;
+    return [year, month, day].join('-');
   };
 
   const getDayName = (date) => {
@@ -295,45 +398,280 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
     }
   };
 
+  const validateEmail = (emailStr) => {
+    if (!emailStr || typeof emailStr !== 'string') return false;
+    const email = emailStr.trim();
+    if (email.length < 5 || email.length > 254) return false;
+    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+    if (!emailRegex.test(email)) return false;
+    if (email.includes('..') || email.startsWith('.') || email.endsWith('.')) return false;
+    const parts = email.split('@');
+    if (parts.length !== 2 || !parts[0] || !parts[1] || parts[0].length > 64) return false;
+    const domainParts = parts[1].split('.');
+    const tld = domainParts[domainParts.length - 1];
+    if (!tld || tld.length < 2 || !/^[a-zA-Z]{2,}$/.test(tld)) return false;
+    const fakePatterns = [/^test@test\./i, /^abc@xyz\./i, /^fake@fake\./i, /^admin@admin\./i, /^sample@sample\./i];
+    if (fakePatterns.some(pat => pat.test(email))) return false;
+    return true;
+  };
+
+  const validatePhone = (phoneStr, code = '+91') => {
+    if (!phoneStr || typeof phoneStr !== 'string') return false;
+    const digits = phoneStr.replace(/\D/g, '');
+    switch (code) {
+      case '+91': // India: 10 digits starting with 6, 7, 8, 9
+        return /^[6-9]\d{9}$/.test(digits);
+      case '+1': // USA/Canada: 10 digits, area code 2-9
+        return /^[2-9]\d{9}$/.test(digits);
+      case '+44': // UK: 10 to 11 digits
+        return /^[1-9]\d{9,10}$/.test(digits);
+      case '+61': // Australia: 9 to 10 digits
+        return /^[1-9]\d{8,9}$/.test(digits);
+      case '+971': // UAE: 9 digits
+        return /^[1-9]\d{8}$/.test(digits);
+      case '+65': // Singapore: 8 digits
+        return /^[689]\d{7}$/.test(digits);
+      case '+81': // Japan: 10 to 11 digits
+        return /^[1-9]\d{9,10}$/.test(digits);
+      case '+49': // Germany: 10 to 11 digits
+        return /^[1-9]\d{9,10}$/.test(digits);
+      default:
+        return digits.length >= 7 && digits.length <= 15;
+    }
+  };
+
+  const getPhoneErrorMessage = (code = '+91') => {
+    switch (code) {
+      case '+91':
+        return 'Please enter a valid 10-digit Indian mobile number';
+      case '+1':
+        return 'Please enter a valid 10-digit US/Canada phone number';
+      case '+44':
+        return 'Please enter a valid 10 to 11-digit UK phone number';
+      case '+61':
+        return 'Please enter a valid 9 to 10-digit Australian phone number';
+      case '+971':
+        return 'Please enter a valid 9-digit UAE phone number';
+      case '+65':
+        return 'Please enter a valid 8-digit Singapore phone number';
+      default:
+        return 'Please enter a valid phone number for your selected country';
+    }
+  };
+
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
-    if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
-    if (!formData.email.trim()) {
+    const fName = (formData.firstName || '').replace(/[<>]/g, '').trim();
+    const lName = (formData.lastName || '').replace(/[<>]/g, '').trim();
+    const emailVal = (formData.email || '').trim();
+    const phoneDigits = (formData.phone || '').replace(/\D/g, '');
+
+    if (!fName) {
+      newErrors.firstName = 'First name is required';
+    } else if (fName.length < 2) {
+      newErrors.firstName = 'First name must be at least 2 characters';
+    }
+
+    if (!lName) {
+      newErrors.lastName = 'Last name is required';
+    } else if (lName.length < 2) {
+      newErrors.lastName = 'Last name must be at least 2 characters';
+    }
+
+    if (!emailVal) {
       newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email';
+    } else if (!validateEmail(emailVal)) {
+      newErrors.email = 'Please enter a valid email address (e.g. name@domain.com)';
     }
-    if (!formData.phone.trim()) {
+
+    if (!phoneDigits) {
       newErrors.phone = 'Phone number is required';
-    } else if (!/^\d{10}$/.test(formData.phone.replace(/\D/g, ''))) {
-      newErrors.phone = 'Please enter a valid 10-digit phone number';
+    } else if (!validatePhone(formData.phone, formData.countryCode)) {
+      newErrors.phone = getPhoneErrorMessage(formData.countryCode);
     }
+
     if (!formData.agreeTerms) newErrors.agreeTerms = 'You must agree to the terms';
     if (!formData.agreePrivacy) newErrors.agreePrivacy = 'You must agree to the privacy policy';
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isProcessing) return;
+
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
-    
-    // Generate Booking ID if not exists
-    let bookingId = sessionStorage.getItem('meraki_bookingId');
-    if (!bookingId) {
-      bookingId = 'ML-' + Math.random().toString(36).substr(2, 6).toUpperCase() + '-' + Date.now().toString().slice(-4);
-      sessionStorage.setItem('meraki_bookingId', bookingId);
+
+    setIsProcessing(true);
+    setConfirmedBooking(null);
+    sessionStorage.removeItem('meraki_bookingId');
+    const res = await loadRazorpayScript();
+
+    if (!res) {
+      alert("Payment gateway failed to load. Please check your internet connection.");
+      setIsProcessing(false);
+      return;
     }
 
-    sessionStorage.setItem('meraki_guestDetails', JSON.stringify(formData));
-    sessionStorage.setItem('meraki_couponApplied', couponApplied.toString());
-    sessionStorage.setItem('meraki_couponCode', couponCode);
-    if (setCurrentPage) {
-      setCurrentPage('payment');
+    try {
+      const orderResponse = await fetch("http://localhost/merakiliving_backend/api/bookings/create_order.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: totalAmount })
+      });
+      
+      const orderData = await orderResponse.json();
+
+      if (!orderData.id) {
+        alert("Server response: " + JSON.stringify(orderData));
+        setIsProcessing(false);
+        return;
+      }
+
+      const options = {
+        key: "rzp_test_TTUNJUYE5Iw7qw",
+        amount: totalAmount * 100,
+        currency: "INR",
+        name: "Meraki Living Homestay",
+        description: room.title,
+        order_id: orderData.id,
+        handler: async function (response) {
+          try {
+            const fName = (formData.firstName || '').replace(/[<>]/g, '').trim();
+            const lName = (formData.lastName || '').replace(/[<>]/g, '').trim();
+            const cleanEmail = (formData.email || '').trim().toLowerCase();
+            const cleanPhone = (formData.phone || '').replace(/\D/g, '');
+
+            const finalData = {
+              name: `${fName} ${lName}`,
+              email: cleanEmail,
+              phone: `${formData.countryCode} ${cleanPhone}`,
+              room_id: selectedRoomId,
+              check_in: formatDateForDB(checkInDate),
+              check_out: formatDateForDB(checkOutDate),
+              guest_count: guests.adults + guests.children,
+              amount: totalAmount,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature
+            };
+
+            const saveResponse = await fetch("http://localhost/merakiliving_backend/api/bookings/create_booking.php", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(finalData)
+            });
+
+            const result = await saveResponse.json();
+            if (result.status === "success") {
+              let realBookingId = result.booking_reference || result.booking_id || result.bookingId || result.id || result.insert_id || result.insertId ||
+                                  (result.data && (result.data.booking_reference || result.data.booking_id || result.data.bookingId || result.data.id || result.data.insert_id || result.data.insertId)) ||
+                                  (result.booking && (result.booking.booking_reference || result.booking.id || result.booking.booking_id));
+
+              if (!realBookingId) {
+                try {
+                  const fetchLatestRes = await fetch("http://localhost/merakiliving_backend/api_bookings.php");
+                  const fetchLatestJson = await fetchLatestRes.json();
+                  if (fetchLatestJson && fetchLatestJson.status === 'success' && Array.isArray(fetchLatestJson.data) && fetchLatestJson.data.length > 0) {
+                    const matched = fetchLatestJson.data.find(b => 
+                      (b.guest_email && b.guest_email.toLowerCase() === formData.email.trim().toLowerCase()) ||
+                      (b.guest_phone && b.guest_phone.replace(/\D/g, '').endsWith(formData.phone.replace(/\D/g, '')))
+                    ) || fetchLatestJson.data[0];
+
+                    if (matched) {
+                      realBookingId = matched.booking_reference || (matched.id ? `MERI${String(matched.id).padStart(4, '0')}` : null);
+                    }
+                  }
+                } catch (fetchErr) {
+                  console.error("Error fetching latest booking ID:", fetchErr);
+                }
+              }
+
+              let finalDisplayId = '';
+              if (realBookingId) {
+                const rawStr = String(realBookingId).trim();
+                if (/^MERI/i.test(rawStr)) {
+                  finalDisplayId = rawStr.toUpperCase();
+                } else if (/^\d+$/.test(rawStr)) {
+                  finalDisplayId = `MERI${rawStr.padStart(4, '0')}`;
+                } else {
+                  finalDisplayId = rawStr;
+                }
+              }
+
+              if (finalDisplayId) {
+                sessionStorage.setItem('meraki_bookingId', finalDisplayId);
+                sessionStorage.setItem('meraki_paymentAmount', totalAmount);
+                sessionStorage.setItem('meraki_paymentMethod', 'Online');
+                
+                setConfirmedBooking({
+                  id: finalDisplayId,
+                  name: `${formData.firstName} ${formData.lastName}`
+                });
+
+                // Trigger booking confirmation email automatically via existing api_send_email.php
+                if (!sentEmailBookingsRef.current.has(finalDisplayId)) {
+                  sentEmailBookingsRef.current.add(finalDisplayId);
+                  
+                  const emailPayload = {
+                    userEmail: cleanEmail,
+                    userName: `${fName} ${lName}`.trim(),
+                    serviceName: `${room.title || 'Meraki Living Homestay'} (Booking ID: ${finalDisplayId})`,
+                    date: `${formatDate(checkInDate)} to ${formatDate(checkOutDate)}`,
+                    bookingId: finalDisplayId,
+                    checkIn: formatDate(checkInDate),
+                    checkOut: formatDate(checkOutDate),
+                    roomName: room.title,
+                    phone: `${formData.countryCode} ${cleanPhone}`,
+                    amount: totalAmount
+                  };
+
+                  fetch("http://localhost/merakiliving_backend/api_send_email.php", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(emailPayload)
+                  })
+                    .then(res => res.json())
+                    .then(() => {})
+                    .catch(emailErr => {
+                      console.warn("Email dispatch notification notice:", emailErr ? emailErr.message : "Service notice");
+                    });
+                }
+              } else {
+                alert("Booking saved successfully! Please check Manage Booking for your Booking ID.");
+              }
+            } else {
+              alert("Payment successful but booking failed: " + (result.message || "Unknown error"));
+            }
+          } catch (err) {
+            alert("Database Error: " + err.message);
+          }
+        },
+        prefill: {
+          name: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
+          contact: `${formData.countryCode.replace('+', '')}${formData.phone}`
+        },
+        theme: {
+          color: "#800080"
+        }
+      };
+
+      const paymentObject = new window.Razorpay(options);
+      
+      paymentObject.on('payment.failed', function (response){
+        alert("Payment Failed: " + response.error.description);
+        setIsProcessing(false);
+      });
+
+      paymentObject.open();
+    } catch (error) {
+      alert("Error Details: " + error.message);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -351,20 +689,36 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
       setCouponError('Please enter a coupon code');
       return;
     }
-    const validCoupons = ['MERAKI8', 'SAVE8', 'WELCOME8', 'DISCOUNT8'];
-    if (validCoupons.includes(couponCode.trim().toUpperCase())) {
+    
+    const enteredCode = couponCode.trim().toUpperCase();
+    const matchedCoupon = availableCoupons.find(c => c.code.toUpperCase() === enteredCode);
+
+    if (matchedCoupon) {
+      const percentage = parseFloat(matchedCoupon.discount_percentage) || 0;
       setCouponApplied(true);
+      setCouponDiscountPercent(percentage);
       setCouponError('');
+      sessionStorage.setItem('meraki_couponCode', enteredCode);
+      sessionStorage.setItem('meraki_couponApplied', 'true');
+      sessionStorage.setItem('meraki_couponDiscount', percentage);
     } else {
       setCouponApplied(false);
-      setCouponError('Invalid coupon code. Try MERAKI8');
+      setCouponDiscountPercent(0);
+      setCouponError('Invalid coupon code.');
+      sessionStorage.removeItem('meraki_couponCode');
+      sessionStorage.removeItem('meraki_couponApplied');
+      sessionStorage.removeItem('meraki_couponDiscount');
     }
   };
 
   const handleRemoveCoupon = () => {
     setCouponApplied(false);
+    setCouponDiscountPercent(0);
     setCouponCode('');
     setCouponError('');
+    sessionStorage.removeItem('meraki_couponCode');
+    sessionStorage.removeItem('meraki_couponApplied');
+    sessionStorage.removeItem('meraki_couponDiscount');
   };
 
   const handleWhatsApp = () => {
@@ -384,13 +738,6 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
     window.open(`https://wa.me/917037189517?text=${message}`, '_blank');
   };
 
-  const steps = [
-    { label: 'Your Stay', number: 1, icon: BedDoubleIcon },
-    { label: 'Guest Details', number: 2, icon: User03Icon },
-    { label: 'Payment', number: 3, icon: CreditCardPosIcon },
-    { label: 'Confirmation', number: 4, icon: SecurityValidationIcon }
-  ];
-
   const countryCodes = [
     { code: '+91', country: 'India' },
     { code: '+1', country: 'USA' },
@@ -402,118 +749,115 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
     { code: '+49', country: 'Germany' }
   ];
 
-  const renderProgressBar = () => (
-    <div className="gd-steps">
-      {steps.map((step, idx) => {
-        const isActive = step.number <= currentStep;
-        const isCurrent = step.number === currentStep;
-        const isCompleted = step.number < currentStep;
-        return (
-          <div key={step.number} className={`gd-step ${isActive ? 'active' : ''} ${isCurrent ? 'current' : ''} ${isCompleted ? 'completed' : ''}`}>
-            <div className="gd-step-track">
-              {idx > 0 && (
-                <div className={`gd-step-track-line gd-step-track-left ${isActive ? 'filled' : ''}`}></div>
-              )}
-              <div className="gd-step-circle">
-                <HugeiconsIcon icon={step.icon} size={14} />
+  const renderRoomSummary = () => {
+    const titleData = parseRoomTitle(room.title);
+    return (
+      <div className="gd-card gd-summary-card">
+        <div className="gd-summary-header">
+          <div className="gd-summary-room-image">
+            <img src={room.image} alt={titleData.mainName || room.title} loading="eager" decoding="async" />
+          </div>
+          <div className="gd-summary-room-info">
+            <div className="gd-summary-room-title-block">
+              <div className="gd-summary-room-title-primary-row">
+                {titleData.mainName && <h3 className="gd-summary-room-title">{titleData.mainName}</h3>}
+                {titleData.subtitle && <span className="gd-summary-room-sub">{titleData.subtitle}</span>}
               </div>
-              {idx < steps.length - 1 && (
-                <div className={`gd-step-track-line gd-step-track-right ${isCompleted ? 'filled' : ''}`}></div>
-              )}
+              {titleData.roomType && <span className="gd-summary-room-type">{titleData.roomType}</span>}
             </div>
-            <span className="gd-step-label">{step.label}</span>
-          </div>
-        );
-      })}
-    </div>
-  );
-
-  const renderRoomSummary = () => (
-    <div className="gd-card gd-summary-card">
-      <div className="gd-summary-header">
-        <div className="gd-summary-room-image">
-          <img src={room.image} alt={room.title} loading="eager" decoding="async" />
-        </div>
-        <div className="gd-summary-room-info">
-          <h3 className="gd-summary-room-title">{room.title}</h3>
-          <div className="gd-summary-room-meta">
-            <span className="gd-summary-tag">{room.tag}</span>
-            <div className="gd-summary-rating">
-              <HugeiconsIcon icon={StarIcon} size={14} />
-              <span>{room.rating}</span>
-              <span className="gd-rating-count">({room.reviews})</span>
+            <div className="gd-summary-room-meta">
+              <span className="gd-summary-tag">{room.tag}</span>
+              <div className="gd-summary-rating">
+                <HugeiconsIcon icon={StarIcon} size={14} />
+                <span>{room.rating}</span>
+                <span className="gd-rating-count">({room.reviews})</span>
+              </div>
             </div>
           </div>
         </div>
+        <div className="gd-summary-divider"></div>
+        <div className="gd-summary-details">
+          <div className="gd-summary-row">
+            <div className="gd-summary-item">
+              <HugeiconsIcon icon={Calendar01Icon} size={16} />
+              <div>
+                <span className="gd-summary-label">Check-in</span>
+                <span className="gd-summary-value">{formatDate(checkInDate)}</span>
+                <span className="gd-summary-sub">{getDayName(checkInDate)} &middot; After 12:00 PM</span>
+              </div>
+            </div>
+            <div className="gd-summary-item">
+              <HugeiconsIcon icon={Calendar01Icon} size={16} />
+              <div>
+                <span className="gd-summary-label">Check-out</span>
+                <span className="gd-summary-value">{formatDate(checkOutDate)}</span>
+                <span className="gd-summary-sub">{getDayName(checkOutDate)} &middot; Before 11:00 AM</span>
+              </div>
+            </div>
+          </div>
+          <div className="gd-summary-row">
+            <div className="gd-summary-item">
+              <HugeiconsIcon icon={UserMultiple02Icon} size={16} />
+              <div>
+                <span className="gd-summary-label">Guests</span>
+                <span className="gd-summary-value">{guests.adults + guests.children} Guests</span>
+              </div>
+            </div>
+            <div className="gd-summary-item">
+              <HugeiconsIcon icon={BedDoubleIcon} size={16} />
+              <div>
+                <span className="gd-summary-label">Rooms</span>
+                <span className="gd-summary-value">{guests.rooms} Room{guests.rooms > 1 ? 's' : ''}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button
+          className="gd-edit-btn"
+          onClick={() => {
+            if (setCurrentPage) setCurrentPage('booking');
+          }}
+        >
+          <HugeiconsIcon icon={Edit02Icon} size={16} />
+          <span>Edit Stay Details</span>
+        </button>
       </div>
-      <div className="gd-summary-divider"></div>
-      <div className="gd-summary-details">
-        <div className="gd-summary-row">
-          <div className="gd-summary-item">
-            <HugeiconsIcon icon={Calendar01Icon} size={16} />
-            <div>
-              <span className="gd-summary-label">Check-in</span>
-              <span className="gd-summary-value">{formatDate(checkInDate)}</span>
-              <span className="gd-summary-sub">{getDayName(checkInDate)} &middot; After 12:00 PM</span>
+    );
+  };
+
+  const renderPriceBreakdown = () => {
+    const titleData = parseRoomTitle(room.title);
+    return (
+      <div className="gd-card gd-price-card">
+        <h4 className="gd-price-title">Price Breakdown</h4>
+
+        <div className="gd-price-room">
+          <img src={room.image} alt={titleData.mainName || room.title} loading="eager" decoding="async" />
+          <div className="gd-price-room-info">
+            <div className="gd-price-room-title-block">
+              <div className="gd-price-room-title-primary-row">
+                <span className="gd-price-room-name">{titleData.mainName || room.title}</span>
+                {titleData.subtitle && <span className="gd-price-room-sub">{titleData.subtitle}</span>}
+              </div>
+              {titleData.roomType && <span className="gd-price-room-type">{titleData.roomType}</span>}
             </div>
-          </div>
-          <div className="gd-summary-item">
-            <HugeiconsIcon icon={Calendar01Icon} size={16} />
-            <div>
-              <span className="gd-summary-label">Check-out</span>
-              <span className="gd-summary-value">{formatDate(checkOutDate)}</span>
-              <span className="gd-summary-sub">{getDayName(checkOutDate)} &middot; Before 11:00 AM</span>
-            </div>
+            <span className="gd-price-room-meta">{nights} nights &middot; {guests.adults + guests.children} guests</span>
           </div>
         </div>
-        <div className="gd-summary-row">
-          <div className="gd-summary-item">
-            <HugeiconsIcon icon={UserMultiple02Icon} size={16} />
-            <div>
-              <span className="gd-summary-label">Guests</span>
-              <span className="gd-summary-value">{guests.adults + guests.children} Guests</span>
-            </div>
-          </div>
-          <div className="gd-summary-item">
-            <HugeiconsIcon icon={BedDoubleIcon} size={16} />
-            <div>
-              <span className="gd-summary-label">Rooms</span>
-              <span className="gd-summary-value">{guests.rooms} Room{guests.rooms > 1 ? 's' : ''}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <button
-        className="gd-edit-btn"
-        onClick={() => {
-          if (setCurrentPage) setCurrentPage('booking');
-        }}
-      >
-        <HugeiconsIcon icon={Edit02Icon} size={16} />
-        <span>Edit Stay Details</span>
-      </button>
-    </div>
-  );
 
-  const renderPriceBreakdown = () => (
-    <div className="gd-card gd-price-card">
-      <h4 className="gd-price-title">Price Breakdown</h4>
-
-      <div className="gd-price-room">
-        <img src={room.image} alt={room.title} loading="eager" decoding="async" />
-        <div>
-          <span className="gd-price-room-name">{room.title}</span>
-          <span className="gd-price-room-meta">{nights} nights &middot; {guests.adults + guests.children} guests</span>
-        </div>
-      </div>
-
-      <div className="gd-price-divider"></div>
+        <div className="gd-price-divider"></div>
 
       <div className="gd-price-breakdown">
         <div className="gd-price-row">
-          <span>Rs.{room.price} x {nights} night{nights > 1 ? 's' : ''} x {guests.rooms} room{guests.rooms > 1 ? 's' : ''}</span>
-          <span>Rs.{subtotal.toLocaleString('en-IN')}</span>
+          <span>Rs.{pricePerNight.toLocaleString('en-IN')} x {nights} night{nights > 1 ? 's' : ''} {room.id !== 4 ? `x ${multiplier} room${multiplier > 1 ? 's' : ''}` : ''}</span>
+          <span>Rs.{(pricePerNight * nights * multiplier).toLocaleString('en-IN')}</span>
         </div>
+        {extraChargePerNight > 0 && (
+          <div className="gd-price-row">
+            <span>Extra Guests (+ Rs.{extraChargePerNight * multiplier}/night)</span>
+            <span>Rs.{(extraChargePerNight * nights * multiplier).toLocaleString('en-IN')}</span>
+          </div>
+        )}
         <div className={`gd-price-row ${couponApplied ? 'gd-discount' : ''}`}>
           <span>Coupon Discount</span>
           <span>{couponApplied ? `-Rs.${discountAmount.toLocaleString('en-IN')}` : 'Rs.0'}</span>
@@ -582,6 +926,7 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
       </div>
     </div>
   );
+};
 
   const renderGuestForm = () => (
     <div className="gd-card gd-form-card">
@@ -610,6 +955,7 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
                 onChange={handleInputChange}
                 placeholder="Enter first name"
                 className="gd-input"
+                disabled={isProcessing}
               />
             </div>
             {errors.firstName && <span className="gd-error-text">{errors.firstName}</span>}
@@ -627,6 +973,7 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
                 onChange={handleInputChange}
                 placeholder="Enter last name"
                 className="gd-input"
+                disabled={isProcessing}
               />
             </div>
             {errors.lastName && <span className="gd-error-text">{errors.lastName}</span>}
@@ -646,6 +993,7 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
               onChange={handleInputChange}
               placeholder="your@email.com"
               className="gd-input"
+              disabled={isProcessing}
             />
           </div>
           {errors.email && <span className="gd-error-text">{errors.email}</span>}
@@ -664,6 +1012,7 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
                 value={formData.countryCode}
                 onChange={handleInputChange}
                 className="gd-select"
+                disabled={isProcessing}
               >
                 {countryCodes.map(c => (
                   <option key={c.code} value={c.code}>{c.code}</option>
@@ -677,25 +1026,11 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
               onChange={handleInputChange}
               placeholder="98765 43210"
               className="gd-input gd-phone-input"
+              disabled={isProcessing}
             />
           </div>
           {errors.phone && <span className="gd-error-text">{errors.phone}</span>}
           <span className="gd-input-hint">For booking updates and check-in coordination</span>
-        </div>
-
-        <div className="gd-form-group">
-          <label className="gd-form-label">Special Requests (Optional)</label>
-          <div className="gd-textarea-wrapper">
-            <HugeiconsIcon icon={Comment01Icon} size={18} />
-            <textarea
-              name="specialRequests"
-              value={formData.specialRequests}
-              onChange={handleInputChange}
-              placeholder="Any special requests? E.g., early check-in, room preference, dietary requirements..."
-              className="gd-textarea"
-              rows={4}
-            />
-          </div>
         </div>
 
         <div className="gd-terms-section">
@@ -707,6 +1042,7 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
                 checked={formData.agreeTerms}
                 onChange={handleInputChange}
                 className="gd-checkbox"
+                disabled={isProcessing}
               />
               <span className="gd-checkbox-custom">
                 {formData.agreeTerms && <TickIcon />}
@@ -725,6 +1061,7 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
                 checked={formData.agreePrivacy}
                 onChange={handleInputChange}
                 className="gd-checkbox"
+                disabled={isProcessing}
               />
               <span className="gd-checkbox-custom">
                 {formData.agreePrivacy && <TickIcon />}
@@ -738,13 +1075,13 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
         </div>
 
         <div className="gd-form-actions">
-          <button type="button" className="gd-btn-secondary" onClick={handleBackToBooking}>
+          <button type="button" className="gd-btn-secondary" onClick={handleBackToBooking} disabled={isProcessing}>
             <HugeiconsIcon icon={ArrowLeft01Icon} size={18} />
             <span>Back</span>
           </button>
-          <button type="submit" className="gd-btn-primary">
-            <span>Proceed to Payment</span>
-            <HugeiconsIcon icon={ArrowRight01Icon} size={18} />
+          <button type="submit" className="gd-btn-primary" disabled={isProcessing}>
+            <span>{isProcessing ? 'Processing Payment...' : 'Proceed to Payment'}</span>
+            {!isProcessing && <HugeiconsIcon icon={ArrowRight01Icon} size={18} />}
           </button>
         </div>
       </form>
@@ -833,11 +1170,56 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
     </div>
   );
 
+  if (confirmedBooking) {
+    return (
+      <section className="conf-section">
+        <div className="conf-card animate-pop">
+          <div className="conf-content" style={{ width: '100%' }}>
+            <div className="conf-success-ripple">
+              <div className="conf-success-icon">
+                <HugeiconsIcon icon={CheckmarkBadge01Icon} size={42} strokeWidth={1.5} color="#ffffff" />
+              </div>
+            </div>
+
+            <h2 className="conf-title" style={{ marginBottom: '4px' }}>Payment Successful</h2>
+            <p className="conf-desc" style={{ marginBottom: '24px' }}>Your booking has been confirmed.</p>
+            
+            <div className="conf-booking-status-box" style={{ background: '#FDF5FF', border: '1px solid #F3E0F5', borderRadius: '12px', padding: '16px', width: '100%', marginBottom: '28px', textAlign: 'left', boxSizing: 'border-box' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span style={{ fontSize: '13px', color: '#666' }}>Booking ID</span>
+                <span style={{ fontSize: '14px', fontWeight: '600', color: '#870097' }}>{confirmedBooking.id}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span style={{ fontSize: '13px', color: '#666' }}>Status</span>
+                <span style={{ fontSize: '13px', fontWeight: '500', color: '#2E7D32', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#2E7D32', display: 'inline-block' }}></span> Confirmed
+                </span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '13px', color: '#666' }}>Guest</span>
+                <span style={{ fontSize: '14px', fontWeight: '500', color: '#333' }}>{confirmedBooking.name || 'Guest'}</span>
+              </div>
+            </div>
+
+            <button 
+              className="conf-home-btn" 
+              onClick={() => { if (setCurrentPage) setCurrentPage('home'); }}
+              style={{ background: '#870097', color: 'white', border: 'none', padding: '14px 24px', borderRadius: '8px', fontSize: '15px', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', width: '100%', justifyContent: 'center', transition: 'background 0.2s' }}
+              onMouseOver={(e) => e.currentTarget.style.background = '#6B007A'}
+              onMouseOut={(e) => e.currentTarget.style.background = '#870097'}
+            >
+              <HugeiconsIcon icon={Home07Icon} size={18} />
+              <span>Return Home</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className={`gd-section ${animateIn ? 'gd-animate' : ''}`}>
       <div className="gd-container">
-
-        {renderProgressBar()}
 
         <div className="gd-page-header">
           <h1 className="gd-page-title">Guest Details</h1>

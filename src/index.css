@@ -2,7 +2,9 @@
   color-scheme: light;
 }
 
-body {
+html, body {
+  overflow-x: hidden;
+
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
@@ -22,10 +24,11 @@ code {
 /* Zero out horizontal padding on section wrappers */
 .mcf-ab-hero, .mcf-ab-highlights, .mcf-ab-story, .mcf-ab-cta,
 .cta-section, .cafe-section, .faq-section, .footer-wrapper,
-.rooms-section, .booking-section, .gd-section, .pay-section, .room-details-section,
+.rooms-section, .booking-section, .gd-section, .room-details-section,
 .mcf-about, .mcf-premium-menu-section, .mcf-ambiance, .mcf-gallery, .mcf-contact,
 .explore-section, .experience-section, .viewpoints-section, .review-section,
-.privacy-policy-wrapper, .terms-conditions-wrapper, .cancellation-policy-wrapper {
+.privacy-policy-wrapper, .terms-conditions-wrapper, .cancellation-policy-wrapper,
+.mb-section {
   padding-left: 0 !important;
   padding-right: 0 !important;
 }
@@ -33,10 +36,11 @@ code {
 /* Apply Navbar horizontal alignment to inner containers & heroes */
 .hero-container,
 .mcf-ab-container, .cta-container, .cafe-container, .faq-container, .faq-header, .footer-container,
-.rooms-container, .booking-container, .gd-container, .pay-container, .room-details-container,
+.rooms-container, .booking-container, .gd-container, .room-details-container,
 .mcf-hero-container, .mcf-about-container, .mcf-menu-container, .mcf-ambiance-container, .mcf-gallery-container, .mcf-contact-container,
 .explore-header, .explore-grid, .experience-header, .experience-row, .viewpoints-header, .viewpoints-grid, .review-header, .review-grid,
-.privacy-policy-outer, .terms-conditions-outer, .cancellation-policy-outer {
+.privacy-policy-outer, .terms-conditions-outer, .cancellation-policy-outer,
+.mb-container {
   width: 100% !important;
   max-width: 1440px !important;
   margin-left: auto !important;
@@ -48,10 +52,11 @@ code {
 
 @media (max-width: 1100px) {
   .hero-container, .mcf-ab-container, .cta-container, .cafe-container, .faq-container, .faq-header, .footer-container,
-  .rooms-container, .booking-container, .gd-container, .pay-container, .room-details-container,
+  .rooms-container, .booking-container, .gd-container, .room-details-container,
   .mcf-hero-container, .mcf-about-container, .mcf-menu-container, .mcf-ambiance-container, .mcf-gallery-container, .mcf-contact-container,
   .explore-header, .explore-grid, .experience-header, .experience-row, .viewpoints-header, .viewpoints-grid, .review-header, .review-grid,
-  .privacy-policy-outer, .terms-conditions-outer, .cancellation-policy-outer {
+  .privacy-policy-outer, .terms-conditions-outer, .cancellation-policy-outer,
+  .mb-container {
     padding-left: 32px !important;
     padding-right: 32px !important;
   }
@@ -59,10 +64,11 @@ code {
 
 @media (max-width: 950px) {
   .hero-container, .mcf-ab-container, .cta-container, .cafe-container, .faq-container, .faq-header, .footer-container,
-  .rooms-container, .booking-container, .gd-container, .pay-container, .room-details-container,
+  .rooms-container, .booking-container, .gd-container, .room-details-container,
   .mcf-hero-container, .mcf-about-container, .mcf-menu-container, .mcf-ambiance-container, .mcf-gallery-container, .mcf-contact-container,
   .explore-header, .explore-grid, .experience-header, .experience-row, .viewpoints-header, .viewpoints-grid, .review-header, .review-grid,
-  .privacy-policy-outer, .terms-conditions-outer, .cancellation-policy-outer {
+  .privacy-policy-outer, .terms-conditions-outer, .cancellation-policy-outer,
+  .mb-container {
     padding-left: 24px !important;
     padding-right: 24px !important;
   }
@@ -70,10 +76,11 @@ code {
 
 @media (max-width: 640px) {
   .hero-container, .mcf-ab-container, .cta-container, .cafe-container, .faq-container, .faq-header, .footer-container,
-  .rooms-container, .booking-container, .gd-container, .pay-container, .room-details-container,
+  .rooms-container, .booking-container, .gd-container, .room-details-container,
   .mcf-hero-container, .mcf-about-container, .mcf-menu-container, .mcf-ambiance-container, .mcf-gallery-container, .mcf-contact-container,
   .explore-header, .explore-grid, .experience-header, .experience-row, .viewpoints-header, .viewpoints-grid, .review-header, .review-grid,
-  .privacy-policy-outer, .terms-conditions-outer, .cancellation-policy-outer {
+  .privacy-policy-outer, .terms-conditions-outer, .cancellation-policy-outer,
+  .mb-container {
     padding-left: 20px !important;
     padding-right: 20px !important;
   }
@@ -81,10 +88,11 @@ code {
 
 @media (max-width: 380px) {
   .hero-container, .mcf-ab-container, .cta-container, .cafe-container, .faq-container, .faq-header, .footer-container,
-  .rooms-container, .booking-container, .gd-container, .pay-container, .room-details-container,
+  .rooms-container, .booking-container, .gd-container, .room-details-container,
   .mcf-hero-container, .mcf-about-container, .mcf-menu-container, .mcf-ambiance-container, .mcf-gallery-container, .mcf-contact-container,
   .explore-header, .explore-grid, .experience-header, .experience-row, .viewpoints-header, .viewpoints-grid, .review-header, .review-grid,
-  .privacy-policy-outer, .terms-conditions-outer, .cancellation-policy-outer {
+  .privacy-policy-outer, .terms-conditions-outer, .cancellation-policy-outer,
+  .mb-container {
     padding-left: 16px !important;
     padding-right: 16px !important;
   }
@@ -99,8 +107,9 @@ code {
 }
 
 /* Top-level pages (excluding Heroes) that have excessive 150px+ gaps */
-.rooms-section, .booking-section, .gd-section, .pay-section, .room-details-section,
-.privacy-policy-wrapper, .terms-conditions-wrapper, .cancellation-policy-wrapper {
+.rooms-section, .booking-section, .gd-section, .room-details-section,
+.privacy-policy-wrapper, .terms-conditions-wrapper, .cancellation-policy-wrapper,
+.mb-section {
   padding-top: 100px !important;
   padding-bottom: 60px !important;
 }
@@ -123,8 +132,9 @@ code {
     padding-top: 40px !important;
     padding-bottom: 40px !important;
   }
-  .rooms-section, .booking-section, .gd-section, .pay-section, .room-details-section,
-  .privacy-policy-wrapper, .terms-conditions-wrapper, .cancellation-policy-wrapper {
+  .rooms-section, .booking-section, .gd-section, .room-details-section,
+  .privacy-policy-wrapper, .terms-conditions-wrapper, .cancellation-policy-wrapper,
+  .mb-section {
     padding-top: 80px !important;
     padding-bottom: 40px !important;
   }
@@ -133,7 +143,7 @@ code {
     padding-bottom: 60px !important;
   }
   .mcf-hero-container {
-    padding-top: 24px !important; /* 100 - 76 */
+    padding-top: 24px !important;
     padding-bottom: 60px !important;
   }
 }

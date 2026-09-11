@@ -333,7 +333,7 @@
 
 .mcf-about-desc {
   font-size: 16px;
-  color: #666666;
+  color: #817F8F;
   line-height: 32px;
   font-weight: 400;
   margin: 0 0 32px 0;
@@ -380,7 +380,7 @@
 
 .mcf-about-feature-desc {
   font-size: 14px;
-  color: #888888;
+  color: #817F8F;
   line-height: 22px;
 }
 
@@ -485,7 +485,7 @@
     color: #870097;
   }
   .mcf-feature-card:hover .mcf-feature-desc {
-    color: #666666;
+    color: #817F8F;
   }
 }
 
@@ -499,7 +499,7 @@
 
 .mcf-feature-desc {
   font-size: 13px;
-  color: #888888;
+  color: #817F8F;
   line-height: 1.6;
   max-width: 160px;
   transition: color 0.4s ease;
@@ -538,7 +538,7 @@
 
 .mcf-menu-subtitle {
   font-size: 16px;
-  color: #666666;
+  color: #817F8F;
   line-height: 32px;
   margin: 0;
   font-weight: 400;
@@ -739,7 +739,7 @@
 
 .mcf-fc-desc {
   font-size: 14px;
-  color: #666666;
+  color: #817F8F;
   line-height: 22px;
   margin: 0 0 24px 0;
   flex-grow: 1;
@@ -797,7 +797,7 @@
   grid-column: 1 / -1;
   text-align: center;
   padding: 40px;
-  color: #666666;
+  color: #817F8F;
   font-size: 16px;
 }
 

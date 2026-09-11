@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { parseRoomTitle } from '../../components/Rooms/Rooms';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   ArrowRight02Icon,
@@ -36,82 +37,93 @@ const SHARED_POLICY = [
   'Check-out: 11:00 AM'
 ];
 
-const ROOMS_DATA = [
+const CATEGORIZED_AMENITIES = [
   {
-    id: 1,
-    image: room1,
-    title: 'Himalayan View Room',
-    desc: 'Wake up to peaceful mountain views and a relaxing stay surrounded by nature. Designed for comfort and tranquility, our Himalayan View Room offers a perfect blend of warm interiors and breathtaking mountain views. Ideal for couples and solo travelers looking for a peaceful mountain escape.',
-    originalPrice: '5,000',
-    price: '3,500',
-    discount: '30',
-    guests: '2 Guests',
-    bed: '1 King Bed',
-    view: 'Mountain View',
-    rating: '4.9',
-    reviews: '120',
-    amenities: [
-      'Free WiFi', 'Electric Kettle', 'Hair Dryer', 'Room Heater',
-      'Complimentary Toiletries', 'Daily Housekeeping', 'Hot Water',
-      'Work Desk', 'Wardrobe', 'Mirror'
-    ],
-    highlights: [
-      'Private balcony with mountain views',
-      'Cozy sitting area',
-      'Work desk with lamp and seating',
-      'Heater',
-      'Wardrobe space'
-    ],
-    reviewBreakdown: [
-      { label: 'Cleanliness', score: '4.9' },
-      { label: 'Location', score: '4.9' },
-      { label: 'Service', score: '4.8' },
-      { label: 'Value for Money', score: '4.8' }
-    ],
-    reviewsList: [
-      { name: 'Ananya S.', rating: 5, date: 'Jun 2025', text: 'Absolutely loved the view from the balcony. The room was spotless and the staff was very helpful.' },
-      { name: 'Rahul K.', rating: 5, date: 'May 2025', text: 'Perfect getaway spot. Cozy room with amazing mountain views. Will definitely come back!' },
-      { name: 'Priya M.', rating: 4, date: 'Apr 2025', text: 'Great experience overall. The heater was a lifesaver in the cold weather.' }
-    ],
-    gallery: [room1, room1a, room1b, room1c]
+    category: 'Essential Room Amenities',
+    icon: '🛏️',
+    items: [
+      'Comfortable king-size bed',
+      'Good-quality mattress and 4 pillows',
+      'Fresh bedsheets, blanket',
+      'Bedside tables',
+      'Bedside reading lights',
+      'Adequate electrical sockets',
+      'Wardrobe or hanging space',
+      'Full-length mirror',
+      'Luggage rack',
+      'Curtains / blackout curtains',
+      'Fan'
+    ]
   },
   {
-    id: 2,
-    image: room2,
-    title: 'Premium Valley Room',
-    desc: 'Wake up to breathtaking valley views with elegant comfort and peaceful Himalayan charm. Our Premium Valley Room offers a serene retreat with premium furnishings, panoramic valley vistas, and all modern amenities for a luxurious mountain stay.',
-    originalPrice: '6,500',
-    price: '4,500',
-    discount: '30',
-    guests: '2 Guests',
-    bed: 'Queen Bed',
-    view: 'Private Sitting Area',
-    rating: '4.8',
-    reviews: '95',
-    amenities: [
-      'Free WiFi', 'Electric Kettle', 'Hair Dryer', 'Balcony',
-      'Complimentary Toiletries', 'Daily Housekeeping', 'Hot Water',
-      'Work Desk', 'Wardrobe', 'Mirror', 'Room Service'
-    ],
+    category: 'Bathroom',
+    icon: '🚿',
+    items: [
+      'Hot & cold water',
+      'Good shower',
+      'Western toilet',
+      'Towels: bath + hand + face',
+      'Toilet paper',
+      'Shampoo',
+      'Body wash / soap',
+      'Handwash',
+      'Hair dryer',
+      'Mirror with good lighting'
+    ]
+  },
+  {
+    category: 'In-room Convenience',
+    icon: '☕',
+    items: [
+      'Electric kettle',
+      'Tea / coffee',
+      'Drinking water',
+      '2–4 glasses',
+      'Small refrigerator / minibar',
+      'Iron + ironing board or ironing service',
+      'Small work desk / table and chair',
+      'Clothes drying arrangement',
+      'Room-service / contact information'
+    ]
+  }
+];
+
+const ALL_ROOM_AMENITIES = CATEGORIZED_AMENITIES.flatMap(c => c.items);
+
+const ROOMS_DATA = [
+  {
+    id: 4,
+    image: room4,
+    title: 'Entire Homestay',
+    desc: 'Book the entire Meraki Living homestay for complete privacy and a memorable stay with your loved ones. Perfect for large groups, family gatherings, or special occasions with exclusive access to all amenities and spaces.',
+    originalPrice: '30,000',
+    price: '22,000',
+    discount: '26',
+    guests: '8+ Guests',
+    bed: 'Multiple Rooms',
+    view: 'Panoramic View',
+    rating: '5.0',
+    reviews: '45',
+    amenities: ALL_ROOM_AMENITIES,
     highlights: [
-      'Private balcony with valley views',
-      'Cozy sitting area with armchairs',
-      'Premium bedding and linens',
-      'Balcony access',
-      'Spacious wardrobe'
+      'Exclusive access to entire property',
+      'Full kitchen with dining area',
+      'Private garden and bonfire area',
+      'Multiple bedrooms with attached baths',
+      'Perfect for groups and events'
     ],
     reviewBreakdown: [
-      { label: 'Cleanliness', score: '4.9' },
-      { label: 'Location', score: '4.8' },
-      { label: 'Service', score: '4.8' },
-      { label: 'Value for Money', score: '4.7' }
+      { label: 'Cleanliness', score: '5.0' },
+      { label: 'Location', score: '4.9' },
+      { label: 'Service', score: '5.0' },
+      { label: 'Value for Money', score: '4.9' }
     ],
     reviewsList: [
-      { name: 'Vikram R.', rating: 5, date: 'Jun 2025', text: 'The valley view from this room is unreal. Premium quality stay with excellent service.' },
-      { name: 'Sneha P.', rating: 5, date: 'May 2025', text: 'Loved the private sitting area. Perfect for morning tea with a view.' },
-      { name: 'Amit T.', rating: 4, date: 'Apr 2025', text: 'Spacious room with great amenities. The balcony was the highlight.' }
+      { name: 'Arjun M.', rating: 5, date: 'Jun 2025', text: 'We booked the entire place for a family reunion. It was absolutely perfect!' },
+      { name: 'Neha R.', rating: 5, date: 'May 2025', text: 'The private bonfire area was magical. Best experience for our group of 10.' },
+      { name: 'Karan S.', rating: 5, date: 'Apr 2025', text: 'Exclusive privacy with all amenities. Felt like our own mountain home.' }
     ],
-    gallery: [room2, room2a, room2b, room2c]
+    gallery: [room4, room4a, room4b, room4c]
   },
   {
     id: 3,
@@ -126,11 +138,7 @@ const ROOMS_DATA = [
     view: 'Extra Space',
     rating: '4.9',
     reviews: '78',
-    amenities: [
-      'Free WiFi', 'Electric Kettle', 'Hair Dryer', 'Kitchenette',
-      'Complimentary Toiletries', 'Daily Housekeeping', 'Hot Water',
-      'Work Desk', 'Wardrobe', 'Mirror', 'Room Service', 'Extra Bed'
-    ],
+    amenities: ALL_ROOM_AMENITIES,
     highlights: [
       'Spacious living area for family',
       'Kitchenette with basic amenities',
@@ -152,43 +160,72 @@ const ROOMS_DATA = [
     gallery: [room3, room3a, room3b, room3c]
   },
   {
-    id: 4,
-    image: room4,
-    title: 'Entire Homestay',
-    desc: 'Book the entire Meraki Living homestay for complete privacy and a memorable stay with your loved ones. Perfect for large groups, family gatherings, or special occasions with exclusive access to all amenities and spaces.',
-    originalPrice: '30,000',
-    price: '22,000',
-    discount: '26',
-    guests: '8+ Guests',
-    bed: 'Multiple Rooms',
-    view: 'Panoramic View',
-    rating: '5.0',
-    reviews: '45',
-    amenities: [
-      'Free WiFi', 'Electric Kettle', 'Hair Dryer', 'Kitchen',
-      'Complimentary Toiletries', 'Daily Housekeeping', 'Hot Water',
-      'Work Desk', 'Wardrobe', 'Mirror', 'Room Service', 'Parking',
-      'Garden Access', 'Bonfire Area'
-    ],
+    id: 2,
+    image: room2,
+    title: 'Premium Valley Room',
+    desc: 'Wake up to breathtaking valley views with elegant comfort and peaceful Himalayan charm. Our Premium Valley Room offers a serene retreat with premium furnishings, panoramic valley vistas, and all modern amenities for a luxurious mountain stay.',
+    originalPrice: '6,500',
+    price: '4,500',
+    discount: '30',
+    guests: '2 Guests',
+    bed: 'Queen Bed',
+    view: 'Private Sitting Area',
+    rating: '4.8',
+    reviews: '95',
+    amenities: ALL_ROOM_AMENITIES,
     highlights: [
-      'Exclusive access to entire property',
-      'Full kitchen with dining area',
-      'Private garden and bonfire area',
-      'Multiple bedrooms with attached baths',
-      'Perfect for groups and events'
+      'Private balcony with valley views',
+      'Cozy sitting area with armchairs',
+      'Premium bedding and linens',
+      'Balcony access',
+      'Spacious wardrobe'
     ],
     reviewBreakdown: [
-      { label: 'Cleanliness', score: '5.0' },
-      { label: 'Location', score: '4.9' },
-      { label: 'Service', score: '5.0' },
-      { label: 'Value for Money', score: '4.9' }
+      { label: 'Cleanliness', score: '4.9' },
+      { label: 'Location', score: '4.8' },
+      { label: 'Service', score: '4.8' },
+      { label: 'Value for Money', score: '4.7' }
     ],
     reviewsList: [
-      { name: 'Arjun M.', rating: 5, date: 'Jun 2025', text: 'We booked the entire place for a family reunion. It was absolutely perfect!' },
-      { name: 'Neha R.', rating: 5, date: 'May 2025', text: 'The private bonfire area was magical. Best experience for our group of 10.' },
-      { name: 'Karan S.', rating: 5, date: 'Apr 2025', text: 'Exclusive privacy with all amenities. Felt like our own mountain home.' }
+      { name: 'Vikram R.', rating: 5, date: 'Jun 2025', text: 'The valley view from this room is unreal. Premium quality stay with excellent service.' },
+      { name: 'Sneha P.', rating: 5, date: 'May 2025', text: 'Loved the private sitting area. Perfect for morning tea with a view.' },
+      { name: 'Amit T.', rating: 4, date: 'Apr 2025', text: 'Spacious room with great amenities. The balcony was the highlight.' }
     ],
-    gallery: [room4, room4a, room4b, room4c]
+    gallery: [room2, room2a, room2b, room2c]
+  },
+  {
+    id: 1,
+    image: room1,
+    title: 'Himalayan View Room',
+    desc: 'Wake up to peaceful nature surroundings and a relaxing stay surrounded by greenery. Designed for comfort and tranquility, our Himalayan View Room offers a perfect blend of warm interiors and serene surroundings. Ideal for couples and solo travelers looking for a peaceful mountain escape.',
+    originalPrice: '5,000',
+    price: '3,500',
+    discount: '30',
+    guests: '2 Guests',
+    bed: '1 King Bed',
+    view: 'Nature View',
+    rating: '4.9',
+    reviews: '120',
+    amenities: ALL_ROOM_AMENITIES,
+    highlights: [
+      'Peaceful nature surroundings',
+      'Cozy sitting area',
+      'Work desk with lamp and seating',
+      'Heater',
+      'Wardrobe space'
+    ],
+    reviewBreakdown: [
+      { label: 'Cleanliness', score: '4.9' },
+      { label: 'Location', score: '4.9' },
+      { label: 'Service', score: '4.8' },
+      { label: 'Value for Money', score: '4.8' }
+    ],
+    reviewsList: [
+      { name: 'Ananya S.', rating: 5, date: 'Jun 2025', text: 'Absolutely loved the peaceful stay. The room was spotless and the staff was very helpful.' },
+      { name: 'Rahul K.', rating: 5, date: 'May 2025', text: 'Perfect getaway spot. Cozy room with serene nature surroundings. Will definitely come back!' },
+      { name: 'Priya M.', rating: 4, date: 'Apr 2025', text: 'Great experience overall. The heater was a lifesaver in the cold weather.' }
+    ],
+    gallery: [room1, room1a, room1b, room1c]
   }
 ];
 
@@ -251,19 +288,53 @@ const CancelCircleIcon = ({ size }) => (
 );
 
 function RoomDetails({ setCurrentPage, selectedRoomId }) {
-  const room = ROOMS_DATA.find((r) => r.id === selectedRoomId) || ROOMS_DATA[0];
+  const [rooms, setRooms] = useState(ROOMS_DATA);
+  const room = rooms.find((r) => r.id === selectedRoomId) || rooms[0];
   const [showAllAmenities, setShowAllAmenities] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const displayedAmenities = showAllAmenities ? room.amenities : room.amenities.slice(0, 6);
+  const compactAmenities = ALL_ROOM_AMENITIES.slice(0, 6);
   const displayedReviews = showAllReviews ? room.reviewsList : room.reviewsList.slice(0, 2);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setCurrentImageIndex(0);
     setIsGalleryOpen(false);
+
+    fetch('http://localhost/merakiliving_backend/api_rooms.php')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.status === 'success' && data.data) {
+          const merged = ROOMS_DATA.map(localRoom => {
+            const backendRoom = data.data.find(r => r.id === localRoom.id);
+            if (backendRoom) {
+              const originalPrice = parseFloat(String(backendRoom.original_price || localRoom.originalPrice).replace(/,/g, ''));
+              const currentPrice = parseFloat(String(backendRoom.price || localRoom.price).replace(/,/g, ''));
+              let calculatedDiscount = localRoom.discount;
+              if (originalPrice > 0 && originalPrice > currentPrice) {
+                calculatedDiscount = Math.round(((originalPrice - currentPrice) / originalPrice) * 100).toString();
+              }
+
+              return {
+                ...localRoom,
+                title: backendRoom.name || localRoom.title,
+                desc: backendRoom.description || localRoom.desc,
+                price: backendRoom.price?.toLocaleString() || localRoom.price,
+                originalPrice: backendRoom.original_price?.toLocaleString() || localRoom.originalPrice,
+                discount: calculatedDiscount,
+                image: backendRoom.image_url || localRoom.image,
+                gallery: backendRoom.image_url ? [backendRoom.image_url, ...localRoom.gallery.slice(1)] : localRoom.gallery,
+                status: backendRoom.status
+              };
+            }
+            return localRoom;
+          });
+          setRooms(merged);
+        }
+      })
+      .catch(err => console.error(err));
   }, [selectedRoomId]);
 
   const renderStars = (rating) => {
@@ -341,7 +412,18 @@ function RoomDetails({ setCurrentPage, selectedRoomId }) {
                 </div>
               </div>
 
-              <h1 className="rd-title">{room.title}</h1>
+              {(() => {
+                const titleData = parseRoomTitle(room.title);
+                return (
+                  <div className="rd-title-block">
+                    <div className="rd-title-primary-row">
+                      <h1 className="rd-title-main">{titleData.mainName || room.title}</h1>
+                      {titleData.subtitle && <span className="rd-title-sub">{titleData.subtitle}</span>}
+                    </div>
+                    {titleData.roomType && <span className="rd-title-type">{titleData.roomType}</span>}
+                  </div>
+                );
+              })()}
               <div className="rd-rating-row">
                 <div className="rd-rating-stars">{renderStars(parseFloat(room.rating))}</div>
                 <span className="rd-rating-score">{room.rating}</span>
@@ -352,7 +434,7 @@ function RoomDetails({ setCurrentPage, selectedRoomId }) {
 
               <div className="rd-address">
                 <MapPinIcon size={16} />
-                <span>Meraki Living, Bhimtal, Uttarakhand</span>
+                <span>Meraki Living Peora Mukteshwar Uttarakhand</span>
                 <a href="https://maps.app.goo.gl/kL6fpQpMUpJ4nMAr9?g_st=aw" target="_blank" rel="noopener noreferrer" className="rd-view-map">
                   View on Google map
                 </a>
@@ -367,19 +449,37 @@ function RoomDetails({ setCurrentPage, selectedRoomId }) {
 
               <div className="rd-section">
                 <h2 className="rd-section-title">Amenities</h2>
-                <div className="rd-amenities-grid">
-                  {displayedAmenities.map((amenity, idx) => (
-                    <div className="rd-amenity-item" key={idx}>
-                      <CheckIcon size={18} />
-                      <span>{amenity}</span>
-                    </div>
-                  ))}
-                </div>
-                {room.amenities.length > 6 && (
-                  <button className="rd-show-more" onClick={() => setShowAllAmenities(!showAllAmenities)}>
-                    {showAllAmenities ? 'Show Less' : 'Show All Amenities'}
-                  </button>
+                {!showAllAmenities ? (
+                  <div className="rd-amenities-grid">
+                    {compactAmenities.map((amenity, idx) => (
+                      <div className="rd-amenity-item" key={idx}>
+                        <CheckIcon size={18} />
+                        <span>{amenity}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rd-amenities-categorized">
+                    {CATEGORIZED_AMENITIES.map((group, groupIdx) => (
+                      <div className="rd-amenities-category-block" key={groupIdx}>
+                        <h3 className="rd-amenities-category-title">
+                          <span className="rd-category-emoji">{group.icon}</span> {group.category}
+                        </h3>
+                        <div className="rd-amenities-grid">
+                          {group.items.map((amenity, idx) => (
+                            <div className="rd-amenity-item" key={idx}>
+                              <CheckIcon size={18} />
+                              <span>{amenity}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
+                <button className="rd-show-more" onClick={() => setShowAllAmenities(!showAllAmenities)}>
+                  {showAllAmenities ? 'Show Less' : 'Show All Amenities'}
+                </button>
               </div>
 
               <div className="rd-section">
@@ -538,7 +638,7 @@ function RoomDetails({ setCurrentPage, selectedRoomId }) {
                   </div>
                   <p className="rd-book-tax">+ taxes per night</p>
                   <button className="rd-book-btn" onClick={handleBookNow}>
-                    <span>Check Availability</span>
+                    <span>{room.status?.toLowerCase() === 'booked' ? 'Booked' : 'Check Availability'}</span>
                     <HugeiconsIcon icon={ArrowRight02Icon} size={16} />
                   </button>
                   <div className="rd-book-trust">
@@ -626,7 +726,7 @@ function RoomDetails({ setCurrentPage, selectedRoomId }) {
             </div>
           </div>
           <button className="rd-sticky-btn" onClick={handleBookNow}>
-            <span>Check Availability</span>
+            <span>{room.status?.toLowerCase() === 'booked' ? 'Booked' : 'Check Availability'}</span>
             <HugeiconsIcon icon={ArrowRight02Icon} size={16} />
           </button>
         </div>

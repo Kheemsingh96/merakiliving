@@ -222,7 +222,7 @@ const galleryImages = [
   cafeMenuImg1
 ];
 
-const reviewData = [
+const DEFAULT_REVIEW_DATA = [
   {
     id: 1,
     name: "Rajesh Khanna",
@@ -248,27 +248,55 @@ const reviewData = [
 
 const CafePage = () => {
   const [activeCategory, setActiveCategory] = useState("All");
-  const [dietFilter, setDietFilter] = useState("All"); 
   const [foodIndex, setFoodIndex] = useState(0);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [activeSlide, setActiveSlide] = useState(0);
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
   const [currentMenuPage, setCurrentMenuPage] = useState(0);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [dietFilter, setDietFilter] = useState("All");
   const [showFilter, setShowFilter] = useState(false);
-  const [isHeroLoaded, setIsHeroLoaded] = useState(false);
 
+  const [featuredMenuState, setFeaturedMenuState] = useState(featuredMenuItems);
+  const [modalMenuState, setModalMenuState] = useState(modalMenuPages);
+  const [galleryImagesState, setGalleryImagesState] = useState(galleryImages);
+  
   // Review section state
   const [activeReviewIndex, setActiveReviewIndex] = useState(0);
+  const [reviews, setReviews] = useState(DEFAULT_REVIEW_DATA);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveReviewIndex((current) => (current + 1) % reviewData.length);
-    }, 4500);
-    return () => clearInterval(timer);
+    fetch('http://localhost/merakiliving_backend/api_reviews.php')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.status === 'success' && Array.isArray(data.data)) {
+          const cafeReviews = data.data
+            .filter(r => r.visibility === 'Visible' && r.type === 'Cafe')
+            .map(r => ({
+              id: r.review_id,
+              name: r.guest_name || 'Guest',
+              date: 'Recent',
+              avatar: null,
+              text: r.review_text,
+              rating: r.rating || 5
+            }));
+          if (cafeReviews.length > 0) {
+            setReviews(cafeReviews);
+            setActiveReviewIndex(0);
+          }
+        }
+      })
+      .catch(e => console.error("Error fetching cafe reviews:", e));
   }, []);
 
+  useEffect(() => {
+    if (reviews.length === 0) return;
+    const timer = setInterval(() => {
+      setActiveReviewIndex((current) => (current + 1) % reviews.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [reviews.length]);
+
   const getPositionClass = (index) => {
-    const length = reviewData.length;
+    const length = reviews.length;
     let dist = (index - activeReviewIndex + length) % length;
     
     if (dist > Math.floor(length / 2)) {
@@ -283,7 +311,76 @@ const CafePage = () => {
     return 'pos-hidden';
   };
 
-  const activeReview = reviewData[activeReviewIndex];
+  const activeReview = reviews[activeReviewIndex];
+
+  const fetchCafeGallery = useCallback(() => {
+    fetch('http://localhost/merakiliving_backend/api_gallery.php')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.status === 'success' && data.data) {
+           const ambianceImages = data.data.filter(img => img.category === 'Cafe Ambiance Gallery');
+           if (ambianceImages.length > 0) {
+              setGalleryImagesState(ambianceImages.map(img => img.image_url));
+           }
+        }
+      }).catch(e => console.error("Error fetching cafe gallery:", e));
+  }, []);
+
+  useEffect(() => {
+    fetchCafeGallery();
+  }, [fetchCafeGallery]);
+
+  useEffect(() => {
+    const handler = () => fetchCafeGallery();
+    window.addEventListener('galleryUpdated', handler);
+    return () => window.removeEventListener('galleryUpdated', handler);
+  }, [fetchCafeGallery]);
+
+  useEffect(() => {
+    fetch('http://localhost/merakiliving_backend/api_cafe.php')
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success' && data.data.length > 0) {
+          const apiItems = data.data;
+          
+          const featured = apiItems.filter(i => Number(i.is_featured) === 1 || i.is_featured === true);
+          setFeaturedMenuState(featured.map(i => ({
+               id: i.item_id || i.id,
+               image: i.image_url,
+               name: i.title,
+               desc: i.description,
+               category: i.category,
+               tag: i.tag,
+               rating: i.rating || 4.8,
+               price: i.price,
+               originalPrice: i.original_price,
+               isVeg: Number(i.is_veg) === 1 || i.is_veg === true,
+               status: i.status
+          })));
+
+          const newModalMenuPages = JSON.parse(JSON.stringify(modalMenuPages));
+          newModalMenuPages.forEach(page => {
+            page.sections.forEach(section => {
+              const sectionItems = apiItems.filter(i => i.category === section.title);
+              if (sectionItems.length > 0) {
+                 section.items = sectionItems.map(i => ({
+                   name: i.title,
+                   desc: i.description,
+                   price: i.price,
+                   tag: i.tag || ''
+                 }));
+              }
+            });
+          });
+          setModalMenuState(newModalMenuPages);
+        }
+      })
+      .catch(e => console.error(e));
+  }, []);
+
+
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [isHeroLoaded, setIsHeroLoaded] = useState(false);
 
   const categories = [
     { name: "All", icon: <FaStar size={16} /> },
@@ -294,7 +391,7 @@ const CafePage = () => {
     { name: "Desserts", icon: <ApplePieIcon size={18} variant="stroke" /> }
   ];
 
-  const filteredMenu = featuredMenuItems.filter(item => {
+  let filteredMenu = featuredMenuState.filter(item => {
     const categoryMatch = activeCategory === "All" || item.category === activeCategory;
     const dietMatch = dietFilter === "All" || (dietFilter === "Veg" ? item.isVeg === true : item.isVeg === false);
     return categoryMatch && dietMatch;
@@ -423,10 +520,10 @@ const CafePage = () => {
       <div id="about" className="mcf-about">
         <div className="mcf-about-container mcf-animate">
           <div className="mcf-about-image mobile-only">
-            <img src={cafeAboutImg} alt="Cozy cafe interior with mountain views" loading="eager" decoding="async" width="640" height="480" />
+            <img src={cafeAboutImg} alt="Cozy cafe interior with mountain views" loading="lazy" decoding="async" width="640" height="480" />
           </div>
           <div className="mcf-about-image desktop-only">
-            <img src={cafeAboutImg} alt="Cozy cafe interior with mountain views" loading="eager" decoding="async" width="640" height="480" />
+            <img src={cafeAboutImg} alt="Cozy cafe interior with mountain views" loading="lazy" decoding="async" width="640" height="480" />
           </div>
           <div className="mcf-about-text-header">
             <h2 className="mcf-about-title">Experience the Soul of Café Meraki</h2>
@@ -666,7 +763,7 @@ const CafePage = () => {
             <h2 className="mcf-gallery-title">Come for the View, Stay for the Moments</h2>
           </div>
           <div className="mcf-gallery-grid mcf-stagger-children">
-            {galleryImages.map((img, idx) => (
+            {galleryImagesState.map((img, idx) => (
               <div
                 className="mcf-gallery-item"
                 key={idx}
@@ -696,7 +793,7 @@ const CafePage = () => {
           <div className="premium-review-box">
             <div className="review-content">
               <div className="review-stars">
-                {[...Array(5)].map((_, i) => (
+                {[...Array(parseInt(activeReview?.rating) || 5)].map((_, i) => (
                   <svg key={i} viewBox="0 0 24 24" fill="#F79D00">
                     <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
                   </svg>
@@ -718,7 +815,7 @@ const CafePage = () => {
                 <path d="M 20 60 Q 170 -10 320 60" stroke="#E2E8F0" strokeWidth="2" fill="none" />
               </svg>
 
-              {reviewData.map((review, index) => (
+              {reviews.map((review, index) => (
                 <div 
                   key={review.id} 
                   className={`avatar-item ${getPositionClass(index)}`}
@@ -782,9 +879,9 @@ const CafePage = () => {
             <div className="mcf-menu-modal-header">
               <div className="mcf-menu-modal-header-text">
                 <p className="mcf-menu-modal-pretitle">Café Meraki</p>
-                <h2 className="mcf-menu-modal-title">{modalMenuPages[currentMenuPage].pageTitle}</h2>
-                {modalMenuPages[currentMenuPage].subtitle && (
-                  <p className="mcf-menu-modal-subtitle">{modalMenuPages[currentMenuPage].subtitle}</p>
+                <h2 className="mcf-menu-modal-title">{modalMenuState[currentMenuPage].pageTitle}</h2>
+                {modalMenuState[currentMenuPage].subtitle && (
+                  <p className="mcf-menu-modal-subtitle">{modalMenuState[currentMenuPage].subtitle}</p>
                 )}
               </div>
               <button className="mcf-menu-modal-close" onClick={() => setIsMenuModalOpen(false)}>
@@ -793,7 +890,7 @@ const CafePage = () => {
             </div>
 
             <div className="mcf-menu-modal-body">
-              {modalMenuPages[currentMenuPage].sections.map((section, idx) => (
+              {modalMenuState[currentMenuPage].sections.map((section, idx) => (
                 <div className="mcf-menu-modal-section" key={idx}>
                   <h3 className="mcf-menu-modal-section-title"><span>{section.title}</span></h3>
                   {section.desc && <p className="mcf-menu-modal-section-desc">{section.desc}</p>}
@@ -834,10 +931,10 @@ const CafePage = () => {
                   <FiChevronLeft size={20} /> Prev
                 </button>
                 <span className="mcf-modal-page-indicator">
-                  Page {currentMenuPage + 1} of {modalMenuPages.length}
+                  Page {currentMenuPage + 1} of {modalMenuState.length}
                 </span>
                 <button 
-                  disabled={currentMenuPage === modalMenuPages.length - 1} 
+                  disabled={currentMenuPage === modalMenuState.length - 1} 
                   onClick={() => setCurrentMenuPage(prev => prev + 1)}
                   className="mcf-modal-page-btn"
                 >

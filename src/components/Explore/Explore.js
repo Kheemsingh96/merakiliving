@@ -103,6 +103,50 @@ const EXPLORE_DATA = [
 
 function Explore() {
   const [activeGallery, setActiveGallery] = useState(null);
+  const [exploreData, setExploreData] = useState(EXPLORE_DATA);
+
+  // Fetch explore data from backend
+  const fetchExploreData = useCallback(() => {
+    fetch('http://localhost/merakiliving_backend/api_gallery.php')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.status === 'success' && data.data) {
+          const apiImages = data.data;
+          const updatedData = EXPLORE_DATA.map(item => {
+            const catName = `Explore - ${item.title}`;
+            const imagesForCat = apiImages.filter(img => img.category === catName);
+            if (imagesForCat.length > 0) {
+              return {
+                ...item,
+                coverImage: imagesForCat[0].image_url,
+                photosCount: `${imagesForCat.length} Photos`,
+                gallery: imagesForCat.map(img => ({ src: img.image_url }))
+              };
+            }
+            return item;
+          });
+          setExploreData(updatedData);
+        }
+      })
+      .catch(err => console.error("Error fetching explore images:", err));
+  }, []);
+
+  // Initial load
+  useEffect(() => {
+    fetchExploreData();
+  }, [fetchExploreData]);
+
+  // Listen for updates from admin panel
+  useEffect(() => {
+    const handler = () => {
+      fetchExploreData();
+    };
+    window.addEventListener('galleryUpdated', handler);
+    return () => {
+      window.removeEventListener('galleryUpdated', handler);
+    };
+  }, [fetchExploreData]);
+
 
   const handleOpenGallery = useCallback((item) => {
     setActiveGallery(item);
@@ -136,7 +180,7 @@ function Explore() {
       </div>
 
       <div className="explore-grid">
-        {EXPLORE_DATA.map((item) => (
+        {exploreData.map((item) => (
           <article
             className="explore-card"
             key={item.id}

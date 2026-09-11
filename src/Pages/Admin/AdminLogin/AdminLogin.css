@@ -1,0 +1,121 @@
+.admin-login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #F8F3F8; /* Exact theme background */
+  font-family: 'Outfit', sans-serif;
+}
+
+.admin-login-card {
+  background: #ffffff;
+  padding: 48px;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  border: 1px solid #f0f0f0;
+  text-align: center;
+}
+
+.admin-login-logo {
+  height: 48px;
+  margin-bottom: 32px;
+  object-fit: contain;
+}
+
+.admin-login-title {
+  font-size: 26px;
+  font-weight: 600;
+  color: #373737; /* Theme text */
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.admin-login-subtitle {
+  font-size: 15px;
+  color: #817F7F; /* Theme secondary text */
+  margin-bottom: 32px;
+}
+
+.admin-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  text-align: left;
+}
+
+.admin-login-form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #373737;
+  margin-bottom: 8px;
+}
+
+.admin-login-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  font-size: 15px;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+  background: #ffffff;
+  color: #373737;
+}
+
+.admin-login-input::placeholder {
+  color: #817F7F;
+}
+
+.admin-login-input:focus {
+  outline: none;
+  border-color: #870097;
+  box-shadow: 0 0 0 3px rgba(135, 0, 151, 0.1);
+  background: #ffffff;
+}
+
+.admin-login-btn {
+  background: #870097; /* Theme primary */
+  color: #ffffff;
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  margin-top: 8px;
+}
+
+.admin-login-btn:hover {
+  background: #6a0078;
+  transform: translateY(-1px);
+}
+
+.admin-login-error {
+  color: #d93025;
+  background: #fdf5f5;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  border: 1px solid rgba(217, 48, 37, 0.1);
+}
+
+@media (max-width: 640px) {
+  .admin-login-card {
+    margin: 20px;
+    padding: 32px 24px;
+  }
+}
+@media (max-width: 380px) {
+  .admin-login-card {
+    margin: 16px;
+    padding: 24px 16px;
+  }
+}

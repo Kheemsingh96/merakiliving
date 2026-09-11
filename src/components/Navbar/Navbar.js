@@ -6,21 +6,21 @@ import ventureLogo from '../../assets/images/pranay-matiyani-ventures.webp';
 const NAV_ITEMS = [
   { id: 'home', label: 'Home' },
   { id: 'stay', label: 'Stay' },
-  { id: 'own-villa', label: 'Own a Villa' },
   { id: 'experiences', label: 'Experiences' },
   { id: 'cafe', label: 'Cafe' },
   { id: 'gallery', label: 'Gallery' },
-  { id: 'about', label: 'About' },
+  { id: 'manage-booking', label: 'Manage Booking' },
+  { id: 'about', label: 'About Us' },
   { id: 'contact', label: 'Contact' },
 ];
 
 const PAGE_MAP = {
   home: 'home',
   stay: 'rooms',
-  'own-villa': 'home',
   experiences: 'home',
   cafe: 'cafe',
   gallery: 'home',
+  'manage-booking': 'manage-booking',
   about: 'about-us',
   contact: 'home',
 };
@@ -30,6 +30,7 @@ const REVERSE_PAGE_MAP = {
   rooms: 'stay',
   cafe: 'cafe',
   'about-us': 'about',
+  'manage-booking': 'manage-booking',
 };
 
 function Navbar({ setCurrentPage, currentPage }) {
@@ -40,7 +41,17 @@ function Navbar({ setCurrentPage, currentPage }) {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 10);
+    let ticking = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 10;
+          setScrolled((prev) => (prev !== isScrolled ? isScrolled : prev));
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);

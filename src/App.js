@@ -11,6 +11,7 @@ import Review from './components/Review/Review';
 import FAQ from './components/FAQ/FAQ';
 import CTA from './components/CTA/CTA';
 import Footer from './components/Footer/Footer';
+import CookieConsent from './components/CookieConsent/CookieConsent';
 
 import './App.css';
 
@@ -18,18 +19,27 @@ const AboutUs = React.lazy(() => import('./components/AboutUs/AboutUs'));
 const Booking = React.lazy(() => import('./Pages/Booking/Booking'));
 const RoomDetails = React.lazy(() => import('./Pages/RoomDetails/RoomDetails'));
 const GuestDetails = React.lazy(() => import('./Pages/GuestDetails/GuestDetails'));
-const Payment = React.lazy(() => import('./Pages/Payment/Payment'));
-const Confirmation = React.lazy(() => import('./Pages/Confirmation/Confirmation'));
 const PrivacyPolicy = React.lazy(() => import('./Pages/PrivacyPolicy/PrivacyPolicy'));
 const TermsConditions = React.lazy(() => import('./Pages/TermsConditions/TermsConditions'));
 const CancellationPolicy = React.lazy(() => import('./Pages/CancellationPolicy/CancellationPolicy'));
 const CafePage = React.lazy(() => import('./Pages/CafePage/CafePage'));
+const NotFound = React.lazy(() => import('./Pages/NotFound/NotFound'));
+
+// Admin Pages
+const ManageBooking = React.lazy(() => import('./Pages/ManageBooking/ManageBooking'));
+const AdminLogin = React.lazy(() => import('./Pages/Admin/AdminLogin/AdminLogin'));
+const AdminDashboard = React.lazy(() => import('./Pages/Admin/AdminDashboard/AdminDashboard'));
 
 const HOME_PAGES = ['home', 'rooms', 'explore', 'faq'];
 const LEGAL_PAGES = ['privacy-policy', 'terms-conditions', 'cancellation-policy'];
 
 function App() {
   const [currentPage, setCurrentPage] = useState(() => {
+    const path = window.location.pathname;
+    if (path === '/Pranay-admin') {
+      return sessionStorage.getItem('meraki_admin_auth') === 'true' ? 'admin-dashboard' : 'admin-login';
+    }
+    
     return sessionStorage.getItem('meraki_currentPage') || 'home';
   });
   const [selectedRoomId, setSelectedRoomId] = useState(() => {
@@ -50,7 +60,12 @@ function App() {
     if (history.length > 10) history.shift();
     sessionStorage.setItem('meraki_navHistory', JSON.stringify(history));
 
-    window.history.pushState({ page }, '', window.location.href);
+    // Handle updating URL for admin routes so they match the requirements (/Pranay-admin)
+    let url = window.location.href;
+    if (page === 'admin-login' || page === 'admin-dashboard') url = '/Pranay-admin';
+    else if (window.location.pathname.startsWith('/Pranay-admin')) url = '/';
+
+    window.history.pushState({ page }, '', url);
     
     if (scrollToId) {
       setTimeout(() => {
@@ -68,6 +83,12 @@ function App() {
 
   useEffect(() => {
     const handlePopState = () => {
+      const path = window.location.pathname;
+      if (path === '/Pranay-admin') {
+        setCurrentPage(sessionStorage.getItem('meraki_admin_auth') === 'true' ? 'admin-dashboard' : 'admin-login');
+        return;
+      }
+
       const history = JSON.parse(sessionStorage.getItem('meraki_navHistory') || '[]');
       if (history.length > 1) {
         history.pop();
@@ -126,8 +147,6 @@ function App() {
     switch (currentPage) {
       case 'about-us':
         return <AboutUs setCurrentPage={handleNavigate} />;
-      // Gallery ka case yahan se hata diya gaya hai, taaki wo separate page ki tarah nahi, 
-      // balki home page ke section ki tarah render ho.
       case 'cafe':
         return <CafePage setCurrentPage={handleNavigate} />;
       case 'room-details':
@@ -136,44 +155,52 @@ function App() {
         return <Booking setCurrentPage={handleNavigate} />;
       case 'guest-details':
         return <GuestDetails setCurrentPage={handleNavigate} selectedRoomId={selectedRoomId} />;
-      case 'payment':
-        return <Payment setCurrentPage={handleNavigate} selectedRoomId={selectedRoomId} />;
-      case 'confirmation':
-        return <Confirmation setCurrentPage={handleNavigate} />;
       case 'privacy-policy':
         return <PrivacyPolicy />;
       case 'terms-conditions':
         return <TermsConditions />;
+      case 'manage-booking':
+        return <ManageBooking setCurrentPage={handleNavigate} />;
       case 'cancellation-policy':
         return <CancellationPolicy />;
+      case '404':
       default:
-        return (
-          <>
-            <div id="home"><Hero setCurrentPage={handleNavigate} /></div>
-            <div id="experiences"><Experience /></div>
-            <Viewpoints />
-            <div id="stay"><Rooms setCurrentPage={handleNavigate} /></div>
-            
-            <div id="gallery">
-              <Explore />
-            </div>
-            
-            <CafeSection setCurrentPage={handleNavigate} />
-            <Review />
-            <FAQ />
-            <CTA setCurrentPage={handleNavigate} />
-          </>
-        );
+        return <NotFound setCurrentPage={handleNavigate} />;
     }
+  };
+
+  const renderLayout = () => {
+    if (currentPage === 'admin-login') {
+      return (
+        <React.Suspense fallback={<div className="suspense-loader"><div className="suspense-spinner"></div></div>}>
+          <AdminLogin setCurrentPage={handleNavigate} />
+        </React.Suspense>
+      );
+    }
+    
+    if (currentPage === 'admin-dashboard') {
+      return (
+        <React.Suspense fallback={<div className="suspense-loader"><div className="suspense-spinner"></div></div>}>
+          <AdminDashboard setCurrentPage={handleNavigate} />
+        </React.Suspense>
+      );
+    }
+
+    return (
+      <>
+        <Navbar setCurrentPage={handleNavigate} currentPage={currentPage} />
+        <React.Suspense fallback={<div className="suspense-loader"><div className="suspense-spinner"></div></div>}>
+          {renderPage()}
+        </React.Suspense>
+        <div id="contact"><Footer setCurrentPage={handleNavigate} /></div>
+        <CookieConsent setCurrentPage={handleNavigate} />
+      </>
+    );
   };
 
   return (
     <div className="app-container">
-      <Navbar setCurrentPage={handleNavigate} currentPage={currentPage} />
-      <React.Suspense fallback={<div className="suspense-loader"><div className="suspense-spinner"></div></div>}>
-        {renderPage()}
-      </React.Suspense>
-      <div id="contact"><Footer setCurrentPage={handleNavigate} /></div>
+      {renderLayout()}
     </div>
   );
 }

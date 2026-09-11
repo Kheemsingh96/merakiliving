@@ -1,4 +1,4 @@
-﻿.error-page-container {
+.error-page-container {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -28,7 +28,7 @@
 
 .error-page-text {
   font-size: 16px;
-  color: #666666;
+  color: #817F8F;
   line-height: 1.6;
   margin-bottom: 32px;
 }

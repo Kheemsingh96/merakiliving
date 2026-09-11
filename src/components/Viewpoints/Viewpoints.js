@@ -85,6 +85,7 @@ function Viewpoints() {
               width="640"
               height="380"
               loading="lazy"
+              decoding="async"
             />
             <div className="viewpoint-overlay" />
 

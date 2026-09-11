@@ -86,7 +86,7 @@
 .mcf-ab-hero-desc {
   font-size: 16px;
   font-weight: 400;
-  color: #666666;
+  color: #817F8F;
   line-height: 1.7;
   margin: 0 0 10px 0;
   max-width: 540px;
@@ -153,7 +153,7 @@
 
 .mcf-ab-hero-box-text p {
   font-size: 14px;
-  color: #666666;
+  color: #817F8F;
   line-height: 22px;
   margin: 0;
 }
@@ -338,7 +338,7 @@
 
 .mcf-ab-highlight-desc {
   font-size: 13px;
-  color: #888888;
+  color: #817F8F;
   line-height: 1.6;
   max-width: 200px;
   margin: 0;
@@ -346,7 +346,7 @@
 }
 
 .mcf-ab-highlight:hover .mcf-ab-highlight-desc {
-  color: #666666;
+  color: #817F8F;
 }
 
 /* ================================================================
@@ -480,7 +480,7 @@
 .mcf-ab-story-body p {
   font-size: 16px;
   font-weight: 400;
-  color: #666666;
+  color: #817F8F;
   line-height: 32px;
   margin: 0;
 }
@@ -565,7 +565,7 @@
 .mcf-ab-cta-desc {
   font-size: 16px;
   font-weight: 400;
-  color: #666666;
+  color: #817F8F;
   line-height: 32px;
   margin: 0 0 40px 0;
   max-width: 540px;
@@ -620,6 +620,7 @@
   filter: blur(80px);
   pointer-events: none;
   z-index: 1;
+  will-change: transform;
 }
 
 .mcf-ab-cta-orb.orb-1 {
@@ -659,20 +660,20 @@
 }
 
 @keyframes mcf-ab-float-1 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(20px, -30px) scale(1.05); }
-  66% { transform: translate(-10px, 15px) scale(0.95); }
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33% { transform: translate3d(20px, -30px, 0) scale(1.05); }
+  66% { transform: translate3d(-10px, 15px, 0) scale(0.95); }
 }
 
 @keyframes mcf-ab-float-2 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-25px, -20px) scale(1.08); }
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-25px, -20px, 0) scale(1.08); }
 }
 
 @keyframes mcf-ab-float-3 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(15px, 25px) scale(0.92); }
-  66% { transform: translate(-20px, -10px) scale(1.03); }
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33% { transform: translate3d(15px, 25px, 0) scale(0.92); }
+  66% { transform: translate3d(-20px, -10px, 0) scale(1.03); }
 }
 
 /* ================================================================

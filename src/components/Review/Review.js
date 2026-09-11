@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import './Review.css';
 
-const REVIEW_DATA = [
+const API_CONFIG_URL = 'http://localhost/merakiliving_backend';
+
+const DEFAULT_REVIEW_DATA = [
   {
     id: 1,
     name: 'Rajesh Khanna',
@@ -41,6 +43,7 @@ const REVIEW_DATA = [
 ];
 
 function getInitials(name) {
+  if (!name) return 'G';
   return name
     .split(' ')
     .map((n) => n[0])
@@ -51,16 +54,41 @@ function getInitials(name) {
 
 const Review = () => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [reviews, setReviews] = useState(DEFAULT_REVIEW_DATA);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveIndex((current) => (current + 1) % REVIEW_DATA.length);
-    }, 4500);
-    return () => clearInterval(timer);
+    fetch(`${API_CONFIG_URL}/api_reviews.php`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.status === 'success' && Array.isArray(data.data)) {
+          const homestayReviews = data.data
+            .filter(r => r.visibility === 'Visible' && (!r.type || r.type === 'Homestay'))
+            .map(r => ({
+              id: r.review_id,
+              name: r.guest_name || 'Guest',
+              date: 'Recent',
+              text: r.review_text,
+              rating: r.rating || 5
+            }));
+          if (homestayReviews.length > 0) {
+            setReviews(homestayReviews);
+            setActiveIndex(0);
+          }
+        }
+      })
+      .catch(e => console.error("Error fetching reviews:", e));
   }, []);
 
-  const getPositionClass = (index) => {
-    const length = REVIEW_DATA.length;
+  useEffect(() => {
+    if (reviews.length === 0) return;
+    const timer = setInterval(() => {
+      setActiveIndex((current) => (current + 1) % reviews.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [reviews.length]);
+
+  const getPositionClass = useCallback((index) => {
+    const length = reviews.length;
     let dist = (index - activeIndex + length) % length;
     
     if (dist > Math.floor(length / 2)) {
@@ -73,9 +101,11 @@ const Review = () => {
     if (dist === -2) return 'pos-far-left';
     if (dist === 2) return 'pos-far-right';
     return 'pos-hidden';
-  };
+  }, [activeIndex, reviews.length]);
 
-  const activeReview = REVIEW_DATA[activeIndex];
+  const activeReview = useMemo(() => reviews[activeIndex], [reviews, activeIndex]);
+
+  if (!activeReview) return null;
 
   return (
     <section className="premium-review-section">
@@ -92,7 +122,7 @@ const Review = () => {
         <div className="premium-review-box">
           <div className="review-content">
             <div className="review-stars">
-              {[...Array(5)].map((_, i) => (
+              {[...Array(parseInt(activeReview.rating) || 5)].map((_, i) => (
                 <svg key={i} viewBox="0 0 24 24" fill="#F79D00">
                   <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
                 </svg>
@@ -114,7 +144,7 @@ const Review = () => {
               <path d="M 20 60 Q 170 -10 320 60" stroke="#E2E8F0" strokeWidth="2" fill="none" />
             </svg>
 
-            {REVIEW_DATA.map((review, index) => (
+            {reviews.map((review, index) => (
               <div 
                 key={review.id} 
                 className={`avatar-item ${getPositionClass(index)}`}

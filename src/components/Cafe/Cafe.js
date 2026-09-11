@@ -12,7 +12,7 @@ const Cafe = ({ setCurrentPage }) => {
       <div className="cafe-container">
         <div className="cafe-visuals">
           <div className="cafe-main-image">
-            <img src={cafeMain} alt="Meraki Mountain Cafe exterior with Himalayan mountain views" width="640" height="480" loading="lazy" />
+            <img src={cafeMain} alt="Meraki Mountain Cafe exterior with Himalayan mountain views" width="640" height="480" loading="lazy" decoding="async" />
           </div>
         </div>
 

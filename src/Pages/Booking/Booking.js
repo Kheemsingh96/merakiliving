@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { parseRoomTitle } from '../../components/Rooms/Rooms';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   Calendar01Icon,
@@ -11,7 +12,6 @@ import {
   PlusSignIcon,
   MinusSignIcon,
   Edit02Icon,
-  MapPinIcon,
   ViewIcon,
   MountainIcon,
   ArmchairIcon
@@ -38,19 +38,34 @@ import room4c from '../../assets/images/room-4c.webp';
 
 const roomsData = [
   {
-    id: 1,
-    image: room1,
-    title: 'Himalayan View Room',
-    desc: 'Relax in our Himalayan View Room at Meraki Living, featuring cozy interiors, modern comfort, fresh mountain air, and breathtaking Himalayan views.',
-    price: '3,500',
-    originalPrice: '4,500',
-    discount: '22',
+    id: 4,
+    image: room4,
+    title: 'Entire Homestay',
+    desc: 'Book the entire Meraki Living homestay for complete privacy and a memorable stay with your loved ones. Perfect for large groups, family gatherings, or special occasions with exclusive access to all amenities and spaces.',
+    price: '22,000',
+    originalPrice: '30,000',
+    discount: '26',
+    guests: '14 Guests',
+    bed: 'Multiple Rooms',
+    view: 'Panoramic View',
+    size: '1200 sq ft',
+    amenities: ['Free WiFi', 'Free Parking', 'Power Backup', 'Kitchen'],
+    gallery: [room4, room4a, room4b, room4c]
+  },
+  {
+    id: 3,
+    image: room3,
+    title: 'Luxury Family Suite',
+    desc: 'Enjoy our Luxury Family Suite at Meraki Living, featuring spacious interiors, premium comfort, modern amenities, and a peaceful mountain atmosphere perfect for families.',
+    price: '6,000',
+    originalPrice: '7,500',
+    discount: '20',
     guests: '2 Guests',
-    bed: 'King Bed',
-    view: 'Mountain View',
-    size: '280 sq ft',
-    amenities: ['Free WiFi', 'Free Parking', 'Breakfast Included', 'Room Heater'],
-    gallery: [room1, room1a, room1b, room1c]
+    bed: 'Premium Room',
+    view: 'Extra Space',
+    size: '450 sq ft',
+    amenities: ['Free WiFi', 'Free Parking', 'Power Backup', 'Kitchenette'],
+    gallery: [room3, room3a, room3b, room3c]
   },
   {
     id: 2,
@@ -64,38 +79,23 @@ const roomsData = [
     bed: 'Queen Bed',
     view: 'Private Sitting Area',
     size: '320 sq ft',
-    amenities: ['Free WiFi', 'Free Parking', 'Breakfast Included', 'Balcony'],
+    amenities: ['Free WiFi', 'Free Parking', 'Power Backup', 'Balcony'],
     gallery: [room2, room2a, room2b, room2c]
   },
   {
-    id: 3,
-    image: room3,
-    title: 'Luxury Family Suite',
-    desc: 'Enjoy our Luxury Family Suite at Meraki Living, featuring spacious interiors, premium comfort, modern amenities, and a peaceful mountain atmosphere perfect for families.',
-    price: '6,000',
-    originalPrice: '7,500',
-    discount: '20',
-    guests: '4 Guests',
-    bed: 'Premium Room',
-    view: 'Extra Space',
-    size: '450 sq ft',
-    amenities: ['Free WiFi', 'Free Parking', 'Breakfast Included', 'Kitchenette'],
-    gallery: [room3, room3a, room3b, room3c]
-  },
-  {
-    id: 4,
-    image: room4,
-    title: 'Entire Homestay',
-    desc: 'Book the entire Meraki Living homestay for complete privacy and a memorable stay with your loved ones. Perfect for large groups, family gatherings, or special occasions with exclusive access to all amenities and spaces.',
-    price: '22,000',
-    originalPrice: '30,000',
-    discount: '26',
-    guests: '8+ Guests',
-    bed: 'Multiple Rooms',
-    view: 'Panoramic View',
-    size: '1200 sq ft',
-    amenities: ['Free WiFi', 'Free Parking', 'Breakfast Included', 'Kitchen', 'Garden Access', 'Bonfire Area'],
-    gallery: [room4, room4a, room4b, room4c]
+    id: 1,
+    image: room1,
+    title: 'Himalayan View Room',
+    desc: 'Relax in our Himalayan View Room at Meraki Living, featuring cozy interiors, modern comfort, fresh mountain air, and peaceful nature surroundings.',
+    price: '3,500',
+    originalPrice: '4,500',
+    discount: '22',
+    guests: '2 Guests',
+    bed: 'King Bed',
+    view: 'Nature View',
+    size: '280 sq ft',
+    amenities: ['Free WiFi', 'Free Parking', 'Power Backup', 'Room Heater'],
+    gallery: [room1, room1a, room1b, room1c]
   }
 ];
 
@@ -112,14 +112,88 @@ const Booking = ({ setCurrentPage }) => {
   const [selectedThumb, setSelectedThumb] = useState({});
   const [activePopup, setActivePopup] = useState(null);
   const [expandedDesc, setExpandedDesc] = useState({});
+  const [showBookedPopup, setShowBookedPopup] = useState(false);
+  const [rooms, setRooms] = useState(roomsData);
+
+  useEffect(() => {
+    fetch('http://localhost/merakiliving_backend/api_rooms.php')
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success' && data.data) {
+          const merged = roomsData.map(localRoom => {
+            const backendRoom = data.data.find(r => r.id === localRoom.id);
+            if (backendRoom) {
+              const originalPrice = parseFloat(String(backendRoom.original_price || localRoom.originalPrice).replace(/,/g, ''));
+              const currentPrice = parseFloat(String(backendRoom.price || localRoom.price).replace(/,/g, ''));
+              let calculatedDiscount = localRoom.discount;
+              if (originalPrice > 0 && originalPrice > currentPrice) {
+                calculatedDiscount = Math.round(((originalPrice - currentPrice) / originalPrice) * 100).toString();
+              }
+              
+              return {
+                ...localRoom,
+                title: backendRoom.name || localRoom.title,
+                desc: backendRoom.description || localRoom.desc,
+                price: backendRoom.price?.toLocaleString() || localRoom.price,
+                originalPrice: backendRoom.original_price?.toLocaleString() || localRoom.originalPrice,
+                discount: calculatedDiscount,
+                image: backendRoom.image_url || localRoom.image,
+                gallery: backendRoom.image_url ? [backendRoom.image_url, ...localRoom.gallery.slice(1)] : localRoom.gallery,
+                status: backendRoom.status
+              };
+            }
+            return localRoom;
+          });
+          
+          const room1Booked = merged.find(r => r.id === 1)?.status?.toLowerCase() === 'booked' ? 1 : 0;
+          const room2Booked = merged.find(r => r.id === 2)?.status?.toLowerCase() === 'booked' ? 1 : 0;
+          const room3Booked = merged.find(r => r.id === 3)?.status?.toLowerCase() === 'booked' ? 1 : 0;
+          const bookedCount = room1Booked + room2Booked + room3Booked;
+          const entireHomestayBooked = merged.find(r => r.id === 4)?.status?.toLowerCase() === 'booked';
+
+          const finalRooms = merged.map(r => {
+            if (r.id === 4) {
+              if (r.status?.toLowerCase() === 'booked') return r;
+              return { ...r, status: bookedCount > 0 ? 'Not Available' : r.status };
+            } else if (r.id === 1 || r.id === 2 || r.id === 3) {
+              if (entireHomestayBooked) {
+                return { ...r, status: 'Not Available' };
+              }
+            }
+            return r;
+          });
+          
+          setRooms(finalRooms);
+        }
+      })
+      .catch(err => console.error(err));
+  }, []);
+
 
   const storedCheckIn = sessionStorage.getItem('meraki_checkIn');
   const storedCheckOut = sessionStorage.getItem('meraki_checkOut');
   const storedGuests = sessionStorage.getItem('meraki_guests');
 
   const defaultCheckIn = storedCheckIn ? new Date(storedCheckIn) : new Date();
-  const defaultCheckOut = storedCheckOut ? new Date(storedCheckOut) : new Date(new Date().setDate(new Date().getDate() + 2));
-  const defaultGuests = storedGuests ? JSON.parse(storedGuests) : { adults: 2, children: 0, rooms: 1 };
+  const defaultCheckOut = storedCheckOut ? new Date(storedCheckOut) : new Date(new Date().setDate(new Date().getDate() + 1));
+  const isPageReload = () => {
+    try {
+      const navEntries = window.performance.getEntriesByType('navigation');
+      if (navEntries && navEntries.length > 0) {
+        return navEntries[0].type === 'reload';
+      }
+      return window.performance.navigation && window.performance.navigation.type === 1;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  let defaultGuests = { adults: 2, children: 0, rooms: 1 };
+  if (!isPageReload() && storedGuests) {
+    try {
+      defaultGuests = JSON.parse(storedGuests);
+    } catch (e) {}
+  }
 
   const [checkInDate, setCheckInDate] = useState(defaultCheckIn);
   const [checkOutDate, setCheckOutDate] = useState(defaultCheckOut);
@@ -167,18 +241,88 @@ const Booking = ({ setCurrentPage }) => {
         if (type === 'rooms' && prev.rooms <= 1) return prev;
         newGuests[type] = prev[type] - 1;
       }
-      if (type === 'adults') {
-        newGuests.rooms = Math.max(newGuests.rooms, Math.ceil(newGuests.adults / 3));
-      }
       return newGuests;
     });
   }, []);
 
-  const handleBookNow = useCallback((e, room) => {
+  const handleBookNow = useCallback(async (e, room) => {
     e.stopPropagation();
+    
+    if (room.status?.toLowerCase() === 'booked' || room.status?.toLowerCase() === 'not available') {
+      setShowBookedPopup(true);
+      return;
+    }
+    
+    const adultsPerRoom = Math.ceil((guests.adults || 2) / (guests.rooms || 1));
+    const kidsPerRoom = Math.ceil((guests.children || 0) / (guests.rooms || 1));
+
+    if (room.id === 1) {
+      if (adultsPerRoom > 2 || kidsPerRoom > 2) {
+        alert('Himalayan View Room allows a maximum of 2 Adults and 2 Kids per room. Please adjust your guest count or add more rooms.');
+        return;
+      }
+    } else if (room.id === 2 || room.id === 3) {
+      if (adultsPerRoom > 6 || kidsPerRoom > 5) {
+        alert(`${room.title} allows a maximum of 6 Adults and 5 Kids per room. Please adjust your guest count or add more rooms.`);
+        return;
+      }
+    }
+    
+    try {
+      const res = await fetch('http://localhost/merakiliving_backend/api_rooms.php');
+      const data = await res.json();
+      if (data && data.status === 'success' && data.data) {
+        let isBooked = false;
+        const r1 = data.data.find(r => r.id === 1)?.status?.toLowerCase() === 'booked' ? 1 : 0;
+        const r2 = data.data.find(r => r.id === 2)?.status?.toLowerCase() === 'booked' ? 1 : 0;
+        const r3 = data.data.find(r => r.id === 3)?.status?.toLowerCase() === 'booked' ? 1 : 0;
+        const r4 = data.data.find(r => r.id === 4)?.status?.toLowerCase() === 'booked' ? 1 : 0;
+        const entireHomestayBooked = r4 > 0;
+        
+        if (room.id === 4) {
+          isBooked = r4 > 0 || (r1 + r2 + r3) > 0;
+        } else if (room.id === 1 || room.id === 2 || room.id === 3) {
+          const backendRoom = data.data.find(r => r.id === room.id);
+          isBooked = (backendRoom && backendRoom.status?.toLowerCase() === 'booked') || entireHomestayBooked;
+        } else {
+          const backendRoom = data.data.find(r => r.id === room.id);
+          isBooked = backendRoom && backendRoom.status?.toLowerCase() === 'booked';
+        }
+        
+        if (isBooked) {
+          setShowBookedPopup(true);
+          setRooms(prev => prev.map(r => {
+            if (r.id === room.id) {
+              if (room.id === 4 && r4 === 0) return { ...r, status: 'Not Available' };
+              if ((room.id === 1 || room.id === 2 || room.id === 3) && entireHomestayBooked) return { ...r, status: 'Not Available' };
+              return { ...r, status: 'Booked' };
+            }
+            return r;
+          }));
+          return;
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+
     const nights = getNights();
-    const price = parseInt(room.price.split(',').join(''), 10);
-    const totalPrice = price * nights * guests.rooms;
+    let price = parseInt(String(room.price).split(',').join(''), 10);
+    let extraCharge = 0;
+    
+    if (room.id === 2 || room.id === 3) {
+      const extraAdults = Math.max(0, adultsPerRoom - 2);
+      const extraKids = Math.max(0, kidsPerRoom - 2);
+      extraCharge = (extraAdults * 1000) + (extraKids * 500);
+    } else if (room.id === 4) {
+      const extraAdults = Math.max(0, guests.adults - 12);
+      const extraKids = Math.max(0, (guests.children || 0) - 2);
+      extraCharge = (extraAdults * 1000) + (extraKids * 500);
+    }
+    
+    price += extraCharge;
+    const multiplier = room.id === 4 ? 1 : guests.rooms;
+    const totalPrice = price * nights * multiplier;
     const bookingData = {
       roomId: room.id,
       roomTitle: room.title,
@@ -329,8 +473,8 @@ const Booking = ({ setCurrentPage }) => {
       </div>
       <div className="guest-row">
         <div className="guest-info">
-          <span className="guest-type">Children</span>
-          <span className="guest-desc">Ages 2-12</span>
+          <span className="guest-type">Kids</span>
+          <span className="guest-desc">Ages 6-12</span>
         </div>
         <div className="guest-controls">
           <button className="guest-btn" onClick={(e) => { e.stopPropagation(); handleGuestChange('children', 'subtract'); }} disabled={guests.children <= 0}><HugeiconsIcon icon={MinusSignIcon} size={16} /></button>
@@ -358,14 +502,67 @@ const Booking = ({ setCurrentPage }) => {
   const nights = getNights();
 
   const roomCards = useMemo(() => {
-    return roomsData.map((room) => (
+    return rooms.map((room, roomIdx) => {
+      let currentRoomPrice = parseInt(String(room.price).replace(/,/g, ''), 10);
+      let extraChargePerNight = 0;
+      let extraChargeLabel = null;
+
+      const adultsPerRoom = Math.ceil((guests.adults || 2) / (guests.rooms || 1));
+      const kidsPerRoom = Math.ceil((guests.children || 0) / (guests.rooms || 1));
+
+      const totalGuestsInBar = (guests.adults || 2) + (guests.children || 0);
+      
+      if (room.id === 1) {
+        if (totalGuestsInBar > 3) return null;
+        if (adultsPerRoom > 2 || kidsPerRoom > 2) return null; // fallback to capacity rule just in case
+      } else if (room.id === 2) {
+        if (adultsPerRoom > 6 || kidsPerRoom > 5) return null;
+        const extraAdults = Math.max(0, adultsPerRoom - 2);
+        const extraKids = Math.max(0, kidsPerRoom - 2);
+        extraChargePerNight = (extraAdults * 1000) + (extraKids * 500);
+      } else if (room.id === 3) {
+        if (adultsPerRoom > 6 || kidsPerRoom > 5) return null;
+        const extraAdults = Math.max(0, adultsPerRoom - 2);
+        const extraKids = Math.max(0, kidsPerRoom - 2);
+        extraChargePerNight = (extraAdults * 1000) + (extraKids * 500);
+      } else if (room.id === 4) {
+        if (guests.adults + (guests.children || 0) > 14) return null;
+        const extraAdults = Math.max(0, guests.adults - 12);
+        const extraKids = Math.max(0, (guests.children || 0) - 2);
+        extraChargePerNight = (extraAdults * 1000) + (extraKids * 500);
+      }
+      
+      currentRoomPrice += extraChargePerNight;
+      
+      if (extraChargePerNight > 0) {
+        const multiplier = room.id === 4 ? 1 : (guests.rooms || 1);
+        
+        let labelText = [];
+        let extraA = 0;
+        let extraK = 0;
+        if (room.id === 2 || room.id === 3) {
+          extraA = Math.max(0, adultsPerRoom - 2);
+          extraK = Math.max(0, kidsPerRoom - 2);
+        } else if (room.id === 4) {
+          extraA = Math.max(0, guests.adults - 12);
+          extraK = Math.max(0, (guests.children || 0) - 2);
+        }
+        
+        if (extraA > 0) labelText.push(`${extraA} Extra Adult${extraA > 1 ? 's' : ''}`);
+        if (extraK > 0) labelText.push(`${extraK} Extra Kid${extraK > 1 ? 's' : ''}`);
+        
+        const extraAmountString = `₹${(extraChargePerNight * multiplier).toLocaleString('en-IN')} Extra`;
+        extraChargeLabel = <div style={{ fontSize: '13px', color: '#c5221f', marginTop: '4px', fontWeight: '500', width: '100%', display: 'block' }}>{labelText.join(' & ')} &middot; {extraAmountString}</div>;
+      }
+
+      return (
       <div className="booking-room-card" key={room.id} onClick={() => handleViewDetails(room.id)}>
         <div className="booking-room-gallery">
           <div className="booking-room-main-image">
             <img
               src={selectedThumb[room.id] !== undefined ? room.gallery[selectedThumb[room.id]] : room.image}
               alt={room.title}
-              loading="eager"
+              loading={roomIdx === 0 ? "eager" : "lazy"}
               decoding="async"
             />
           </div>
@@ -376,17 +573,25 @@ const Booking = ({ setCurrentPage }) => {
                 key={idx}
                 onClick={(e) => handleThumbClick(e, room.id, idx)}
               >
-                <img src={thumb} alt={`${room.title} ${idx + 1}`} loading="eager" decoding="async" />
+                <img src={thumb} alt={`${room.title} ${idx + 1}`} loading="lazy" decoding="async" />
               </div>
             ))}
           </div>
         </div>
         <div className="booking-room-details">
           <div className="booking-room-header">
-            <h3 className="booking-room-title">{room.title}</h3>
-            <div className="booking-room-size">
-              <HugeiconsIcon icon={MapPinIcon} size={14} />
-              <span>{room.size}</span>
+            {(() => {
+              const titleData = parseRoomTitle(room.title);
+              return (
+                <h3 className="booking-room-title">
+                  <span className="booking-room-title-main">{titleData.mainName || room.title}</span>
+                  {titleData.subtitle && <span className="booking-room-title-sub"> {titleData.subtitle}</span>}
+                  {titleData.roomType && <span className="booking-room-title-type"> {titleData.roomType}</span>}
+                </h3>
+              );
+            })()}
+            <div className={`availability-tag availability-desktop ${(room.status?.toLowerCase() === 'booked' || room.status?.toLowerCase() === 'not available') ? 'booked' : 'available'}`}>
+              {room.status === 'Not Available' ? 'Not Available' : (room.status?.toLowerCase() === 'booked' ? 'Booked' : 'Available')}
             </div>
           </div>
           <div className="booking-room-desc-wrapper">
@@ -420,10 +625,14 @@ const Booking = ({ setCurrentPage }) => {
             ))}
           </div>
           <div className="booking-room-footer">
-            <div className="booking-room-price">
-              <span className="booking-price-amount">&#8377;{room.price}</span>
+            <div className="booking-room-price" style={{ flexWrap: 'wrap' }}>
+              <span className="booking-price-amount">&#8377;{currentRoomPrice.toLocaleString('en-IN')}</span>
               <span className="booking-price-original">&#8377;{room.originalPrice}</span>
               <span className="booking-price-discount">{room.discount}% OFF</span>
+              <div className={`availability-tag availability-mobile ${(room.status?.toLowerCase() === 'booked' || room.status?.toLowerCase() === 'not available') ? 'booked' : 'available'}`}>
+                {room.status === 'Not Available' ? 'Not Available' : (room.status?.toLowerCase() === 'booked' ? 'Booked' : 'Available')}
+              </div>
+              {extraChargeLabel}
             </div>
             <div className="booking-footer-actions">
               <button className="booking-btn-primary" onClick={(e) => handleBookNow(e, room)}>
@@ -434,8 +643,9 @@ const Booking = ({ setCurrentPage }) => {
           </div>
         </div>
       </div>
-    ));
-  }, [selectedThumb, expandedDesc, handleThumbClick, toggleDesc, handleViewDetails, handleBookNow]);
+      );
+    });
+  }, [rooms, selectedThumb, expandedDesc, handleThumbClick, toggleDesc, handleViewDetails, handleBookNow, guests]);
 
   return (
     <section className="booking-section">
@@ -533,6 +743,38 @@ const Booking = ({ setCurrentPage }) => {
           </div>
         </div>
       </div>
+
+      {showBookedPopup && (
+        <div style={{
+          position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999, 
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px'
+        }} onClick={() => setShowBookedPopup(false)}>
+          <div style={{
+            background: '#fff', borderRadius: '16px', padding: '32px', maxWidth: '400px', width: '100%',
+            textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', transform: 'translateY(0)',
+            animation: 'fadeIn 0.2s ease-out'
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{
+              width: '64px', height: '64px', borderRadius: '50%', background: '#fce8e6',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px'
+            }}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c5221f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </div>
+            <h3 style={{fontSize: '22px', fontWeight: '600', color: '#1A1A1A', marginBottom: '12px', marginTop: 0}}>
+              Room Unavailable
+            </h3>
+            <p style={{fontSize: '15px', color: '#666', lineHeight: '1.6', marginBottom: '28px', marginTop: 0}}>
+              This room is already booked. Please choose another available room for your stay.
+            </p>
+            <button className="booking-btn-primary" style={{width: '100%', justifyContent: 'center', padding: '14px', fontSize: '15px'}} onClick={() => setShowBookedPopup(false)}>
+              Okay, got it
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
