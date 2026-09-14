@@ -1,0 +1,930 @@
+/* ==========================================================================
+   SROT (स्रोत) Experience Page Stylesheet
+   Meraki Living - Peora, Mukteshwar, Uttarakhand
+   Strictly adheres to the website's container alignment, spacing & typography
+   ========================================================================== */
+
+.srot-page {
+  position: relative;
+  width: 100%;
+  background-color: var(--bg-page, #FCFAFC);
+  color: #817F8F;
+  overflow-x: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   1. HERO SECTION (Matches Home Hero Layout & Alignment)
+   -------------------------------------------------------------------------- */
+.srot-hero-section {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow: hidden;
+  background-color: #0a0a0a;
+  contain: layout;
+}
+
+.srot-hero-bg-wrapper {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.srot-hero-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 6s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: transform;
+}
+
+.srot-hero-section:hover .srot-hero-bg {
+  transform: scale(1.04);
+}
+
+.srot-hero-overlay-main {
+  position: absolute;
+  inset: 0;
+  width: 65%;
+  background: linear-gradient(
+    90deg,
+    rgba(5, 5, 7, 0.95) 0%,
+    rgba(5, 5, 7, 0.85) 20%,
+    rgba(5, 5, 7, 0.5) 50%,
+    rgba(5, 5, 7, 0.1) 80%,
+    transparent 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+.srot-hero-overlay-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 40%;
+  background: linear-gradient(
+    to top,
+    rgba(5, 5, 7, 0.9) 0%,
+    rgba(5, 5, 7, 0.4) 40%,
+    transparent 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+.srot-hero-container {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 120px 0 80px;
+  box-sizing: border-box;
+}
+
+.srot-hero-content {
+  text-align: left;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 32px;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 1.3s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 1.3s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.srot-hero-content.srot-hero-loaded {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.srot-hero-text-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.srot-hero-pre-title {
+  color: #f89c0e;
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+}
+
+.srot-hero-title {
+  color: #ffffff;
+  font-size: 76px;
+  font-weight: 700;
+  line-height: 1.1;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+.srot-hindi-title {
+  font-weight: 400;
+  font-size: 68px;
+  opacity: 0.95;
+  color: #ffffff;
+}
+
+.srot-hero-subtitle {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 4px;
+  margin: 4px 0 0;
+  text-transform: uppercase;
+}
+
+.srot-hero-location {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 15px;
+  font-weight: 400;
+  margin: 0;
+}
+
+.srot-location-icon {
+  color: #f89c0e;
+  flex-shrink: 0;
+}
+
+.srot-hero-tagline {
+  color: #f89c0e;
+  font-size: 22px;
+  font-weight: 500;
+  margin: 8px 0 2px;
+}
+
+.srot-hero-description {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 16px;
+  line-height: 1.7;
+  max-width: 560px;
+  margin: 0;
+  font-weight: 400;
+}
+
+.srot-hero-btn-group {
+  display: flex;
+  gap: 20px;
+  margin-top: 8px;
+}
+
+.srot-hero-btn-primary,
+.srot-hero-btn-outline {
+  padding: 16px 38px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.srot-hero-btn-primary {
+  background-color: var(--color-primary, #87008B);
+  color: #ffffff;
+  border: 1px solid var(--color-primary, #87008B);
+  box-shadow: 0 6px 20px rgba(135, 0, 139, 0.3);
+}
+
+.srot-hero-btn-primary:hover {
+  background-color: var(--color-primary-hover, #6F0073);
+  border-color: var(--color-primary-hover, #6F0073);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(135, 0, 139, 0.5);
+}
+
+.srot-hero-btn-outline {
+  background-color: transparent;
+  color: #ffffff;
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+}
+
+.srot-hero-btn-outline:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: #ffffff;
+  transform: translateY(-3px);
+}
+
+/* --------------------------------------------------------------------------
+   SHARED SECTION WRAPPERS & CONTAINER ALIGNMENT (Matches Home Page Exactly)
+   -------------------------------------------------------------------------- */
+.srot-section {
+  width: 100%;
+  background-color: var(--bg-page, #FCFAFC);
+  padding: 70px 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.srot-bg-alt {
+  background-color: var(--bg-page, #FCFAFC);
+}
+
+.srot-container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.srot-header {
+  text-align: center;
+  max-width: 850px;
+  width: 100%;
+  margin: 0 auto 48px auto;
+}
+
+.srot-title {
+  font-size: 30px;
+  color: #373737;
+  font-weight: 600;
+  margin: 0 0 15px 0;
+  letter-spacing: -0.5px;
+  line-height: 1.3;
+}
+
+.srot-highlight {
+  color: #870097;
+}
+
+.srot-subtitle {
+  font-size: 16px;
+  color: #817F8F;
+  line-height: 28px;
+  font-weight: 400;
+  margin: 0 auto;
+  max-width: 700px;
+}
+
+/* --------------------------------------------------------------------------
+   2. STORY SECTION (Split 2-Column Layout, matching CTA box styling)
+   -------------------------------------------------------------------------- */
+.srot-story-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  align-items: stretch;
+}
+
+.srot-story-image-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.srot-image-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 460px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-color, #E7E7EB);
+  background: #F8F8F8;
+}
+
+.srot-story-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.6s ease;
+}
+
+.srot-image-card:hover .srot-story-img {
+  transform: scale(1.03);
+}
+
+.srot-img-badge {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  padding: 10px 18px;
+  border-radius: 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+  color: #373737;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.srot-img-badge svg {
+  color: #870097;
+}
+
+.srot-story-content-col {
+  background: var(--bg-card, #ffffff);
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--border-color, #E7E7EB);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.srot-story-lead p {
+  font-size: 16px;
+  line-height: 1.75;
+  color: #817F8F;
+  margin: 0;
+  font-weight: 400;
+}
+
+.srot-features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.srot-feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color, #E7E7EB);
+}
+
+.srot-feature-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.srot-feature-icon-box {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: #FDF5FD;
+  border: 1px solid rgba(135, 0, 139, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--color-primary, #87008B);
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.srot-feature-item:hover .srot-feature-icon-box {
+  background: var(--color-primary, #87008B);
+  color: #ffffff;
+  border-color: var(--color-primary, #87008B);
+}
+
+.srot-feature-text h4 {
+  font-size: 15px;
+  color: #373737;
+  font-weight: 600;
+  margin: 0 0 3px 0;
+}
+
+.srot-feature-text p {
+  font-size: 14px;
+  color: #817F8F;
+  margin: 0;
+  line-height: 20px;
+}
+
+.srot-quote-box {
+  background: #FDF5FD;
+  border-left: 3px solid var(--color-primary, #87008B);
+  padding: 14px 18px;
+  border-radius: 0 10px 10px 0;
+}
+
+.srot-quote-box p {
+  font-size: 14px;
+  font-style: italic;
+  color: #817F8F;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   3. JOURNEY GRID (Mountain -> Natural Water -> Calm -> Experience)
+   -------------------------------------------------------------------------- */
+.srot-journey-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.srot-journey-card {
+  background: var(--bg-card, #ffffff);
+  border-radius: 16px;
+  padding: 26px 20px;
+  border: 1px solid var(--border-color, #E7E7EB);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.srot-journey-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(135, 0, 139, 0.1);
+  border-color: rgba(135, 0, 139, 0.2);
+}
+
+.srot-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.srot-step-num {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-primary, #87008B);
+  letter-spacing: -0.5px;
+}
+
+.srot-step-icon-wrap {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #FDF5FD;
+  border: 1px solid rgba(135, 0, 139, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary, #87008B);
+  transition: all 0.2s ease;
+}
+
+.srot-journey-card:hover .srot-step-icon-wrap {
+  background: var(--color-primary, #87008B);
+  color: #ffffff;
+}
+
+.srot-card-tag {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #f89c0e;
+  margin-bottom: 6px;
+}
+
+.srot-card-title {
+  font-size: 17px;
+  color: #373737;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+  line-height: 1.35;
+}
+
+.srot-card-desc {
+  font-size: 14px;
+  color: #817F8F;
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   4. LUXURY CTA SECTION
+   -------------------------------------------------------------------------- */
+.srot-cta-wrapper {
+  width: 100%;
+  padding: 70px 0 80px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--bg-page, #FCFAFC);
+}
+
+.srot-cta-card {
+  position: relative;
+  background: linear-gradient(135deg, #2b0632 0%, #17031b 60%, #0d010f 100%);
+  border-radius: 20px;
+  padding: 60px 40px;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(43, 6, 50, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.srot-cta-inner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.srot-cta-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 6px 16px;
+  border-radius: 30px;
+  color: #f89c0e;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 18px;
+}
+
+.srot-cta-title {
+  font-size: 30px;
+  color: #ffffff;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.5px;
+  margin: 0 0 16px 0;
+}
+
+.srot-cta-desc {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.7;
+  margin: 0 0 32px 0;
+}
+
+.srot-cta-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.srot-btn-cta-primary,
+.srot-btn-cta-secondary {
+  padding: 14px 32px;
+  border-radius: 10px;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.25s ease;
+  font-family: inherit;
+}
+
+.srot-btn-cta-primary {
+  background: var(--color-primary, #87008B);
+  color: #ffffff;
+  border: 1px solid var(--color-primary, #87008B);
+  box-shadow: 0 4px 15px rgba(135, 0, 139, 0.35);
+}
+
+.srot-btn-cta-primary:hover {
+  background: var(--color-primary-hover, #6F0073);
+  border-color: var(--color-primary-hover, #6F0073);
+  transform: translateY(-2px);
+}
+
+.srot-btn-cta-secondary {
+  background: transparent;
+  color: #ffffff;
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+}
+
+.srot-btn-cta-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: #ffffff;
+  transform: translateY(-2px);
+}
+
+
+
+/* --------------------------------------------------------------------------
+   INTERSECTION ANIMATIONS
+   -------------------------------------------------------------------------- */
+.srot-animate {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.srot-animate.srot-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.srot-stagger-children > * {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.srot-stagger-children.srot-visible > *:nth-child(1) { transition-delay: 0.1s; opacity: 1; transform: translateY(0); }
+.srot-stagger-children.srot-visible > *:nth-child(2) { transition-delay: 0.2s; opacity: 1; transform: translateY(0); }
+.srot-stagger-children.srot-visible > *:nth-child(3) { transition-delay: 0.3s; opacity: 1; transform: translateY(0); }
+.srot-stagger-children.srot-visible > *:nth-child(4) { transition-delay: 0.4s; opacity: 1; transform: translateY(0); }
+
+/* --------------------------------------------------------------------------
+   RESPONSIVE BREAKPOINTS (Matching Website Media Queries Exactly)
+   -------------------------------------------------------------------------- */
+@media (max-width: 1100px) {
+  .srot-hero-container {
+    padding: 120px 0 80px;
+  }
+
+  .srot-hero-title {
+    font-size: 64px;
+    gap: 16px;
+  }
+
+  .srot-hindi-title {
+    font-size: 58px;
+  }
+
+  .srot-hero-description {
+    font-size: 15px;
+    max-width: 480px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .srot-section,
+  .srot-cta-wrapper {
+    padding: 65px 0;
+  }
+
+  .srot-header {
+    margin-bottom: 40px;
+  }
+
+  .srot-title {
+    font-size: 30px;
+  }
+
+  .srot-subtitle {
+    font-size: 16px;
+  }
+
+  .srot-journey-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .srot-hero-overlay-main {
+    width: 100%;
+    background: linear-gradient(
+      180deg,
+      rgba(5, 5, 7, 0.15) 0%,
+      rgba(5, 5, 7, 0.5) 40%,
+      rgba(5, 5, 7, 0.88) 80%,
+      rgba(5, 5, 7, 0.95) 100%
+    );
+  }
+
+  .srot-hero-overlay-bottom {
+    display: none;
+  }
+
+  .srot-hero-container {
+    padding: 100px 0 60px;
+  }
+
+  .srot-hero-content {
+    align-items: center;
+    text-align: center;
+    gap: 28px;
+  }
+
+  .srot-hero-text-wrapper {
+    align-items: center;
+    gap: 12px;
+  }
+
+  .srot-hero-pre-title {
+    font-size: 12px;
+    letter-spacing: 4px;
+  }
+
+  .srot-hero-title {
+    font-size: 48px;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .srot-hindi-title {
+    font-size: 44px;
+  }
+
+  .srot-hero-subtitle {
+    font-size: 13px;
+    letter-spacing: 3px;
+  }
+
+  .srot-hero-tagline {
+    font-size: 19px;
+  }
+
+  .srot-hero-description {
+    font-size: 15px;
+    line-height: 1.6;
+    max-width: 90%;
+  }
+
+  .srot-hero-btn-group {
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    align-items: center;
+  }
+
+  .srot-hero-btn-primary,
+  .srot-hero-btn-outline {
+    width: 100%;
+    max-width: 320px;
+    padding: 15px 32px;
+    font-size: 14px;
+  }
+
+  .srot-section,
+  .srot-cta-wrapper {
+    padding: 50px 0;
+  }
+
+  .srot-header {
+    margin-bottom: 36px;
+  }
+
+  .srot-title {
+    font-size: 28px;
+  }
+
+  .srot-story-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .srot-image-card {
+    min-height: 320px;
+  }
+
+  .srot-story-content-col {
+    padding: 24px;
+  }
+
+  .srot-journey-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .srot-cta-card {
+    padding: 40px 24px;
+  }
+
+  .srot-cta-title {
+    font-size: 26px;
+  }
+
+  .srot-cta-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .srot-btn-cta-primary,
+  .srot-btn-cta-secondary {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .srot-hero-container {
+    padding: 90px 0 50px;
+  }
+
+  .srot-hero-title {
+    font-size: 40px;
+    gap: 10px;
+  }
+
+  .srot-hindi-title {
+    font-size: 40px;
+  }
+
+  .srot-hero-subtitle {
+    font-size: 14px;
+    letter-spacing: 2.5px;
+  }
+
+  .srot-hero-tagline {
+    font-size: 17px;
+  }
+
+  .srot-hero-description {
+    font-size: 15px;
+  }
+
+  .srot-hero-btn-primary,
+  .srot-hero-btn-outline {
+    max-width: 280px;
+    padding: 14px 28px;
+  }
+
+  .srot-section,
+  .srot-cta-wrapper {
+    padding: 45px 0;
+  }
+
+  .srot-header {
+    margin-bottom: 30px;
+  }
+
+  .srot-title {
+    font-size: 24px;
+  }
+
+  .srot-subtitle {
+    font-size: 14px;
+    line-height: 24px;
+  }
+
+  .srot-story-content-col {
+    padding: 20px 16px;
+    border-radius: 16px;
+  }
+
+  .srot-image-card {
+    border-radius: 16px;
+    min-height: 260px;
+  }
+
+  .srot-cta-card {
+    padding: 36px 16px;
+    border-radius: 16px;
+  }
+
+  .srot-cta-title {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 380px) {
+  .srot-hero-container {
+    padding: 80px 0 40px;
+  }
+
+  .srot-section,
+  .srot-cta-wrapper {
+    padding: 40px 0;
+  }
+
+  .srot-hero-title {
+    font-size: 34px;
+    gap: 8px;
+  }
+
+  .srot-hindi-title {
+    font-size: 34px;
+  }
+
+  .srot-hero-subtitle {
+    font-size: 12px;
+    letter-spacing: 2px;
+  }
+
+  .srot-hero-btn-primary,
+  .srot-hero-btn-outline {
+    max-width: 260px;
+    padding: 13px 24px;
+    font-size: 13px;
+  }
+}

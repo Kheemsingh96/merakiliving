@@ -1220,25 +1220,6 @@
     padding: 90px 20px 40px;
   }
 
-  .gd-steps {
-    margin-bottom: 28px;
-    padding: 0;
-  }
-
-  .gd-step {
-    max-width: 140px;
-  }
-
-  .gd-step-circle {
-    width: 32px;
-    height: 32px;
-    font-size: 12px;
-  }
-
-  .gd-step-label {
-    font-size: 12px;
-  }
-
   .gd-page-title {
     font-size: 24px;
   }
@@ -1341,6 +1322,9 @@
 /* =========================================
    Payment Confirmation UI
    ========================================= */
+/* =========================================
+   Payment Confirmation UI
+   ========================================= */
 .conf-section {
   position: fixed;
   top: 0;
@@ -1349,9 +1333,9 @@
   bottom: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(15, 5, 20, 0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1360,14 +1344,20 @@
   z-index: 999999;
   overflow-y: auto;
   font-family: inherit;
+  animation: confOverlayFade 0.22s ease-out forwards;
+}
+
+@keyframes confOverlayFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .conf-card {
   background: #ffffff;
-  padding: 44px 36px;
+  padding: 40px 32px;
   border-radius: 20px;
-  border: 1px solid #f0f0f0;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(135, 0, 151, 0.12);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28), 0 4px 20px rgba(135, 0, 151, 0.1);
   text-align: center;
   max-width: 440px;
   width: 100%;
@@ -1375,6 +1365,88 @@
   overflow: hidden;
   box-sizing: border-box;
   margin: auto;
+  animation: confCardPop 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: center center;
+}
+
+@keyframes confCardPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Processing Spinner & Reassurance */
+.conf-processing-card {
+  max-width: 420px;
+  padding: 44px 32px;
+}
+
+.conf-processing-spinner-wrap {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.conf-processing-spinner {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3.5px solid rgba(135, 0, 151, 0.15);
+  border-top-color: #870097;
+  border-right-color: #870097;
+  animation: confSpin 0.9s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+@keyframes confSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.conf-processing-icon-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: confIconPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes confIconPulse {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.12); opacity: 1; }
+}
+
+.conf-processing-reassurance {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #FDF5FF;
+  border: 1px solid #F3E0F5;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #870097;
+}
+
+.conf-processing-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #870097;
+  animation: confDotPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes confDotPulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
 }
 
 .conf-content {
@@ -1389,7 +1461,7 @@
   font-size: 24px;
   font-weight: 600;
   color: #373737;
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
   letter-spacing: -0.3px;
 }
 
@@ -1405,7 +1477,7 @@
   background: #FDF5FF;
   border: 1px solid #F3E0F5;
   border-radius: 12px;
-  padding: 18px 20px;
+  padding: 16px 18px;
   width: 100%;
   margin-bottom: 24px;
   text-align: left;
@@ -1471,21 +1543,21 @@
   gap: 8px;
   cursor: pointer;
   width: 100%;
-  transition: background 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
-  box-shadow: 0 4px 16px rgba(135, 0, 151, 0.2);
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 16px rgba(135, 0, 151, 0.22);
 }
 
 .conf-home-btn:hover {
   background: #6B007A;
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(135, 0, 151, 0.3);
+  box-shadow: 0 8px 24px rgba(135, 0, 151, 0.32);
 }
 
 .conf-success-ripple {
   position: relative;
-  width: 90px;
-  height: 90px;
-  margin-bottom: 24px;
+  width: 84px;
+  height: 84px;
+  margin-bottom: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1493,15 +1565,15 @@
 
 .conf-success-icon {
   position: relative;
-  width: 60px;
-  height: 60px;
+  width: 56px;
+  height: 56px;
   background: #2E7D32;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 3;
-  box-shadow: 0 8px 20px rgba(46, 125, 50, 0.25);
+  box-shadow: 0 6px 18px rgba(46, 125, 50, 0.3);
 }
 
 .conf-success-ripple::before,
@@ -1511,8 +1583,8 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 60px;
-  height: 60px;
+  width: 56px;
+  height: 56px;
   border: 1.5px solid rgba(46, 125, 50, 0.35);
   border-radius: 50%;
   z-index: 1;
@@ -1524,17 +1596,8 @@
 }
 
 @keyframes confRipple {
-  0% { width: 60px; height: 60px; opacity: 1; border-width: 2px; }
-  100% { width: 130px; height: 130px; opacity: 0; border-width: 0px; }
-}
-
-.animate-pop {
-  animation: confPopIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-}
-
-@keyframes confPopIn {
-  0% { transform: scale(0.96); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
+  0% { width: 56px; height: 56px; opacity: 1; border-width: 2px; }
+  100% { width: 120px; height: 120px; opacity: 0; border-width: 0px; }
 }
 
 @media (max-width: 480px) {
@@ -1542,7 +1605,7 @@
     padding: 16px;
   }
   .conf-card {
-    padding: 32px 20px;
+    padding: 30px 18px;
     border-radius: 16px;
   }
   .conf-title {
@@ -1550,6 +1613,6 @@
   }
   .conf-desc {
     font-size: 14px;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
   }
 }

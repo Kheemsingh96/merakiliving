@@ -84,7 +84,7 @@ function Hero({ setCurrentPage }) {
             <button
               type="button"
               className="hero-btn-outline"
-              onClick={() => setCurrentPage('explore')}
+              onClick={() => setCurrentPage('srot')}
               aria-label="Explore SROT retreat"
             >
               Explore स्रोत

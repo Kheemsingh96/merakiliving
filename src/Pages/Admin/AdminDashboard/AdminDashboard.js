@@ -4,7 +4,8 @@ import logo from '../../../assets/images/logo.webp';
 import {
   DashboardSquare01Icon, Calendar01Icon, BedDoubleIcon, Coffee02Icon, UserGroupIcon,
   Wallet01Icon, Ticket01Icon, Image01Icon, Settings01Icon, Logout01Icon, PlusSignIcon,
-  Edit01Icon, Delete01Icon, File02Icon, StarIcon, Doc01Icon, Menu01Icon, Cancel01Icon, Download02Icon
+  Edit01Icon, Delete01Icon, File02Icon, StarIcon, Doc01Icon, Menu01Icon, Cancel01Icon, Download02Icon,
+  Message01Icon
 } from 'hugeicons-react';
 import room1 from '../../../assets/images/room-1.webp';
 import room2 from '../../../assets/images/room-2.webp';
@@ -22,6 +23,140 @@ const getRoomImage = (id) => {
 };
 
 const API_CONFIG_URL = 'http://localhost/merakiliving_backend';
+
+const formatDateNumeric = (dateStr) => {
+  if (!dateStr) return '—';
+  
+  if (dateStr instanceof Date) {
+    if (isNaN(dateStr.getTime())) return '—';
+    const d = String(dateStr.getDate()).padStart(2, '0');
+    const m = String(dateStr.getMonth() + 1).padStart(2, '0');
+    const y = dateStr.getFullYear();
+    return `${d}/${m}/${y}`;
+  }
+
+  if (typeof dateStr === 'number') {
+    const timestamp = dateStr > 1e11 ? dateStr : dateStr * 1000;
+    const d = new Date(timestamp);
+    if (isNaN(d.getTime())) return '—';
+    return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+  }
+
+  if (typeof dateStr === 'string') {
+    const cleanStr = dateStr.trim();
+    if (!cleanStr || cleanStr === 'N/A' || cleanStr === '—' || cleanStr === 'null' || cleanStr === 'undefined') return '—';
+
+    // Matches YYYY-MM-DD or YYYY/MM/DD (with optional time)
+    const ymdMatch = cleanStr.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+    if (ymdMatch) {
+      const y = ymdMatch[1];
+      const m = ymdMatch[2].padStart(2, '0');
+      const d = ymdMatch[3].padStart(2, '0');
+      return `${d}/${m}/${y}`;
+    }
+
+    // Matches DD-MM-YYYY or DD/MM/YYYY (with optional time)
+    const dmyMatch = cleanStr.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+    if (dmyMatch) {
+      const d = dmyMatch[1].padStart(2, '0');
+      const m = dmyMatch[2].padStart(2, '0');
+      const y = dmyMatch[3];
+      return `${d}/${m}/${y}`;
+    }
+
+    // Matches DD Mon YYYY or DD Month YYYY (e.g. "13 Sep 2026")
+    const monMatch = cleanStr.match(/^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/);
+    if (monMatch) {
+      const d = monMatch[1].padStart(2, '0');
+      const monthNames = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+      const mIndex = monthNames.findIndex(mn => monMatch[2].toLowerCase().startsWith(mn));
+      if (mIndex !== -1) {
+        const m = String(mIndex + 1).padStart(2, '0');
+        const y = monMatch[3];
+        return `${d}/${m}/${y}`;
+      }
+    }
+  }
+
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '—';
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
+const formatBookingTime = (dateStr) => {
+  if (!dateStr) return '';
+  
+  if (dateStr instanceof Date) {
+    if (isNaN(dateStr.getTime())) return '';
+    let h = dateStr.getHours();
+    const m = String(dateStr.getMinutes()).padStart(2, '0');
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return `${String(h).padStart(2, '0')}:${m} ${ampm}`;
+  }
+
+  if (typeof dateStr === 'number') {
+    const timestamp = dateStr > 1e11 ? dateStr : dateStr * 1000;
+    const d = new Date(timestamp);
+    if (isNaN(d.getTime())) return '';
+    let h = d.getHours();
+    const m = String(d.getMinutes()).padStart(2, '0');
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return `${String(h).padStart(2, '0')}:${m} ${ampm}`;
+  }
+
+  if (typeof dateStr === 'string') {
+    const cleanStr = dateStr.trim();
+    if (!cleanStr || cleanStr === 'N/A' || cleanStr === '—' || cleanStr === 'null' || cleanStr === 'undefined') return '';
+
+    // Matches time portion within timestamp strings e.g. "2026-09-13 14:30:00" or "14:30:00" or "02:30 PM"
+    const timeMatch = cleanStr.match(/(?:[ T]|^)(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(am|pm|AM|PM)?/);
+    if (timeMatch) {
+      let h = parseInt(timeMatch[1], 10);
+      const m = timeMatch[2].padStart(2, '0');
+      const ampmModifier = timeMatch[4] ? timeMatch[4].toUpperCase() : null;
+
+      if (!isNaN(h) && h >= 0 && h <= 23) {
+        if (ampmModifier) {
+          if (ampmModifier === 'PM' && h < 12) h += 12;
+          if (ampmModifier === 'AM' && h === 12) h = 0;
+        }
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const displayH = h % 12 || 12;
+        return `${String(displayH).padStart(2, '0')}:${m} ${ampm}`;
+      }
+    }
+  }
+
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleTimeString('en-IN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+};
+
+const getStatusBadge = (status) => {
+  const s = (status || 'Pending').toLowerCase().trim();
+  if (s === 'confirmed' || s === 'completed' || s === 'success' || s === 'active') {
+    return <span className="admin-badge badge-success">{status || 'Confirmed'}</span>;
+  }
+  if (s === 'pending') {
+    return <span className="admin-badge badge-warning">Pending</span>;
+  }
+  if (s.includes('cancel') || s === 'failed' || s === 'inactive') {
+    return <span className="admin-badge badge-danger">{status || 'Cancelled'}</span>;
+  }
+  if (s === 'refunded') {
+    return <span className="admin-badge badge-info">Refunded</span>;
+  }
+  return <span className="admin-badge badge-info">{status || 'Pending'}</span>;
+};
 
 export default function AdminDashboard({ setCurrentPage }) {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -53,6 +188,14 @@ export default function AdminDashboard({ setCurrentPage }) {
     { id: 'payments', label: 'Payments', icon: Wallet01Icon },
     { id: 'coupons', label: 'Coupons & Discounts', icon: Ticket01Icon },
     {
+      id: 'chatbot', label: 'Chatbot', icon: Message01Icon,
+      subItems: [
+        { id: 'chatbot-guests', label: 'Guest Details' },
+        { id: 'chatbot-conversations', label: 'Conversations' },
+        { id: 'chatbot-refunds', label: 'Refund Requests' }
+      ]
+    },
+    {
       id: 'website', label: 'Website Content', icon: File02Icon,
       subItems: [{ id: 'gallery', label: 'Gallery Manager', icon: Image01Icon }, { id: 'reviews', label: 'Reviews', icon: StarIcon }, { id: 'policies', label: 'Legal Policies', icon: Doc01Icon }]
     },
@@ -75,6 +218,9 @@ export default function AdminDashboard({ setCurrentPage }) {
     if (activeTab === 'guests') return <GuestsTab />;
     if (activeTab === 'payments') return <PaymentsTab />;
     if (activeTab === 'coupons') return <CouponsTab />;
+    if (activeTab === 'chatbot' && (subTab === 'chatbot-guests' || !subTab)) return <AdminChatbotGuestsTab />;
+    if (activeTab === 'chatbot' && subTab === 'chatbot-conversations') return <AdminChatbotConversationsTab />;
+    if (activeTab === 'chatbot' && subTab === 'chatbot-refunds') return <AdminChatbotRefundsTab />;
     if (activeTab === 'website' && subTab === 'gallery') return <GalleryTab />;
     if (activeTab === 'website' && subTab === 'reviews') return <ReviewsTab />;
     if (activeTab === 'website' && subTab === 'policies') return <PoliciesTab />;
@@ -413,7 +559,7 @@ function DashboardTab() {
               <div key={b.id} className="recent-booking-item hover-lift-subtle">
                 <img src={b.room_image_url || getRoomImage(b.room_id || b.room)} alt="Booking" />
                 <div className="recent-booking-info">
-                  <h4>{b.name || b.guest_name}</h4><p>{b.room || b.room_name}</p><span>{b.dates || `${b.check_in} - ${b.check_out}`}</span>
+                  <h4>{b.name || b.guest_name}</h4><p>{b.room || b.room_name}</p><span>{b.dates ? formatDateNumeric(b.dates) : `${formatDateNumeric(b.check_in)} → ${formatDateNumeric(b.check_out)}`}</span>
                 </div>
                 <span className={`admin-badge ${b.status === 'Confirmed' || b.status === 'Success' ? 'badge-success' : b.status === 'Pending' ? 'badge-warning' : 'badge-danger'}`} style={b.status === 'Pending' ? {background:'#fff7ed', color:'#ea580c'} : {}}>{b.status}</span>
               </div>
@@ -428,23 +574,45 @@ function DashboardTab() {
 function BookingsTab() {
   const [bookings, setBookings] = useState([]);
   const [filter, setFilter] = useState('All');
+  const [currentPage, setCurrentPageNum] = useState(1);
   const [editingBooking, setEditingBooking] = useState(null);
+  const [viewingBooking, setViewingBooking] = useState(null);
+
+  const ITEMS_PER_PAGE = 10;
 
   const fetchBookings = () => {
     Promise.all([
       fetch(`${API_CONFIG_URL}/api_bookings.php`).then(res => res.json()),
-      fetch(`${API_CONFIG_URL}/api_payments.php`).then(res => res.json())
-    ]).then(([bookingsData, paymentsData]) => {
+      fetch(`${API_CONFIG_URL}/api_payments.php`).then(res => res.json()),
+      fetch(`${API_CONFIG_URL}/api_guests.php`).then(res => res.json()).catch(() => ({ data: [] }))
+    ]).then(([bookingsData, paymentsData, guestsData]) => {
       let fetchedPayments = [];
-      if (paymentsData && paymentsData.status === 'success') {
+      if (paymentsData && paymentsData.status === 'success' && Array.isArray(paymentsData.data)) {
         fetchedPayments = paymentsData.data;
       }
-      if (bookingsData && bookingsData.status === 'success') {
+      let fetchedGuests = [];
+      if (guestsData && guestsData.status === 'success' && Array.isArray(guestsData.data)) {
+        fetchedGuests = guestsData.data;
+      }
+      if (bookingsData && bookingsData.status === 'success' && Array.isArray(bookingsData.data)) {
         const mergedBookings = bookingsData.data.map(b => {
-          const payment = fetchedPayments.find(p => p.booking_id === b.id && (p.status === 'Success' || p.status === 'Completed'));
+          const payment = fetchedPayments.find(p => p.booking_id === b.id && (p.status === 'Success' || p.status === 'Completed')) ||
+                          fetchedPayments.find(p => p.booking_id === b.id);
+          const guest = fetchedGuests.find(g => g.id === b.guest_id);
+          const rawBookingTimestamp = b.time || b.created_at || b.booking_date || (payment ? (payment.time || payment.created_at || payment.payment_date || payment.date) : '') || b.check_in;
           return {
             ...b,
-            paid_amount: payment ? payment.amount : (b.room_price || 0)
+            booking_date: rawBookingTimestamp,
+            created_at: rawBookingTimestamp,
+            paid_amount: payment ? payment.amount : (b.room_price || b.paid_amount || 0),
+            payment_info: payment,
+            payment_status: payment ? payment.status : (b.payment_status || (b.status === 'Confirmed' || b.status === 'Completed' ? 'Paid' : b.status === 'Pending' ? 'Pending' : 'Unpaid')),
+            payment_method: payment ? payment.payment_method : (b.payment_method || (b.paid_amount ? 'Online / UPI' : 'Pending')),
+            transaction_id: payment ? (payment.razorpay_payment_id || payment.transaction_id || 'N/A') : (b.transaction_id || 'N/A'),
+            payment_date: payment ? (payment.created_at || payment.payment_date || payment.date || rawBookingTimestamp) : rawBookingTimestamp,
+            guest_name: b.guest_name || (guest ? guest.name : (b.guest_id ? `Guest ${b.guest_id}` : 'Guest')),
+            guest_email: b.guest_email || (guest ? guest.email : 'N/A'),
+            guest_phone: b.guest_phone || (guest ? guest.phone : '')
           };
         });
         setBookings(mergedBookings);
@@ -455,6 +623,11 @@ function BookingsTab() {
   useEffect(() => {
     fetchBookings();
   }, []);
+
+  const handleFilterChange = (newFilter) => {
+    setFilter(newFilter);
+    setCurrentPageNum(1);
+  };
 
   const saveBooking = () => {
     const isNew = !editingBooking.id;
@@ -494,93 +667,474 @@ function BookingsTab() {
     .then(res => res.json())
     .then(data => {
       if(data && data.status === 'success') {
-        setBookings(bookings.filter(b => b.id !== id));
+        setBookings(prev => prev.filter(b => b.id !== id));
+        setViewingBooking(null);
       } else {
         alert(data.message || 'Error deleting booking');
       }
     }).catch(e => console.error(e));
   };
 
-  const filteredBookings = filter === 'All' ? bookings : bookings.filter(b => b.status === filter);
-  const formatBookingDate = (dateStr) => {
-    if (!dateStr) return '';
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const calculateNights = (inDate, outDate) => {
+    if (!inDate || !outDate) return null;
+    const d1 = new Date(inDate);
+    const d2 = new Date(outDate);
+    if (isNaN(d1.getTime()) || isNaN(d2.getTime())) return null;
+    const diffTime = d2.getTime() - d1.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 1;
   };
+
+  const filteredBookings = filter === 'All' 
+    ? bookings 
+    : bookings.filter(b => {
+        const s = (b.status || '').toLowerCase().trim();
+        const f = filter.toLowerCase().trim();
+        if (f === 'cancelled') return s.includes('cancel');
+        if (f === 'confirmed') return s === 'confirmed';
+        if (f === 'completed') return s === 'completed';
+        if (f === 'pending') return s === 'pending';
+        return s === f;
+      });
+  const totalFiltered = filteredBookings.length;
+  const totalPages = Math.ceil(totalFiltered / ITEMS_PER_PAGE) || 1;
+  const safePage = Math.max(1, Math.min(currentPage, totalPages));
+  const startIndex = (safePage - 1) * ITEMS_PER_PAGE;
+  const paginatedBookings = filteredBookings.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   return (
     <>
-      <PageHeader title="Booking Management" subtitle="View and manage all homestay reservations." action={<button className="admin-btn-primary" onClick={() => setEditingBooking({status: 'Pending', guest_id: 1, room_id: 1})}><PlusSignIcon size={18} /> Create Booking</button>} />
+      <PageHeader
+        title="Booking Management"
+        subtitle="View and manage all homestay reservations."
+        action={
+          <button className="admin-btn-primary" onClick={() => setEditingBooking({status: 'Pending', guest_id: 1, room_id: 1})}>
+            <PlusSignIcon size={18} /> Create Booking
+          </button>
+        }
+      />
+
       <div className="admin-card">
+        {/* Status Filter Tabs */}
         <div className="admin-filter-bar">
           {['All', 'Pending', 'Confirmed', 'Completed', 'Cancelled'].map(f => (
-            <button key={f} className={`admin-filter-btn ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>{f}</button>
+            <button
+              key={f}
+              className={`admin-filter-btn ${filter === f ? 'active' : ''}`}
+              onClick={() => handleFilterChange(f)}
+            >
+              {f}
+            </button>
           ))}
         </div>
+
+        {/* 7-Column Premium Booking Table */}
         <div className="admin-table-wrapper">
-          <table className="admin-table">
-            <thead><tr><th>ID</th><th>Guest Name</th><th>Room</th><th>Dates</th><th>Amount</th><th>Guests</th><th>Actions</th></tr></thead>
+          <table className="admin-booking-table">
+            <thead>
+              <tr>
+                <th>Booking ID</th>
+                <th>Guest Name</th>
+                <th>Room</th>
+                <th>Stay Dates</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th style={{textAlign: 'right'}}>Action</th>
+              </tr>
+            </thead>
             <tbody>
-              {filteredBookings.map((b, i) => (
-                <tr key={i}>
-                  <td className="admin-text-mono">MERI{String(b.id).padStart(4, '0')}</td>
-                  <td><div className="admin-cell-stack"><span>{b.guest_name || `Guest ${b.guest_id}`}</span><span className="admin-cell-muted">{b.guest_phone || ''}</span></div></td>
-                  <td>{b.room_name || `Room ${b.room_id}`}</td>
-                  <td><div className="admin-cell-stack"><span>{formatBookingDate(b.check_in)} to {formatBookingDate(b.check_out)}</span></div></td>
-                  <td className="admin-text-medium">&#8377;{b.paid_amount}</td>
+              {paginatedBookings.map((b) => (
+                <tr key={b.id}>
                   <td>
-                    <div style={{fontWeight: '500'}}>{b.guest_count} {parseInt(b.guest_count) === 1 ? 'Guest' : 'Guests'}</div>
+                    <span className="admin-booking-id">
+                      {b.booking_reference || `MERI${String(b.id).padStart(4, '0')}`}
+                    </span>
                   </td>
                   <td>
-                    <div className="admin-action-group">
-                      <button className="admin-btn-sm admin-btn-outline" onClick={() => deleteBooking(b.id)}><Delete01Icon size={14} /></button>
+                    <div className="admin-guest-cell">
+                      <span className="admin-guest-name">
+                        {b.guest_name || (b.guest_id ? `Guest ${b.guest_id}` : 'Guest')}
+                      </span>
+                      {b.guest_phone && (
+                        <span className="admin-guest-phone">{b.guest_phone}</span>
+                      )}
                     </div>
+                  </td>
+                  <td>
+                    <span className="admin-room-name">{b.room_name || `Room ${b.room_id}`}</span>
+                  </td>
+                  <td>
+                    <div className="admin-stay-dates">
+                      <span>{formatDateNumeric(b.check_in)}</span>
+                      <span className="admin-stay-arrow">→</span>
+                      <span>{formatDateNumeric(b.check_out)}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span className="admin-booking-amount">
+                      &#8377;{Number(b.paid_amount || b.room_price || 0).toLocaleString('en-IN')}
+                    </span>
+                  </td>
+                  <td>
+                    {getStatusBadge(b.status)}
+                  </td>
+                  <td style={{textAlign: 'right'}}>
+                    <button
+                      type="button"
+                      className="admin-btn-view"
+                      onClick={() => setViewingBooking(b)}
+                      title="View Details"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                      <span>View</span>
+                    </button>
                   </td>
                 </tr>
               ))}
-              {filteredBookings.length === 0 && <tr><td colSpan="7" style={{textAlign: 'center', padding: '24px'}}>No {filter.toLowerCase()} bookings found.</td></tr>}
+              {filteredBookings.length === 0 && (
+                <tr>
+                  <td colSpan="7" style={{textAlign: 'center', padding: '36px 20px', color: '#64748b'}}>
+                    No {filter === 'All' ? '' : filter.toLowerCase() + ' '}bookings found.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
+
+        {/* Right-Aligned 10-Record Pagination */}
+        {filteredBookings.length > 0 && (
+          <div className="admin-booking-pagination">
+            <div className="admin-booking-pagination-info">
+              Showing <strong>{startIndex + 1}</strong>&ndash;<strong>{Math.min(startIndex + ITEMS_PER_PAGE, totalFiltered)}</strong> of <strong>{totalFiltered}</strong> bookings
+            </div>
+            <div className="admin-booking-pagination-controls">
+              <button
+                type="button"
+                className="admin-pagination-btn"
+                disabled={safePage <= 1}
+                onClick={() => setCurrentPageNum(prev => Math.max(1, prev - 1))}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                <span>Previous</span>
+              </button>
+              <span className="admin-pagination-page-indicator">
+                Page <strong>{safePage}</strong> of <strong>{totalPages}</strong>
+              </span>
+              <button
+                type="button"
+                className="admin-pagination-btn"
+                disabled={safePage >= totalPages}
+                onClick={() => setCurrentPageNum(prev => Math.min(totalPages, prev + 1))}
+              >
+                <span>Next</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
+      {/* Premium Booking Details View Popup */}
+      {viewingBooking && (
+        <div className="admin-modal-overlay admin-fade-in" style={{zIndex: 9999}} onClick={() => setViewingBooking(null)}>
+          <div className="admin-booking-modal-content" onClick={e => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="admin-modal-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #f1f5f9', paddingBottom: '14px'}}>
+              <div style={{display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap'}}>
+                <h2 style={{margin: 0, fontSize: '19px', color: '#373737', fontWeight: '700'}}>
+                  Booking Details
+                </h2>
+                <span className="admin-booking-id" style={{fontSize: '12px'}}>
+                  {viewingBooking.booking_reference || `MERI${String(viewingBooking.id).padStart(4, '0')}`}
+                </span>
+                {getStatusBadge(viewingBooking.status)}
+              </div>
+              <button
+                type="button"
+                onClick={() => setViewingBooking(null)}
+                style={{background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', padding: '4px', display: 'flex', alignItems: 'center'}}
+                title="Close"
+              >
+                <Cancel01Icon size={22} strokeWidth={1.5} />
+              </button>
+            </div>
+
+            {/* Modal Body - Scrollable content area */}
+            <div className="admin-booking-modal-body">
+              
+              {/* Section 1: Guest Information */}
+              <div className="admin-modal-section">
+                <div className="admin-modal-section-title">Guest Information</div>
+                <div className="admin-modal-grid-2">
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Guest Name</span>
+                    <span className="admin-modal-value admin-text-medium">
+                      {viewingBooking.guest_name || (viewingBooking.guest_id ? `Guest ${viewingBooking.guest_id}` : 'Guest')}
+                    </span>
+                  </div>
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Mobile Number</span>
+                    <span className="admin-modal-value">
+                      {viewingBooking.guest_phone || 'N/A'}
+                    </span>
+                  </div>
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Email Address</span>
+                    <span className="admin-modal-value">
+                      {viewingBooking.guest_email || 'N/A'}
+                    </span>
+                  </div>
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Total Guests</span>
+                    <span className="admin-modal-value">
+                      {viewingBooking.guest_count || (Number(viewingBooking.adults || 0) + Number(viewingBooking.children || 0)) || 1} Guests
+                      {(viewingBooking.adults || viewingBooking.children) && (
+                        <span style={{fontSize: '12px', color: '#64748B', marginLeft: '6px'}}>
+                          ({viewingBooking.adults || 0} Adults, {viewingBooking.children || 0} Children)
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 2: Room & Stay Details */}
+              <div className="admin-modal-section">
+                <div className="admin-modal-section-title">Room & Stay Details</div>
+                <div className="admin-modal-grid-2">
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Room / Property</span>
+                    <span className="admin-modal-value admin-text-medium">
+                      {viewingBooking.room_name || `Room ${viewingBooking.room_id}`}
+                    </span>
+                  </div>
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Room ID</span>
+                    <span className="admin-modal-value">
+                      #{viewingBooking.room_id || 'N/A'}
+                    </span>
+                  </div>
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Check-in Date</span>
+                    <span className="admin-modal-value">
+                      {formatDateNumeric(viewingBooking.check_in)}
+                    </span>
+                  </div>
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Check-out Date</span>
+                    <span className="admin-modal-value">
+                      {formatDateNumeric(viewingBooking.check_out)}
+                    </span>
+                  </div>
+                  {calculateNights(viewingBooking.check_in, viewingBooking.check_out) && (
+                    <div className="admin-modal-field">
+                      <span className="admin-modal-label">Duration of Stay</span>
+                      <span className="admin-modal-value">
+                        {calculateNights(viewingBooking.check_in, viewingBooking.check_out)} {calculateNights(viewingBooking.check_in, viewingBooking.check_out) === 1 ? 'Night' : 'Nights'}
+                      </span>
+                    </div>
+                  )}
+                  {viewingBooking.property_type && (
+                    <div className="admin-modal-field">
+                      <span className="admin-modal-label">Property Type</span>
+                      <span className="admin-modal-value">{viewingBooking.property_type}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Section 3: Booking Metadata */}
+              <div className="admin-modal-section">
+                <div className="admin-modal-section-title">Booking Information</div>
+                <div className="admin-modal-grid-2">
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Booking Date</span>
+                    <span className="admin-modal-value">
+                      {formatDateNumeric(viewingBooking.booking_date || viewingBooking.created_at)}
+                    </span>
+                  </div>
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Exact Booking Time</span>
+                    <span className="admin-modal-value">
+                      {formatBookingTime(viewingBooking.booking_date || viewingBooking.created_at) || 'N/A'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 4: Payment & Billing */}
+              <div className="admin-modal-section">
+                <div className="admin-modal-section-title">Payment & Billing</div>
+                <div className="admin-modal-grid-2">
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Total Booking Amount</span>
+                    <span className="admin-modal-value" style={{fontWeight: '700', color: '#8A158F', fontSize: '15px'}}>
+                      &#8377;{Number(viewingBooking.paid_amount || viewingBooking.room_price || 0).toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Payment Status</span>
+                    <span className="admin-modal-value">
+                      {viewingBooking.payment_status || (viewingBooking.status === 'Confirmed' || viewingBooking.status === 'Completed' ? 'Paid' : viewingBooking.status)}
+                    </span>
+                  </div>
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Payment Method</span>
+                    <span className="admin-modal-value">
+                      {viewingBooking.payment_method || 'Online / UPI / Card'}
+                    </span>
+                  </div>
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Transaction ID</span>
+                    <span className="admin-modal-value" style={{fontFamily: 'monospace', fontSize: '12px'}}>
+                      {viewingBooking.transaction_id || viewingBooking.razorpay_payment_id || 'N/A'}
+                    </span>
+                  </div>
+                  {viewingBooking.coupon_code && (
+                    <div className="admin-modal-field">
+                      <span className="admin-modal-label">Coupon / Discount</span>
+                      <span className="admin-modal-value">
+                        {viewingBooking.coupon_code} {viewingBooking.discount ? `(-₹${viewingBooking.discount})` : ''}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Cancellation Details if Cancelled */}
+              {((viewingBooking.status && viewingBooking.status.toLowerCase().includes('cancel')) || viewingBooking.cancelled_at || viewingBooking.cancellation_reason) && (
+                <div className="admin-modal-section" style={{borderLeft: '3px solid #ef4444', backgroundColor: '#fef2f2', padding: '12px 14px', borderRadius: '6px'}}>
+                  <div className="admin-modal-section-title" style={{color: '#991b1b', marginBottom: '8px', borderBottomColor: '#fecaca'}}>Cancellation Details</div>
+                  <div className="admin-modal-grid-2">
+                    {viewingBooking.cancelled_at && (
+                      <div className="admin-modal-field">
+                        <span className="admin-modal-label" style={{color: '#991b1b'}}>Cancelled On</span>
+                        <span className="admin-modal-value" style={{color: '#7f1d1d'}}>
+                          {formatDateNumeric(viewingBooking.cancelled_at)} {formatBookingTime(viewingBooking.cancelled_at) ? `(${formatBookingTime(viewingBooking.cancelled_at)})` : ''}
+                        </span>
+                      </div>
+                    )}
+                    <div className="admin-modal-field" style={{gridColumn: viewingBooking.cancelled_at ? 'auto' : '1 / -1'}}>
+                      <span className="admin-modal-label" style={{color: '#991b1b'}}>Cancellation Reason</span>
+                      <span className="admin-modal-value" style={{color: '#7f1d1d'}}>
+                        {viewingBooking.cancellation_reason || 'Cancelled by guest / admin'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Optional Notes / Requests */}
+              {(viewingBooking.notes || viewingBooking.special_requests) && (
+                <div className="admin-modal-section">
+                  <div className="admin-modal-section-title">Special Requests / Notes</div>
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-value">
+                      {viewingBooking.notes || viewingBooking.special_requests}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+            </div>
+
+            {/* Modal Footer Actions */}
+            <div className="admin-modal-footer">
+              <button
+                type="button"
+                className="admin-modal-btn-delete"
+                onClick={() => {
+                  const idToDelete = viewingBooking.id;
+                  deleteBooking(idToDelete);
+                }}
+              >
+                <Delete01Icon size={16} />
+                <span>Delete</span>
+              </button>
+
+              <div style={{display: 'flex', gap: '10px', flexWrap: 'wrap'}}>
+                <button
+                  type="button"
+                  className="admin-modal-btn-close"
+                  onClick={() => setViewingBooking(null)}
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  className="admin-modal-btn-edit"
+                  onClick={() => {
+                    const bToEdit = { ...viewingBooking };
+                    setViewingBooking(null);
+                    setEditingBooking(bToEdit);
+                  }}
+                >
+                  <Edit01Icon size={16} />
+                  <span>Edit Booking</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Booking Modal */}
       {editingBooking && (
         <div className="admin-modal-overlay admin-fade-in" style={{zIndex: 9999}}>
-          <div className="admin-modal-content" style={{maxWidth: '500px'}}>
-            <div className="admin-modal-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', borderBottom: '1px solid #f1f5f9', paddingBottom: '16px'}}>
-              <h2 style={{margin: 0, fontSize: '20px', color: '#373737', fontWeight: '700'}}>{editingBooking.id ? 'Edit Booking' : 'New Booking'}</h2>
-              <button onClick={() => setEditingBooking(null)} style={{background: 'none', border: 'none', cursor: 'pointer', color: '#817F7F'}}><Cancel01Icon size={24} strokeWidth={1.5} /></button>
+          <div className="admin-booking-modal-content" style={{maxWidth: '520px'}}>
+            <div className="admin-modal-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #f1f5f9', paddingBottom: '14px'}}>
+              <h2 style={{margin: 0, fontSize: '18px', color: '#373737', fontWeight: '700'}}>
+                {editingBooking.id ? `Edit Booking (${editingBooking.booking_reference || `MERI${String(editingBooking.id).padStart(4, '0')}`})` : 'New Booking'}
+              </h2>
+              <button onClick={() => setEditingBooking(null)} style={{background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: '4px'}}>
+                <Cancel01Icon size={22} strokeWidth={1.5} />
+              </button>
             </div>
             
-            <div style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
-              <div className="admin-form-group">
-                <label className="admin-form-label">Guest ID</label>
-                <input type="number" className="admin-form-input" value={editingBooking.guest_id || ''} onChange={e => setEditingBooking({...editingBooking, guest_id: e.target.value})} />
+            <div className="admin-booking-modal-body">
+              <div className="admin-form-group" style={{margin: 0}}>
+                <label className="admin-form-label" style={{marginBottom: '6px', color: '#334155', fontWeight: '600', fontSize: '13px'}}>Guest ID</label>
+                <input type="number" className="admin-form-input" style={{fontSize: '13px'}} value={editingBooking.guest_id || ''} onChange={e => setEditingBooking({...editingBooking, guest_id: e.target.value})} />
               </div>
-              <div className="admin-form-group">
-                <label className="admin-form-label">Room ID</label>
-                <input type="number" className="admin-form-input" value={editingBooking.room_id || ''} onChange={e => setEditingBooking({...editingBooking, room_id: e.target.value})} />
+              <div className="admin-form-group" style={{margin: 0}}>
+                <label className="admin-form-label" style={{marginBottom: '6px', color: '#334155', fontWeight: '600', fontSize: '13px'}}>Room ID</label>
+                <input type="number" className="admin-form-input" style={{fontSize: '13px'}} value={editingBooking.room_id || ''} onChange={e => setEditingBooking({...editingBooking, room_id: e.target.value})} />
               </div>
-              <div className="admin-form-row">
-                <div className="admin-form-group">
-                  <label className="admin-form-label">Check In</label>
-                  <input type="date" className="admin-form-input" value={editingBooking.check_in || ''} onChange={e => setEditingBooking({...editingBooking, check_in: e.target.value})} />
+              <div className="admin-form-row" style={{margin: 0, gap: '12px'}}>
+                <div className="admin-form-group" style={{margin: 0}}>
+                  <label className="admin-form-label" style={{marginBottom: '6px', color: '#334155', fontWeight: '600', fontSize: '13px'}}>Check In</label>
+                  <input type="date" className="admin-form-input" style={{fontSize: '13px'}} value={editingBooking.check_in || ''} onChange={e => setEditingBooking({...editingBooking, check_in: e.target.value})} />
                 </div>
-                <div className="admin-form-group">
-                  <label className="admin-form-label">Check Out</label>
-                  <input type="date" className="admin-form-input" value={editingBooking.check_out || ''} onChange={e => setEditingBooking({...editingBooking, check_out: e.target.value})} />
+                <div className="admin-form-group" style={{margin: 0}}>
+                  <label className="admin-form-label" style={{marginBottom: '6px', color: '#334155', fontWeight: '600', fontSize: '13px'}}>Check Out</label>
+                  <input type="date" className="admin-form-input" style={{fontSize: '13px'}} value={editingBooking.check_out || ''} onChange={e => setEditingBooking({...editingBooking, check_out: e.target.value})} />
                 </div>
               </div>
-              <div className="admin-form-group">
-                <label className="admin-form-label">Status</label>
-                <select className="admin-form-input" value={editingBooking.status || 'Pending'} onChange={e => setEditingBooking({...editingBooking, status: e.target.value})}>
-                  <option>Pending</option>
-                  <option>Confirmed</option>
-                  <option>Completed</option>
-                  <option>Cancelled</option>
+              <div className="admin-form-group" style={{margin: 0}}>
+                <label className="admin-form-label" style={{marginBottom: '6px', color: '#334155', fontWeight: '600', fontSize: '13px'}}>Guest Count</label>
+                <input type="number" className="admin-form-input" style={{fontSize: '13px'}} value={editingBooking.guest_count || ''} onChange={e => setEditingBooking({...editingBooking, guest_count: e.target.value})} />
+              </div>
+              <div className="admin-form-group" style={{margin: 0}}>
+                <label className="admin-form-label" style={{marginBottom: '6px', color: '#334155', fontWeight: '600', fontSize: '13px'}}>Status</label>
+                <select className="admin-form-input" style={{fontSize: '13px'}} value={editingBooking.status || 'Pending'} onChange={e => setEditingBooking({...editingBooking, status: e.target.value})}>
+                  <option value="Pending">Pending</option>
+                  <option value="Confirmed">Confirmed</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
                 </select>
               </div>
-              <button className="admin-btn-primary admin-btn-full" onClick={saveBooking}>Save Booking</button>
+            </div>
+            <div className="admin-modal-footer" style={{justifyContent: 'flex-end'}}>
+              <button className="admin-modal-btn-close" onClick={() => setEditingBooking(null)}>Cancel</button>
+              <button className="admin-modal-btn-edit" onClick={saveBooking}>Save Booking</button>
             </div>
           </div>
         </div>
@@ -1052,8 +1606,12 @@ function CafeMenuTab() {
   const [activeCategory, setActiveCategory] = useState(menuCategories[0]);
   const [allItems, setAllItems] = useState(initialMenuItems);
   const [editingItem, setEditingItem] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 10;
 
   const filteredItems = allItems.filter(i => i.category === activeCategory);
+  const totalPages = Math.ceil(filteredItems.length / recordsPerPage) || 1;
+  const paginatedItems = filteredItems.slice((currentPage - 1) * recordsPerPage, currentPage * recordsPerPage);
 
   const saveItem = () => {
     fetch(`${API_CONFIG_URL}/api_cafe.php`, {
@@ -1100,13 +1658,13 @@ function CafeMenuTab() {
       <PageHeader title="Full Menu Categories" subtitle="Manage all menu items." />
       <div className="admin-card">
         <div className="admin-filter-bar" style={{flexWrap: 'wrap', gap: '8px', padding: '16px'}}>
-          {menuCategories.map(cat => (<button key={cat} className={`admin-filter-btn ${activeCategory === cat ? 'active' : ''}`} onClick={() => setActiveCategory(cat)}>{cat}</button>))}
+          {menuCategories.map(cat => (<button key={cat} className={`admin-filter-btn ${activeCategory === cat ? 'active' : ''}`} onClick={() => { setActiveCategory(cat); setCurrentPage(1); }}>{cat}</button>))}
         </div>
         <div className="admin-table-wrapper">
-          <table className="admin-table">
+          <table className="admin-booking-table">
             <thead><tr><th>Item Name</th><th>Pricing</th><th>Diet</th><th>Actions</th></tr></thead>
             <tbody>
-              {filteredItems.map(item => (
+              {paginatedItems.map(item => (
                 <tr key={item.id}>
                   <td>
                     <div className="admin-text-medium">{item.name}</div>
@@ -1119,7 +1677,7 @@ function CafeMenuTab() {
                     <span className={item.isVeg ? 'admin-text-veg' : 'admin-text-nonveg'} style={{fontSize: '12px'}}>{item.isVeg ? 'Veg' : 'Non-Veg'}</span>
                   </td>
                   <td>
-                    <button className="admin-btn-sm admin-btn-outline" onClick={() => setEditingItem({...item})}><Edit01Icon size={14} /></button>
+                    <button className="admin-btn-view" onClick={() => setEditingItem({...item})} title="Edit Item"><Edit01Icon size={14} /> Edit</button>
                   </td>
                 </tr>
               ))}
@@ -1129,6 +1687,31 @@ function CafeMenuTab() {
             </tbody>
           </table>
         </div>
+
+        {filteredItems.length > recordsPerPage && (
+          <div className="admin-booking-pagination">
+            <div className="admin-booking-page-info">
+              Showing <span>{Math.min((currentPage - 1) * recordsPerPage + 1, filteredItems.length)}</span> to <span>{Math.min(currentPage * recordsPerPage, filteredItems.length)}</span> of <span>{filteredItems.length}</span> items
+            </div>
+            <div className="admin-booking-page-controls">
+              <button 
+                className="admin-booking-page-btn" 
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
+              <span className="admin-booking-page-current">Page {currentPage} of {totalPages}</span>
+              <button 
+                className="admin-booking-page-btn" 
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
       
       {editingItem && (
@@ -1214,28 +1797,167 @@ function GuestsTab() {
   const [guests, setGuests] = useState([]);
   const [totalGuestsCount, setTotalGuestsCount] = useState(0);
   const [viewingHistory, setViewingHistory] = useState(null);
-  const [guestBookings, setGuestBookings] = useState([]);
+  const [currentPage, setCurrentPageNum] = useState(1);
+
+  const ITEMS_PER_PAGE = 10;
+
+  const normalizePhone = (phone) => {
+    if (!phone) return '';
+    return String(phone).replace(/\D/g, '');
+  };
+
+  const normalizeEmail = (email) => {
+    if (!email) return '';
+    return String(email).trim().toLowerCase();
+  };
+
+  const normalizeName = (name) => {
+    if (!name) return '';
+    return String(name).trim().toLowerCase();
+  };
+
+  const calculateNights = (inDate, outDate) => {
+    if (!inDate || !outDate) return null;
+    const d1 = new Date(inDate);
+    const d2 = new Date(outDate);
+    if (isNaN(d1.getTime()) || isNaN(d2.getTime())) return null;
+    const diffTime = d2.getTime() - d1.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 1;
+  };
+
+  const fetchGuestDirectory = () => {
+    Promise.all([
+      fetch(`${API_CONFIG_URL}/api_guests.php`).then(res => res.json()).catch(() => ({ data: [] })),
+      fetch(`${API_CONFIG_URL}/api_bookings.php`).then(res => res.json()).catch(() => ({ data: [] })),
+      fetch(`${API_CONFIG_URL}/api_payments.php`).then(res => res.json()).catch(() => ({ data: [] }))
+    ]).then(([guestsData, bookingsData, paymentsData]) => {
+      let rawGuests = (guestsData && guestsData.status === 'success' && Array.isArray(guestsData.data)) ? guestsData.data : [];
+      let rawBookings = (bookingsData && bookingsData.status === 'success' && Array.isArray(bookingsData.data)) ? bookingsData.data : [];
+      let rawPayments = (paymentsData && paymentsData.status === 'success' && Array.isArray(paymentsData.data)) ? paymentsData.data : [];
+
+      // Calculate total guest head count across all bookings
+      const totalG = rawBookings.reduce((sum, b) => sum + parseInt(b.guest_count || 1, 10), 0);
+      setTotalGuestsCount(totalG);
+
+      // Enrich all bookings with payment & formatted information
+      const enrichedBookings = rawBookings.map(b => {
+        const payment = rawPayments.find(p => p.booking_id === b.id && (p.status === 'Success' || p.status === 'Completed')) ||
+                        rawPayments.find(p => p.booking_id === b.id);
+        const rawBookingTimestamp = b.time || b.created_at || b.booking_date || (payment ? (payment.time || payment.created_at || payment.payment_date) : '') || b.check_in;
+        return {
+          ...b,
+          booking_date: rawBookingTimestamp,
+          created_at: rawBookingTimestamp,
+          paid_amount: payment ? payment.amount : (b.room_price || b.paid_amount || 0),
+          payment_info: payment,
+          payment_status: payment ? payment.status : (b.payment_status || (b.status === 'Confirmed' || b.status === 'Completed' ? 'Paid' : b.status === 'Pending' ? 'Pending' : 'Unpaid')),
+          payment_method: payment ? payment.payment_method : (b.payment_method || (b.paid_amount ? 'Online / UPI' : 'Pending')),
+          transaction_id: payment ? (payment.razorpay_payment_id || payment.transaction_id || 'N/A') : (b.transaction_id || 'N/A')
+        };
+      });
+
+      // Build unified guest records list
+      const guestList = rawGuests.map(g => ({
+        id: String(g.id),
+        guest_ids: [String(g.id)],
+        name: g.name || 'Guest',
+        email: g.email || '',
+        phone: g.phone || '',
+        last_room: g.last_room || 'N/A',
+        bookings: []
+      }));
+
+      // Match each booking to existing guest group or create a new one
+      enrichedBookings.forEach(b => {
+        const bPhone = normalizePhone(b.guest_phone || b.phone);
+        const bEmail = normalizeEmail(b.guest_email || b.email);
+        const bName = normalizeName(b.guest_name || b.name);
+
+        let match = guestList.find(g => {
+          // 1. Direct ID match
+          if (b.guest_id && g.guest_ids && g.guest_ids.includes(String(b.guest_id))) return true;
+          // 2. Phone match (exact or last 10 digits)
+          const gPhone = normalizePhone(g.phone);
+          if (bPhone && gPhone && (bPhone === gPhone || (bPhone.length >= 10 && gPhone.length >= 10 && bPhone.slice(-10) === gPhone.slice(-10)))) return true;
+          // 3. Email match
+          const gEmail = normalizeEmail(g.email);
+          if (bEmail && gEmail && bEmail === gEmail) return true;
+          // 4. Name match (exact non-generic)
+          const gName = normalizeName(g.name);
+          if (bName && gName && bName === gName && bName !== 'guest' && bName.length > 2) return true;
+          return false;
+        });
+
+        if (match) {
+          match.bookings.push(b);
+          if (b.guest_id && !match.guest_ids.includes(String(b.guest_id))) {
+            match.guest_ids.push(String(b.guest_id));
+          }
+          if (!match.phone && (b.guest_phone || b.phone)) match.phone = b.guest_phone || b.phone;
+          if (!match.email && (b.guest_email || b.email)) match.email = b.guest_email || b.email;
+          if ((!match.name || match.name.toLowerCase() === 'guest') && b.guest_name) match.name = b.guest_name;
+        } else {
+          const newGuest = {
+            id: b.guest_id ? String(b.guest_id) : `bk_guest_${b.id}`,
+            guest_ids: b.guest_id ? [String(b.guest_id)] : [],
+            name: b.guest_name || (b.guest_id ? `Guest ${b.guest_id}` : 'Guest'),
+            email: b.guest_email || '',
+            phone: b.guest_phone || '',
+            last_room: b.room_name || `Room ${b.room_id}`,
+            bookings: [b]
+          };
+          guestList.push(newGuest);
+        }
+      });
+
+      // Finalize summary metrics per guest
+      guestList.forEach(g => {
+        // Sort bookings chronologically descending (newest first)
+        g.bookings.sort((x, y) => {
+          const tX = new Date(x.time || x.created_at || x.booking_date || x.check_in).getTime() || x.id || 0;
+          const tY = new Date(y.time || y.created_at || y.booking_date || y.check_in).getTime() || y.id || 0;
+          return tY - tX;
+        });
+
+        g.total_stays = g.bookings.length;
+        g.active_stays = g.bookings.filter(bk => !((bk.status || '').toLowerCase().includes('cancel'))).length;
+        g.cancelled_stays = g.bookings.filter(bk => (bk.status || '').toLowerCase().includes('cancel')).length;
+        if (g.bookings.length > 0) {
+          g.last_room = g.bookings[0].room_name || `Room ${g.bookings[0].room_id}`;
+        }
+      });
+
+      // Sort guests: guests with more stays and recent bookings first
+      guestList.sort((a, b) => {
+        if (b.total_stays !== a.total_stays) return b.total_stays - a.total_stays;
+        return (b.id || '').localeCompare(a.id || '');
+      });
+
+      setGuests(guestList);
+
+      // Keep viewingHistory synced if modal is open
+      setViewingHistory(prev => {
+        if (!prev) return null;
+        return guestList.find(g => g.id === prev.id || (prev.guest_ids && g.guest_ids && g.guest_ids.some(id => prev.guest_ids.includes(id)))) || prev;
+      });
+    }).catch(e => console.error("Guest Directory Loading Error:", e));
+  };
 
   useEffect(() => {
-    fetch(`${API_CONFIG_URL}/api_guests.php`)
-      .then(res => res.json())
-      .then(data => { if(data && data.status === 'success' && Array.isArray(data.data)) setGuests(data.data); })
-      .catch(e => console.error("JSON Error in Guests:", e));
-
-    fetch(`${API_CONFIG_URL}/api_bookings.php`)
-      .then(res => res.json())
-      .then(data => {
-        if(data && data.status === 'success' && Array.isArray(data.data)) {
-          const totalG = data.data.reduce((sum, b) => sum + parseInt(b.guest_count), 0);
-          setTotalGuestsCount(totalG);
-          setGuestBookings(data.data);
-        }
-      }).catch(e => console.error("JSON Error in Bookings:", e));
+    fetchGuestDirectory();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const totalGuests = guests.length;
+  const totalPages = Math.ceil(totalGuests / ITEMS_PER_PAGE) || 1;
+  const safePage = Math.max(1, Math.min(currentPage, totalPages));
+  const startIndex = (safePage - 1) * ITEMS_PER_PAGE;
+  const paginatedGuests = guests.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   return (
     <>
-      <PageHeader title="Guest Directory" subtitle="Manage guest information and stay history." />
+      <PageHeader title="Guest Directory" subtitle="Manage guest information, reservation history, and stay records." />
       
       <div className="admin-card" style={{marginBottom: '24px', padding: '24px', background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)', display: 'flex', alignItems: 'center', gap: '16px'}}>
         <div style={{background: '#fff', width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'}}>
@@ -1249,47 +1971,242 @@ function GuestsTab() {
 
       <div className="admin-card">
         <div className="admin-table-wrapper">
-          <table className="admin-table">
-            <thead><tr><th>Guest Name</th><th>Contact Info</th><th>Total Stays</th><th>Last Room</th><th>Actions</th></tr></thead>
+          <table className="admin-booking-table">
+            <thead>
+              <tr>
+                <th>Guest Name</th>
+                <th>Contact Info</th>
+                <th>Total Bookings</th>
+                <th>Last Room</th>
+                <th style={{textAlign: 'right'}}>Actions</th>
+              </tr>
+            </thead>
             <tbody>
-              {guests.map((g, idx) => (
-                <tr key={idx}>
-                  <td className="admin-text-medium">{g.name}</td>
-                  <td><div className="admin-cell-stack"><span>{g.email}</span><span className="admin-cell-muted">{g.phone}</span></div></td>
-                  <td>{g.total_stays}</td>
-                  <td>{g.last_room || 'N/A'}</td>
-                  <td><button className="admin-btn-sm admin-btn-outline" onClick={() => setViewingHistory(g)}>History</button></td>
+              {paginatedGuests.map((g, idx) => (
+                <tr key={g.id || idx}>
+                  <td>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap'}}>
+                      <span className="admin-text-medium" style={{fontWeight: '600', color: '#373737'}}>{g.name}</span>
+                      {g.total_stays > 1 && (
+                        <span className="admin-badge badge-primary" style={{fontSize: '11px', padding: '2px 7px'}}>
+                          {g.total_stays} Bookings
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="admin-cell-stack">
+                      <span style={{fontSize: '13px', color: '#373737'}}>{g.email || 'N/A'}</span>
+                      <span className="admin-cell-muted" style={{fontSize: '11px'}}>{g.phone || ''}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div style={{display: 'flex', flexDirection: 'column', gap: '2px'}}>
+                      <span className="admin-badge badge-primary" style={{width: 'fit-content'}}>
+                        {g.total_stays || 0} {g.total_stays === 1 ? 'Stay' : 'Stays'}
+                      </span>
+                      {g.cancelled_stays > 0 && (
+                        <span style={{fontSize: '11px', color: '#dc2626', fontWeight: '500'}}>
+                          {g.cancelled_stays} Cancelled
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td>
+                    <span style={{fontSize: '13px', color: '#373737'}}>{g.last_room || 'N/A'}</span>
+                  </td>
+                  <td style={{textAlign: 'right'}}>
+                    <button
+                      type="button"
+                      className="admin-btn-view"
+                      onClick={() => setViewingHistory(g)}
+                      title="View Stay History"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                      </svg>
+                      <span>History</span>
+                    </button>
+                  </td>
                 </tr>
               ))}
+              {guests.length === 0 && (
+                <tr>
+                  <td colSpan="5" style={{textAlign: 'center', padding: '36px 20px', color: '#64748B'}}>
+                    No guest records found.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
+
+        {/* Right-Aligned 10-Record Pagination */}
+        {guests.length > 0 && (
+          <div className="admin-booking-pagination">
+            <div className="admin-booking-pagination-info">
+              Showing <strong>{startIndex + 1}</strong>&ndash;<strong>{Math.min(startIndex + ITEMS_PER_PAGE, totalGuests)}</strong> of <strong>{totalGuests}</strong> guests
+            </div>
+            <div className="admin-booking-pagination-controls">
+              <button
+                type="button"
+                className="admin-pagination-btn"
+                disabled={safePage <= 1}
+                onClick={() => setCurrentPageNum(prev => Math.max(1, prev - 1))}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                <span>Previous</span>
+              </button>
+              <span className="admin-pagination-page-indicator">
+                Page <strong>{safePage}</strong> of <strong>{totalPages}</strong>
+              </span>
+              <button
+                type="button"
+                className="admin-pagination-btn"
+                disabled={safePage >= totalPages}
+                onClick={() => setCurrentPageNum(prev => Math.min(totalPages, prev + 1))}
+              >
+                <span>Next</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
+      {/* Complete Guest Booking History Modal */}
       {viewingHistory && (
-        <div className="admin-modal-overlay admin-fade-in" style={{zIndex: 9999}}>
-          <div className="admin-modal-content" style={{maxWidth: '600px'}}>
-            <div className="admin-modal-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', borderBottom: '1px solid #f1f5f9', paddingBottom: '16px'}}>
-              <h2 style={{margin: 0, fontSize: '20px', color: '#373737', fontWeight: '700'}}>Booking History: {viewingHistory.name}</h2>
-              <button onClick={() => setViewingHistory(null)} style={{background: 'none', border: 'none', cursor: 'pointer', color: '#817F7F'}}><Cancel01Icon size={24} strokeWidth={1.5} /></button>
+        <div className="admin-modal-overlay admin-fade-in" style={{zIndex: 9999}} onClick={() => setViewingHistory(null)}>
+          <div className="admin-booking-modal-content" style={{maxWidth: '680px'}} onClick={e => e.stopPropagation()}>
+            <div className="admin-modal-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #f1f5f9', paddingBottom: '14px'}}>
+              <div>
+                <h2 style={{margin: 0, fontSize: '19px', color: '#373737', fontWeight: '700'}}>
+                  Stay History: {viewingHistory.name}
+                </h2>
+                <div style={{display: 'flex', gap: '12px', marginTop: '6px', fontSize: '12px', color: '#64748B', flexWrap: 'wrap'}}>
+                  <span><strong>Email:</strong> {viewingHistory.email || 'N/A'}</span>
+                  <span><strong>Mobile:</strong> {viewingHistory.phone || 'N/A'}</span>
+                  <span><strong>Total Stays:</strong> {viewingHistory.total_stays || (viewingHistory.bookings ? viewingHistory.bookings.length : 0)}</span>
+                </div>
+              </div>
+              <button onClick={() => setViewingHistory(null)} style={{background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', padding: '4px', display: 'flex', alignItems: 'center'}}>
+                <Cancel01Icon size={22} strokeWidth={1.5} />
+              </button>
             </div>
-            <div style={{maxHeight: '400px', overflowY: 'auto', paddingRight: '8px'}}>
-              {guestBookings.filter(b => b.guest_id === viewingHistory.id).length === 0 ? (
-                <div style={{textAlign: 'center', color: '#64748b', padding: '24px'}}>No booking history found for this guest.</div>
+
+            <div className="admin-booking-modal-body">
+              {(!viewingHistory.bookings || viewingHistory.bookings.length === 0) ? (
+                <div style={{textAlign: 'center', color: '#64748B', padding: '36px 16px'}}>
+                  No booking records found for this guest.
+                </div>
               ) : (
-                guestBookings.filter(b => b.guest_id === viewingHistory.id).map((b, i) => (
-                  <div key={i} style={{background: '#f8fafc', padding: '16px', borderRadius: '8px', marginBottom: '12px', border: '1px solid #e2e8f0'}}>
-                    <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
-                      <span style={{fontWeight: '600', color: '#0f172a'}}>#BK-{b.id} &bull; {b.room_name || `Room ${b.room_id}`}</span>
-                      <span className={`admin-badge ${b.status === 'Confirmed' || b.status === 'Completed' ? 'badge-success' : b.status === 'Pending' ? 'badge-info' : 'badge-danger'}`}>{b.status}</span>
+                viewingHistory.bookings.map((b, i) => {
+                  const isCancelled = (b.status && b.status.toLowerCase().includes('cancel')) || b.cancelled_at || b.cancellation_reason;
+                  const nights = calculateNights(b.check_in, b.check_out);
+
+                  return (
+                    <div
+                      key={b.id || i}
+                      className="admin-modal-section"
+                      style={{
+                        marginBottom: '14px',
+                        borderLeft: isCancelled ? '3px solid #ef4444' : '3px solid #8A158F',
+                        backgroundColor: isCancelled ? '#fffafb' : '#faf5fb',
+                        padding: '14px',
+                        borderRadius: '6px'
+                      }}
+                    >
+                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px'}}>
+                        <span style={{fontWeight: '700', color: '#373737', fontSize: '14px'}}>
+                          <span className="admin-booking-id" style={{fontSize: '12px', marginRight: '8px'}}>
+                            {b.booking_reference || `MERI${String(b.id).padStart(4, '0')}`}
+                          </span>
+                          {b.room_name || `Room ${b.room_id}`}
+                        </span>
+                        {getStatusBadge(b.status)}
+                      </div>
+
+                      <div className="admin-modal-grid-2" style={{gap: '10px'}}>
+                        <div>
+                          <span className="admin-modal-label">Stay Dates</span>
+                          <span className="admin-modal-value">
+                            {formatDateNumeric(b.check_in)} → {formatDateNumeric(b.check_out)}
+                            {nights && (
+                              <span style={{fontSize: '11px', color: '#64748B', marginLeft: '6px'}}>
+                                ({nights} {nights === 1 ? 'Night' : 'Nights'})
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="admin-modal-label">Total Guests</span>
+                          <span className="admin-modal-value">
+                            {b.guest_count || 1} {parseInt(b.guest_count || 1, 10) === 1 ? 'Guest' : 'Guests'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="admin-modal-label">Booked On</span>
+                          <span className="admin-modal-value">
+                            {formatDateNumeric(b.booking_date || b.created_at)}
+                            {formatBookingTime(b.booking_date || b.created_at) ? ` (${formatBookingTime(b.booking_date || b.created_at)})` : ''}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="admin-modal-label">Amount</span>
+                          <span className="admin-modal-value" style={{fontWeight: '700', color: '#8A158F'}}>
+                            &#8377;{Number(b.paid_amount || b.room_price || 0).toLocaleString('en-IN')}
+                            <span style={{fontSize: '11px', color: '#64748B', fontWeight: 'normal', marginLeft: '6px'}}>
+                              ({b.payment_status || 'Paid'})
+                            </span>
+                          </span>
+                        </div>
+                        {b.payment_method && (
+                          <div>
+                            <span className="admin-modal-label">Payment Method</span>
+                            <span className="admin-modal-value" style={{fontSize: '12px'}}>
+                              {b.payment_method}
+                            </span>
+                          </div>
+                        )}
+                        {b.transaction_id && b.transaction_id !== 'N/A' && (
+                          <div>
+                            <span className="admin-modal-label">Transaction ID</span>
+                            <span className="admin-modal-value" style={{fontFamily: 'monospace', fontSize: '11px'}}>
+                              {b.transaction_id}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Cancellation box if cancelled */}
+                      {isCancelled && (
+                        <div style={{marginTop: '10px', paddingTop: '8px', borderTop: '1px dashed #fecaca', display: 'flex', flexDirection: 'column', gap: '4px'}}>
+                          <span style={{fontSize: '12px', fontWeight: '600', color: '#b91c1c'}}>
+                            Cancellation Information:
+                          </span>
+                          {b.cancelled_at && (
+                            <span style={{fontSize: '12px', color: '#7f1d1d'}}>
+                              <strong>Cancelled On:</strong> {formatDateNumeric(b.cancelled_at)} {formatBookingTime(b.cancelled_at) ? `(${formatBookingTime(b.cancelled_at)})` : ''}
+                            </span>
+                          )}
+                          <span style={{fontSize: '12px', color: '#7f1d1d'}}>
+                            <strong>Reason:</strong> {b.cancellation_reason || 'Cancelled by guest / admin'}
+                          </span>
+                        </div>
+                      )}
                     </div>
-                    <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#64748b'}}>
-                      <span>{b.check_in} to {b.check_out}</span>
-                      <span>{b.guest_count} {parseInt(b.guest_count) === 1 ? 'Guest' : 'Guests'}</span>
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               )}
+            </div>
+
+            <div className="admin-modal-footer" style={{justifyContent: 'flex-end'}}>
+              <button className="admin-modal-btn-close" onClick={() => setViewingHistory(null)}>Close</button>
             </div>
           </div>
         </div>
@@ -1302,24 +2219,43 @@ function PaymentsTab() {
   const [payments, setPayments] = useState([]);
   const [filter, setFilter] = useState('All');
   const [editingPayment, setEditingPayment] = useState(null);
-  const [viewingReceipt, setViewingReceipt] = useState(null);
+  const [viewingPayment, setViewingPayment] = useState(null);
+  const [currentPage, setCurrentPageNum] = useState(1);
+
+  const ITEMS_PER_PAGE = 10;
   
   const fetchPayments = () => {
     Promise.all([
       fetch(`${API_CONFIG_URL}/api_payments.php`).then(res => res.json()),
-      fetch(`${API_CONFIG_URL}/api_bookings.php`).then(res => res.json())
-    ]).then(([paymentsData, bookingsData]) => {
+      fetch(`${API_CONFIG_URL}/api_bookings.php`).then(res => res.json()),
+      fetch(`${API_CONFIG_URL}/api_guests.php`).then(res => res.json()).catch(() => ({ data: [] }))
+    ]).then(([paymentsData, bookingsData, guestsData]) => {
       let fetchedBookings = [];
-      if (bookingsData && bookingsData.status === 'success') {
+      if (bookingsData && bookingsData.status === 'success' && Array.isArray(bookingsData.data)) {
         fetchedBookings = bookingsData.data;
       }
-      if (paymentsData && paymentsData.status === 'success') {
+      let fetchedGuests = [];
+      if (guestsData && guestsData.status === 'success' && Array.isArray(guestsData.data)) {
+        fetchedGuests = guestsData.data;
+      }
+      if (paymentsData && paymentsData.status === 'success' && Array.isArray(paymentsData.data)) {
         const mergedPayments = paymentsData.data.map(p => {
           const booking = fetchedBookings.find(b => b.id === p.booking_id);
+          const guest = booking ? fetchedGuests.find(g => g.id === booking.guest_id) : (p.guest_id ? fetchedGuests.find(g => g.id === p.guest_id) : null);
           return {
             ...p,
-            guest_name: booking ? (booking.guest_name || `Guest ${booking.guest_id}`) : 'Unknown',
-            room_id: booking ? (booking.room_name || `Room ${booking.room_id}`) : 'N/A' 
+            booking: booking || null,
+            booking_id: p.booking_id,
+            booking_reference: booking ? (booking.booking_reference || `MERI${String(booking.id).padStart(4, '0')}`) : (p.booking_id ? `MERI${String(p.booking_id).padStart(4, '0')}` : 'N/A'),
+            booking_status: booking ? booking.status : (p.booking_status || 'N/A'),
+            guest_name: booking ? (booking.guest_name || (guest ? guest.name : (booking.guest_id ? `Guest ${booking.guest_id}` : 'Guest'))) : (p.guest_name || (guest ? guest.name : 'Guest')),
+            guest_phone: booking ? (booking.guest_phone || (guest ? guest.phone : '')) : (p.guest_phone || (guest ? guest.phone : '')),
+            guest_email: booking ? (booking.guest_email || (guest ? guest.email : '')) : (p.guest_email || (guest ? guest.email : '')),
+            room_name: booking ? (booking.room_name || `Room ${booking.room_id}`) : (p.room_name || (p.room_id ? `Room ${p.room_id}` : 'N/A')),
+            room_id: booking ? (booking.room_name || `Room ${booking.room_id}`) : (p.room_name || p.room_id || 'N/A'),
+            coupon_code: booking ? booking.coupon_code : (p.coupon_code || ''),
+            discount: booking ? booking.discount : (p.discount || 0),
+            payment_date: p.time || p.payment_date || p.created_at || p.date || (booking ? (booking.time || booking.created_at || booking.booking_date) : '')
           };
         });
         setPayments(mergedPayments);
@@ -1330,6 +2266,11 @@ function PaymentsTab() {
   useEffect(() => {
     fetchPayments();
   }, []);
+
+  const handleFilterChange = (newFilter) => {
+    setFilter(newFilter);
+    setCurrentPageNum(1);
+  };
 
   const savePayment = () => {
     const isNew = !editingPayment.id;
@@ -1377,137 +2318,385 @@ function PaymentsTab() {
   };
 
   const filteredPayments = filter === 'All' ? payments : payments.filter(p => p.status === filter);
+  const totalPayments = filteredPayments.length;
+  const totalPages = Math.ceil(totalPayments / ITEMS_PER_PAGE) || 1;
+  const safePage = Math.max(1, Math.min(currentPage, totalPages));
+  const startIndex = (safePage - 1) * ITEMS_PER_PAGE;
+  const paginatedPayments = filteredPayments.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   return (
     <>
-      <PageHeader title="Payment History" subtitle="Track all transactions, settlements, and refunds." action={<button className="admin-btn-primary" onClick={() => setEditingPayment({status: 'Pending', booking_id: 1, amount: 0})}><PlusSignIcon size={18} /> New Payment</button>} />
+      <PageHeader
+        title="Payment History"
+        subtitle="Track all transactions, settlements, and refunds."
+        action={
+          <button className="admin-btn-primary" onClick={() => setEditingPayment({status: 'Pending', booking_id: 1, amount: 0})}>
+            <PlusSignIcon size={18} /> New Payment
+          </button>
+        }
+      />
+
       <div className="admin-card">
+        {/* Status Filter Tabs */}
         <div className="admin-filter-bar">
           {['All', 'Success', 'Pending', 'Failed', 'Refunded'].map(f => (
-             <button key={f} className={`admin-filter-btn ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>{f}</button>
+             <button
+               key={f}
+               className={`admin-filter-btn ${filter === f ? 'active' : ''}`}
+               onClick={() => handleFilterChange(f)}
+             >
+               {f}
+             </button>
           ))}
         </div>
+
+        {/* 7-Column Premium Payment Management Table */}
         <div className="admin-table-wrapper">
-          <table className="admin-table">
-            <thead><tr><th>ID</th><th>Guest Name</th><th>Room</th><th>Amount</th><th>Method</th><th>Actions</th></tr></thead>
+          <table className="admin-booking-table">
+            <thead>
+              <tr>
+                <th>Transaction ID</th>
+                <th>Guest Name</th>
+                <th>Room</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>Status</th>
+                <th style={{textAlign: 'right'}}>Action</th>
+              </tr>
+            </thead>
             <tbody>
-              {filteredPayments.map((p, i) => (
-                <tr key={i}>
-                  <td className="admin-text-mono">{p.razorpay_payment_id || `#PAY-${p.id}`}</td>
-                  <td className="admin-text-medium">{p.guest_name}</td>
-                  <td>{p.room_id}</td>
-                  <td className="admin-text-medium">&#8377;{p.amount}</td>
-                  <td><div className="admin-cell-stack"><span>Razorpay</span><span className="admin-cell-muted">{p.payment_method || 'Online / Card'}</span></div></td>
+              {paginatedPayments.map((p, i) => (
+                <tr key={p.id || i}>
                   <td>
-                    <div className="admin-action-group">
-                      <button className="admin-btn-sm admin-btn-outline" title="Receipt" onClick={() => setViewingReceipt(p)}><Doc01Icon size={14} /></button>
-                      <button className="admin-btn-sm admin-btn-outline" onClick={() => deletePayment(p.id)}><Delete01Icon size={14} /></button>
+                    <span className="admin-booking-id">
+                      {p.razorpay_payment_id || (p.id ? `#PAY-${p.id}` : 'PAY')}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="admin-guest-cell">
+                      <span className="admin-guest-name">{p.guest_name || 'Guest'}</span>
+                      {p.guest_phone && (
+                        <span className="admin-guest-phone">{p.guest_phone}</span>
+                      )}
                     </div>
+                  </td>
+                  <td>
+                    <span className="admin-room-name">{p.room_name || p.room_id || 'N/A'}</span>
+                  </td>
+                  <td>
+                    <span className="admin-booking-amount">
+                      &#8377;{Number(p.amount || 0).toLocaleString('en-IN')}
+                    </span>
+                  </td>
+                  <td>
+                    <span style={{fontSize: '13px', color: '#373737'}}>{p.payment_method || 'Online / UPI'}</span>
+                  </td>
+                  <td>
+                    {getStatusBadge(p.status)}
+                  </td>
+                  <td style={{textAlign: 'right'}}>
+                    <button
+                      type="button"
+                      className="admin-btn-view"
+                      onClick={() => setViewingPayment(p)}
+                      title="View Details"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                      <span>View</span>
+                    </button>
                   </td>
                 </tr>
               ))}
-              {filteredPayments.length === 0 && <tr><td colSpan="6" style={{textAlign: 'center', padding: '24px'}}>No {filter.toLowerCase()} payments found.</td></tr>}
+              {filteredPayments.length === 0 && (
+                <tr>
+                  <td colSpan="7" style={{textAlign: 'center', padding: '36px 20px', color: '#64748B'}}>
+                    No {filter === 'All' ? '' : filter.toLowerCase() + ' '}payments found.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
+
+        {/* Right-Aligned 10-Record Pagination */}
+        {filteredPayments.length > 0 && (
+          <div className="admin-booking-pagination">
+            <div className="admin-booking-pagination-info">
+              Showing <strong>{startIndex + 1}</strong>&ndash;<strong>{Math.min(startIndex + ITEMS_PER_PAGE, totalPayments)}</strong> of <strong>{totalPayments}</strong> payments
+            </div>
+            <div className="admin-booking-pagination-controls">
+              <button
+                type="button"
+                className="admin-pagination-btn"
+                disabled={safePage <= 1}
+                onClick={() => setCurrentPageNum(prev => Math.max(1, prev - 1))}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                <span>Previous</span>
+              </button>
+              <span className="admin-pagination-page-indicator">
+                Page <strong>{safePage}</strong> of <strong>{totalPages}</strong>
+              </span>
+              <button
+                type="button"
+                className="admin-pagination-btn"
+                disabled={safePage >= totalPages}
+                onClick={() => setCurrentPageNum(prev => Math.min(totalPages, prev + 1))}
+              >
+                <span>Next</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
+      {/* Edit Payment Modal */}
       {editingPayment && (
         <div className="admin-modal-overlay admin-fade-in" style={{zIndex: 9999}}>
-          <div className="admin-modal-content" style={{maxWidth: '500px'}}>
-            <div className="admin-modal-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', borderBottom: '1px solid #f1f5f9', paddingBottom: '16px'}}>
-              <h2 style={{margin: 0, fontSize: '20px', color: '#373737', fontWeight: '700'}}>{editingPayment.id ? 'Edit Payment' : 'New Payment'}</h2>
-              <button onClick={() => setEditingPayment(null)} style={{background: 'none', border: 'none', cursor: 'pointer', color: '#817F7F'}}><Cancel01Icon size={24} strokeWidth={1.5} /></button>
+          <div className="admin-booking-modal-content" style={{maxWidth: '500px'}}>
+            <div className="admin-modal-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #f1f5f9', paddingBottom: '14px'}}>
+              <h2 style={{margin: 0, fontSize: '19px', color: '#373737', fontWeight: '700'}}>{editingPayment.id ? 'Edit Payment' : 'New Payment'}</h2>
+              <button onClick={() => setEditingPayment(null)} style={{background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', padding: '4px', display: 'flex', alignItems: 'center'}}>
+                <Cancel01Icon size={22} strokeWidth={1.5} />
+              </button>
             </div>
             
-            <div style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
-              <div className="admin-form-group">
-                <label className="admin-form-label">Booking ID</label>
-                <input type="number" className="admin-form-input" value={editingPayment.booking_id || ''} onChange={e => setEditingPayment({...editingPayment, booking_id: e.target.value})} />
+            <div className="admin-booking-modal-body">
+              <div className="admin-form-group" style={{margin: 0}}>
+                <label className="admin-form-label" style={{marginBottom: '6px', color: '#373737', fontWeight: '600', fontSize: '13px'}}>Booking ID</label>
+                <input type="number" className="admin-form-input" style={{fontSize: '13px'}} value={editingPayment.booking_id || ''} onChange={e => setEditingPayment({...editingPayment, booking_id: e.target.value})} />
               </div>
-              <div className="admin-form-group">
-                <label className="admin-form-label">Razorpay Order ID</label>
-                <input type="text" className="admin-form-input" value={editingPayment.razorpay_order_id || ''} onChange={e => setEditingPayment({...editingPayment, razorpay_order_id: e.target.value})} />
+              <div className="admin-form-group" style={{margin: 0}}>
+                <label className="admin-form-label" style={{marginBottom: '6px', color: '#373737', fontWeight: '600', fontSize: '13px'}}>Razorpay Order ID</label>
+                <input type="text" className="admin-form-input" style={{fontSize: '13px'}} value={editingPayment.razorpay_order_id || ''} onChange={e => setEditingPayment({...editingPayment, razorpay_order_id: e.target.value})} />
               </div>
-              <div className="admin-form-group">
-                <label className="admin-form-label">Razorpay Payment ID</label>
-                <input type="text" className="admin-form-input" value={editingPayment.razorpay_payment_id || ''} onChange={e => setEditingPayment({...editingPayment, razorpay_payment_id: e.target.value})} />
+              <div className="admin-form-group" style={{margin: 0}}>
+                <label className="admin-form-label" style={{marginBottom: '6px', color: '#373737', fontWeight: '600', fontSize: '13px'}}>Razorpay Payment ID</label>
+                <input type="text" className="admin-form-input" style={{fontSize: '13px'}} value={editingPayment.razorpay_payment_id || ''} onChange={e => setEditingPayment({...editingPayment, razorpay_payment_id: e.target.value})} />
               </div>
-              <div style={{display: 'flex', gap: '16px'}}>
-                <div className="admin-form-group" style={{flex: 1}}>
-                  <label className="admin-form-label">Amount</label>
-                  <input type="number" className="admin-form-input" value={editingPayment.amount || ''} onChange={e => setEditingPayment({...editingPayment, amount: e.target.value})} />
+              <div className="admin-form-row" style={{margin: 0, gap: '12px'}}>
+                <div className="admin-form-group" style={{margin: 0}}>
+                  <label className="admin-form-label" style={{marginBottom: '6px', color: '#373737', fontWeight: '600', fontSize: '13px'}}>Amount (₹)</label>
+                  <input type="number" className="admin-form-input" style={{fontSize: '13px'}} value={editingPayment.amount || ''} onChange={e => setEditingPayment({...editingPayment, amount: e.target.value})} />
                 </div>
-                <div className="admin-form-group" style={{flex: 1}}>
-                  <label className="admin-form-label">Method</label>
-                  <input type="text" className="admin-form-input" value={editingPayment.payment_method || ''} onChange={e => setEditingPayment({...editingPayment, payment_method: e.target.value})} />
+                <div className="admin-form-group" style={{margin: 0}}>
+                  <label className="admin-form-label" style={{marginBottom: '6px', color: '#373737', fontWeight: '600', fontSize: '13px'}}>Method</label>
+                  <input type="text" className="admin-form-input" style={{fontSize: '13px'}} value={editingPayment.payment_method || ''} onChange={e => setEditingPayment({...editingPayment, payment_method: e.target.value})} />
                 </div>
               </div>
-              <div className="admin-form-group">
-                <label className="admin-form-label">Status</label>
-                <select className="admin-form-input" value={editingPayment.status || 'Pending'} onChange={e => setEditingPayment({...editingPayment, status: e.target.value})}>
-                  <option>Pending</option>
-                  <option>Success</option>
-                  <option>Failed</option>
-                  <option>Refunded</option>
+              <div className="admin-form-group" style={{margin: 0}}>
+                <label className="admin-form-label" style={{marginBottom: '6px', color: '#373737', fontWeight: '600', fontSize: '13px'}}>Status</label>
+                <select className="admin-form-input" style={{fontSize: '13px'}} value={editingPayment.status || 'Pending'} onChange={e => setEditingPayment({...editingPayment, status: e.target.value})}>
+                  <option value="Pending">Pending</option>
+                  <option value="Success">Success</option>
+                  <option value="Failed">Failed</option>
+                  <option value="Refunded">Refunded</option>
                 </select>
               </div>
-              <button className="admin-btn-primary admin-btn-full" onClick={savePayment}>Save Payment</button>
+            </div>
+            <div className="admin-modal-footer" style={{justifyContent: 'flex-end'}}>
+              <button className="admin-modal-btn-close" onClick={() => setEditingPayment(null)}>Cancel</button>
+              <button className="admin-modal-btn-edit" onClick={savePayment}>Save Payment</button>
             </div>
           </div>
         </div>
       )}
 
-      {viewingReceipt && (
-        <div className="admin-modal-overlay admin-fade-in" style={{zIndex: 9999}}>
-          <div className="admin-modal-content" style={{maxWidth: '400px'}}>
-            <div className="admin-modal-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
-              <h2 style={{margin: 0, fontSize: '20px', color: '#373737', fontWeight: '700'}}>Payment Receipt</h2>
-              <button onClick={() => setViewingReceipt(null)} style={{background: 'none', border: 'none', cursor: 'pointer', color: '#817F7F'}}><Cancel01Icon size={20} strokeWidth={1.5} /></button>
-            </div>
-            <div style={{display: 'flex', flexDirection: 'column', gap: '8px', background: '#f8fafc', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '13px'}}>
-              <div style={{display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px'}}>
-                <span style={{color: '#64748b'}}>Transaction ID</span>
-                <span style={{fontWeight: '500', color: '#0f172a'}}>{viewingReceipt.razorpay_payment_id || `#PAY-${viewingReceipt.id}`}</span>
+      {/* Premium Payment Details View Popup */}
+      {viewingPayment && (
+        <div className="admin-modal-overlay admin-fade-in" style={{zIndex: 9999}} onClick={() => setViewingPayment(null)}>
+          <div className="admin-booking-modal-content" onClick={e => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="admin-modal-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #f1f5f9', paddingBottom: '14px'}}>
+              <div style={{display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap'}}>
+                <h2 style={{margin: 0, fontSize: '19px', color: '#373737', fontWeight: '700'}}>
+                  Payment Details
+                </h2>
+                <span className="admin-booking-id" style={{fontSize: '12px'}}>
+                  {viewingPayment.razorpay_payment_id || (viewingPayment.id ? `#PAY-${viewingPayment.id}` : 'PAY')}
+                </span>
+                {getStatusBadge(viewingPayment.status)}
               </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px'}}>
-                <span style={{color: '#64748b'}}>Order ID</span>
-                <span style={{fontWeight: '500', color: '#0f172a'}}>{viewingReceipt.razorpay_order_id || 'N/A'}</span>
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px'}}>
-                <span style={{color: '#64748b'}}>Guest Name</span>
-                <span style={{fontWeight: '500', color: '#0f172a'}}>{viewingReceipt.guest_name}</span>
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px'}}>
-                <span style={{color: '#64748b'}}>Room ID</span>
-                <span style={{fontWeight: '500', color: '#0f172a'}}>{viewingReceipt.room_id}</span>
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px'}}>
-                <span style={{color: '#64748b'}}>Payment Method</span>
-                <span style={{fontWeight: '500', color: '#0f172a'}}>{viewingReceipt.payment_method || 'Online / Card'}</span>
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px'}}>
-                <span style={{color: '#64748b'}}>Status</span>
-                <span className={`admin-badge ${viewingReceipt.status === 'Success' ? 'badge-success' : viewingReceipt.status === 'Pending' ? 'badge-info' : 'badge-danger'}`}>{viewingReceipt.status}</span>
-              </div>
-              <div style={{display: 'flex', justifyContent: 'space-between', paddingTop: '4px'}}>
-                <span style={{color: '#0f172a', fontWeight: '600', fontSize: '15px'}}>Amount Paid</span>
-                <span style={{color: '#16a34a', fontWeight: '700', fontSize: '15px'}}>&#8377;{viewingReceipt.amount}</span>
-              </div>
-            </div>
-            <div style={{marginTop: '24px'}}>
-              <button className="admin-btn-primary admin-btn-full" onClick={() => {
-                const receiptText = `MERAKI LIVING - PAYMENT RECEIPT\n\nTransaction ID: ${viewingReceipt.razorpay_payment_id || '#PAY-'+viewingReceipt.id}\nOrder ID: ${viewingReceipt.razorpay_order_id || 'N/A'}\nGuest Name: ${viewingReceipt.guest_name}\nRoom ID: ${viewingReceipt.room_id}\nPayment Method: ${viewingReceipt.payment_method || 'Online / Card'}\nStatus: ${viewingReceipt.status}\n\nAmount Paid: INR ${viewingReceipt.amount}\n`;
-                const blob = new Blob([receiptText], { type: 'text/plain' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `Receipt_${viewingReceipt.razorpay_payment_id || viewingReceipt.id}.txt`;
-                a.click();
-                URL.revokeObjectURL(url);
-              }} style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px', fontWeight: '600'}}>
-                <Download02Icon size={18} strokeWidth={1.5} /> Download Receipt
+              <button
+                type="button"
+                onClick={() => setViewingPayment(null)}
+                style={{background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', padding: '4px', display: 'flex', alignItems: 'center'}}
+                title="Close"
+              >
+                <Cancel01Icon size={22} strokeWidth={1.5} />
               </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="admin-booking-modal-body">
+              
+              {/* Section 1: Transaction Information */}
+              <div className="admin-modal-section">
+                <div className="admin-modal-section-title">Transaction Information</div>
+                <div className="admin-modal-grid-2">
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Transaction ID</span>
+                    <span className="admin-modal-value" style={{fontFamily: 'monospace', fontWeight: '600', color: '#8A158F'}}>
+                      {viewingPayment.razorpay_payment_id || (viewingPayment.id ? `#PAY-${viewingPayment.id}` : 'N/A')}
+                    </span>
+                  </div>
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Razorpay Order ID</span>
+                    <span className="admin-modal-value" style={{fontFamily: 'monospace'}}>
+                      {viewingPayment.razorpay_order_id || 'N/A'}
+                    </span>
+                  </div>
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Payment Date</span>
+                    <span className="admin-modal-value">
+                      {formatDateNumeric(viewingPayment.payment_date || viewingPayment.created_at || viewingPayment.date)}
+                    </span>
+                  </div>
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Payment Time</span>
+                    <span className="admin-modal-value">
+                      {formatBookingTime(viewingPayment.payment_date || viewingPayment.created_at || viewingPayment.date) || 'N/A'}
+                    </span>
+                  </div>
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Payment Method</span>
+                    <span className="admin-modal-value">
+                      {viewingPayment.payment_method || 'Online / Card'}
+                    </span>
+                  </div>
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Payment Status</span>
+                    <span className="admin-modal-value">
+                      {viewingPayment.status || 'Pending'}
+                    </span>
+                  </div>
+                  <div className="admin-modal-field" style={{gridColumn: '1 / -1'}}>
+                    <span className="admin-modal-label">Total Amount Paid</span>
+                    <span className="admin-modal-value" style={{fontWeight: '700', color: '#8A158F', fontSize: '16px'}}>
+                      &#8377;{Number(viewingPayment.amount || 0).toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 2: Associated Booking & Guest Information */}
+              <div className="admin-modal-section">
+                <div className="admin-modal-section-title">Booking & Guest Information</div>
+                <div className="admin-modal-grid-2">
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Booking ID / Ref</span>
+                    <span className="admin-modal-value admin-booking-id" style={{display: 'inline-block', width: 'fit-content'}}>
+                      {viewingPayment.booking_reference || (viewingPayment.booking_id ? `MERI${String(viewingPayment.booking_id).padStart(4, '0')}` : 'N/A')}
+                    </span>
+                  </div>
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Room / Property</span>
+                    <span className="admin-modal-value">
+                      {viewingPayment.room_name || viewingPayment.room_id || 'N/A'}
+                    </span>
+                  </div>
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Guest Name</span>
+                    <span className="admin-modal-value admin-text-medium">
+                      {viewingPayment.guest_name || 'Guest'}
+                    </span>
+                  </div>
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Mobile Number</span>
+                    <span className="admin-modal-value">
+                      {viewingPayment.guest_phone || 'N/A'}
+                    </span>
+                  </div>
+                  {viewingPayment.guest_email && (
+                    <div className="admin-modal-field">
+                      <span className="admin-modal-label">Email Address</span>
+                      <span className="admin-modal-value">
+                        {viewingPayment.guest_email}
+                      </span>
+                    </div>
+                  )}
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Booking Status</span>
+                    <span className="admin-modal-value">
+                      {getStatusBadge(viewingPayment.booking_status || (viewingPayment.booking ? viewingPayment.booking.status : 'Active'))}
+                    </span>
+                  </div>
+                  {viewingPayment.coupon_code && (
+                    <div className="admin-modal-field">
+                      <span className="admin-modal-label">Coupon / Discount</span>
+                      <span className="admin-modal-value">
+                        {viewingPayment.coupon_code} {viewingPayment.discount ? `(-₹${viewingPayment.discount})` : ''}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Notice if associated booking is cancelled */}
+              {((viewingPayment.booking_status && viewingPayment.booking_status.toLowerCase().includes('cancel')) || (viewingPayment.booking && viewingPayment.booking.status && viewingPayment.booking.status.toLowerCase().includes('cancel'))) && (
+                <div className="admin-modal-section" style={{borderLeft: '3px solid #f59e0b', backgroundColor: '#fffbeb', padding: '12px 14px', borderRadius: '6px'}}>
+                  <div className="admin-modal-section-title" style={{color: '#b45309', marginBottom: '4px', borderBottomColor: '#fde68a'}}>Associated Reservation Cancelled</div>
+                  <p style={{margin: 0, fontSize: '13px', color: '#92400e', lineHeight: '1.4'}}>
+                    The reservation linked to this transaction has been cancelled. Review the transaction status and amount above to process any required refund or record keeping.
+                  </p>
+                </div>
+              )}
+
+            </div>
+
+            {/* Modal Footer */}
+            <div className="admin-modal-footer">
+              <button
+                type="button"
+                className="admin-modal-btn-delete"
+                onClick={() => {
+                  const idToDelete = viewingPayment.id;
+                  deletePayment(idToDelete);
+                  setViewingPayment(null);
+                }}
+              >
+                <Delete01Icon size={16} />
+                <span>Delete</span>
+              </button>
+
+              <div style={{display: 'flex', gap: '10px', flexWrap: 'wrap'}}>
+                <button
+                  type="button"
+                  className="admin-modal-btn-close"
+                  onClick={() => setViewingPayment(null)}
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  className="admin-modal-btn-edit"
+                  onClick={() => {
+                    const dtStr = formatDateNumeric(viewingPayment.payment_date || viewingPayment.created_at || viewingPayment.date);
+                    const tmStr = formatBookingTime(viewingPayment.payment_date || viewingPayment.created_at || viewingPayment.date);
+                    const receiptText = `MERAKI LIVING - PAYMENT RECEIPT\n--------------------------------\nTransaction ID: ${viewingPayment.razorpay_payment_id || '#PAY-'+viewingPayment.id}\nOrder ID: ${viewingPayment.razorpay_order_id || 'N/A'}\nBooking Ref: ${viewingPayment.booking_reference || 'N/A'}\nGuest Name: ${viewingPayment.guest_name}\nPhone: ${viewingPayment.guest_phone || 'N/A'}\nRoom: ${viewingPayment.room_name || viewingPayment.room_id}\nPayment Method: ${viewingPayment.payment_method || 'Online / Card'}\nStatus: ${viewingPayment.status}\nDate: ${dtStr} ${tmStr}\nAmount Paid: INR ${viewingPayment.amount}\n--------------------------------\nThank you for choosing Meraki Living!`;
+                    const blob = new Blob([receiptText], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Receipt_${viewingPayment.razorpay_payment_id || viewingPayment.id}.txt`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                  }}
+                >
+                  <Download02Icon size={16} />
+                  <span>Download Receipt</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1519,12 +2708,15 @@ function PaymentsTab() {
 function CouponsTab() {
   const [coupons, setCoupons] = useState([]);
   const [editingCoupon, setEditingCoupon] = useState(null);
+  const [currentPage, setCurrentPageNum] = useState(1);
+
+  const ITEMS_PER_PAGE = 10;
 
   const fetchCoupons = () => {
     fetch(`${API_CONFIG_URL}/api_coupons.php`)
       .then(res => res.json())
       .then(data => {
-        if (data.status === 'success') {
+        if (data.status === 'success' && Array.isArray(data.data)) {
           setCoupons(data.data);
         }
       })
@@ -1582,31 +2774,72 @@ function CouponsTab() {
     }
   };
 
+  const totalCoupons = coupons.length;
+  const totalPages = Math.ceil(totalCoupons / ITEMS_PER_PAGE) || 1;
+  const safePage = Math.max(1, Math.min(currentPage, totalPages));
+  const startIndex = (safePage - 1) * ITEMS_PER_PAGE;
+  const paginatedCoupons = coupons.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
   return (
     <div className="admin-fade-in" style={{minHeight: 'calc(100vh - 64px)'}}>
-      <PageHeader title="Room Booking Coupons" subtitle="Manage discount coupons specifically for room reservations." action={<button className="admin-btn-primary" onClick={() => setEditingCoupon({status: 'Active', discount_percentage: ''})}><PlusSignIcon size={18} /> Add New Coupon</button>} />
+      <PageHeader
+        title="Room Booking Coupons"
+        subtitle="Manage discount coupons specifically for room reservations."
+        action={
+          <button className="admin-btn-primary" onClick={() => setEditingCoupon({status: 'Active', discount_percentage: ''})}>
+            <PlusSignIcon size={18} /> Add New Coupon
+          </button>
+        }
+      />
       
       <div className="admin-card">
         <div className="admin-table-wrapper">
-          <table className="admin-table">
-            <thead><tr><th>Coupon Code</th><th>Discount Percentage</th><th>Status</th><th>Actions</th></tr></thead>
+          <table className="admin-booking-table">
+            <thead>
+              <tr>
+                <th>Coupon Code</th>
+                <th>Discount Percentage</th>
+                <th>Status</th>
+                <th style={{textAlign: 'right'}}>Actions</th>
+              </tr>
+            </thead>
             <tbody>
-              {coupons.map((c) => (
+              {paginatedCoupons.map((c) => (
                 <tr key={c.coupon_id}>
                   <td>
-                    <div className="admin-text-medium" style={{letterSpacing: '0.5px'}}>{c.code}</div>
+                    <span className="admin-booking-id" style={{letterSpacing: '0.8px', fontWeight: '700'}}>
+                      {c.code}
+                    </span>
                   </td>
                   <td>
-                    <div style={{fontWeight: '600', color: '#0f172a'}}>
+                    <div style={{fontWeight: '600', color: '#0f172a', fontSize: '13px'}}>
                       {c.discount_percentage}% OFF
                     </div>
                   </td>
-                  <td><span className={`admin-badge ${c.status === 'Active' ? 'badge-success' : 'badge-danger'}`} style={c.status === 'Inactive' ? {background: '#fef2f2', color: '#dc2626'} : {}}>{c.status}</span></td>
                   <td>
-                     <div className="admin-action-group">
-                       <button className="admin-btn-sm admin-btn-outline" onClick={() => setEditingCoupon(c)}><Edit01Icon size={14} /></button>
-                       <button className="admin-btn-sm admin-btn-outline" onClick={() => deleteCoupon(c.coupon_id)}><Delete01Icon size={14} /></button>
-                     </div>
+                    {getStatusBadge(c.status)}
+                  </td>
+                  <td style={{textAlign: 'right'}}>
+                    <div className="admin-action-group" style={{justifyContent: 'flex-end'}}>
+                      <button
+                        type="button"
+                        className="admin-btn-view"
+                        onClick={() => setEditingCoupon(c)}
+                        title="Edit Coupon"
+                      >
+                        <Edit01Icon size={14} />
+                        <span>Edit</span>
+                      </button>
+                      <button
+                        type="button"
+                        className="admin-modal-btn-delete"
+                        style={{padding: '6px 10px', fontSize: '12px'}}
+                        onClick={() => deleteCoupon(c.coupon_id)}
+                        title="Delete Coupon"
+                      >
+                        <Delete01Icon size={14} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -1622,39 +2855,98 @@ function CouponsTab() {
             </tbody>
           </table>
         </div>
+
+        {/* Right-Aligned 10-Record Pagination */}
+        {coupons.length > 0 && (
+          <div className="admin-booking-pagination">
+            <div className="admin-booking-pagination-info">
+              Showing <strong>{startIndex + 1}</strong>&ndash;<strong>{Math.min(startIndex + ITEMS_PER_PAGE, totalCoupons)}</strong> of <strong>{totalCoupons}</strong> coupons
+            </div>
+            <div className="admin-booking-pagination-controls">
+              <button
+                type="button"
+                className="admin-pagination-btn"
+                disabled={safePage <= 1}
+                onClick={() => setCurrentPageNum(prev => Math.max(1, prev - 1))}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                <span>Previous</span>
+              </button>
+              <span className="admin-pagination-page-indicator">
+                Page <strong>{safePage}</strong> of <strong>{totalPages}</strong>
+              </span>
+              <button
+                type="button"
+                className="admin-pagination-btn"
+                disabled={safePage >= totalPages}
+                onClick={() => setCurrentPageNum(prev => Math.min(totalPages, prev + 1))}
+              >
+                <span>Next</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
       
       {editingCoupon && (
         <div className="admin-modal-overlay admin-fade-in" style={{zIndex: 9999}}>
-          <div className="admin-modal-content" style={{maxWidth: '450px'}}>
-            <div className="admin-modal-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', borderBottom: '1px solid #f1f5f9', paddingBottom: '16px'}}>
-              <h2 style={{margin: 0, fontSize: '20px', color: '#373737', fontWeight: '700'}}>{editingCoupon.coupon_id ? 'Edit Room Coupon' : 'Add New Coupon'}</h2>
-              <button onClick={() => setEditingCoupon(null)} style={{background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: '4px'}}><Cancel01Icon size={24} strokeWidth={1.5} /></button>
+          <div className="admin-booking-modal-content" style={{maxWidth: '480px'}}>
+            <div className="admin-modal-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #f1f5f9', paddingBottom: '14px'}}>
+              <h2 style={{margin: 0, fontSize: '18px', color: '#373737', fontWeight: '700'}}>
+                {editingCoupon.coupon_id ? 'Edit Room Coupon' : 'Add New Coupon'}
+              </h2>
+              <button onClick={() => setEditingCoupon(null)} style={{background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: '4px'}}>
+                <Cancel01Icon size={22} strokeWidth={1.5} />
+              </button>
             </div>
             
-            <div style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
+            <div className="admin-booking-modal-body">
               <div className="admin-form-group" style={{margin: 0}}>
-                <label className="admin-form-label" style={{marginBottom: '8px', color: '#334155', fontWeight: '600'}}>Coupon Code *</label>
-                <input type="text" className="admin-form-input" value={editingCoupon.code || ''} onChange={e => setEditingCoupon({...editingCoupon, code: e.target.value.toUpperCase()})} placeholder="e.g. ROOM20" style={{border: '1px solid #cbd5e1', padding: '12px 16px', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '600'}} />
+                <label className="admin-form-label" style={{marginBottom: '6px', color: '#334155', fontWeight: '600', fontSize: '13px'}}>Coupon Code *</label>
+                <input
+                  type="text"
+                  className="admin-form-input"
+                  value={editingCoupon.code || ''}
+                  onChange={e => setEditingCoupon({...editingCoupon, code: e.target.value.toUpperCase()})}
+                  placeholder="e.g. ROOM20"
+                  style={{border: '1px solid #cbd5e1', padding: '10px 14px', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '600', fontSize: '13px'}}
+                />
               </div>
 
               <div className="admin-form-group" style={{margin: 0}}>
-                <label className="admin-form-label" style={{marginBottom: '8px', color: '#334155', fontWeight: '600'}}>Discount Percentage (%) *</label>
-                <input type="number" className="admin-form-input" value={editingCoupon.discount_percentage || ''} onChange={e => setEditingCoupon({...editingCoupon, discount_percentage: e.target.value})} placeholder="e.g. 15" />
+                <label className="admin-form-label" style={{marginBottom: '6px', color: '#334155', fontWeight: '600', fontSize: '13px'}}>Discount Percentage (%) *</label>
+                <input
+                  type="number"
+                  className="admin-form-input"
+                  style={{fontSize: '13px'}}
+                  value={editingCoupon.discount_percentage || ''}
+                  onChange={e => setEditingCoupon({...editingCoupon, discount_percentage: e.target.value})}
+                  placeholder="e.g. 15"
+                />
               </div>
 
               <div className="admin-form-group" style={{margin: 0}}>
-                <label className="admin-form-label" style={{marginBottom: '8px', color: '#334155', fontWeight: '600'}}>Status</label>
-                <select className="admin-form-input" value={editingCoupon.status || 'Active'} onChange={e => setEditingCoupon({...editingCoupon, status: e.target.value})}>
+                <label className="admin-form-label" style={{marginBottom: '6px', color: '#334155', fontWeight: '600', fontSize: '13px'}}>Status</label>
+                <select
+                  className="admin-form-input"
+                  style={{fontSize: '13px'}}
+                  value={editingCoupon.status || 'Active'}
+                  onChange={e => setEditingCoupon({...editingCoupon, status: e.target.value})}
+                >
                   <option value="Active">Active</option>
                   <option value="Inactive">Inactive</option>
                 </select>
               </div>
             </div>
             
-            <div style={{display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '32px', paddingTop: '16px', borderTop: '1px solid #f1f5f9'}}>
-              <button className="admin-btn-outline" onClick={() => setEditingCoupon(null)} style={{padding: '10px 20px', fontWeight: '600'}}>Cancel</button>
-              <button className="admin-btn-primary" onClick={saveCoupon} style={{padding: '10px 24px', fontWeight: '600'}}>Save Coupon</button>
+            <div className="admin-modal-footer" style={{justifyContent: 'flex-end'}}>
+              <button className="admin-modal-btn-close" onClick={() => setEditingCoupon(null)}>Cancel</button>
+              <button className="admin-modal-btn-edit" onClick={saveCoupon}>Save Coupon</button>
             </div>
           </div>
         </div>
@@ -2561,5 +3853,809 @@ function NotificationBell({ showNotificationDropdown, setShowNotificationDropdow
         </>
       )}
     </div>
+  );
+}
+
+/* ==========================================================================
+   Admin Chatbot Components: Guests, Conversations, Refund Requests
+   ========================================================================== */
+
+function AdminChatbotGuestsTab() {
+  const [guests, setGuests] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const fetchGuests = useCallback(async (targetPage = 1, search = '') => {
+    setLoading(true);
+    setError('');
+    try {
+      const url = `${API_CONFIG_URL}/api_chatbot.php?action=admin_guests&page=${targetPage}&limit=20&search=${encodeURIComponent(search)}`;
+      const res = await fetch(url, {
+        headers: { 'Authorization': 'Bearer superadmin' }
+      });
+      const data = await res.json();
+      if (data && data.status === 'success') {
+        setGuests(Array.isArray(data.data) ? data.data : []);
+        setTotal(data.total || 0);
+        setPage(data.page || targetPage);
+        setTotalPages(data.total_pages || 1);
+      } else {
+        setError(data?.message || 'Failed to fetch chatbot guests.');
+      }
+    } catch {
+      setError('Unable to connect to the chatbot server.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchGuests(1, searchTerm);
+  }, [fetchGuests, searchTerm]);
+
+  return (
+    <>
+      <PageHeader
+        title="Chatbot Guests"
+        subtitle="Directory of all guest contacts captured through the public concierge assistant."
+      />
+
+      {/* Summary Stat Card */}
+      <div className="admin-card" style={{ marginBottom: '24px', padding: '24px', background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)', display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div style={{ background: '#fff', width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+          <UserGroupIcon size={24} color="#0f172a" />
+        </div>
+        <div>
+          <h3 style={{ margin: 0, fontSize: '14px', color: '#64748b', fontWeight: '500' }}>Total Chatbot Inquiries</h3>
+          <p style={{ margin: '4px 0 0 0', fontSize: '24px', fontWeight: '700', color: '#0f172a' }}>{total}</p>
+        </div>
+      </div>
+
+      {/* Search Bar */}
+      <div className="admin-chatbot-search-card">
+        <input
+          type="text"
+          className="admin-chatbot-search-input"
+          placeholder="Search guests by name, email, or phone number..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        {searchTerm && (
+          <button className="admin-btn-sm admin-btn-outline" onClick={() => setSearchTerm('')}>
+            Clear
+          </button>
+        )}
+      </div>
+
+      {/* Table Container */}
+      <div className="admin-card">
+        {loading ? (
+          <div style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
+            <div className="cb-spinner" style={{ margin: '0 auto 12px' }}></div>
+            <span>Loading chatbot guest records...</span>
+          </div>
+        ) : error ? (
+          <div style={{ padding: '40px', textAlign: 'center', color: '#dc2626' }}>
+            <p>{error}</p>
+            <button className="admin-btn-sm admin-btn-primary" onClick={() => fetchGuests(page, searchTerm)} style={{ marginTop: '12px' }}>
+              Retry
+            </button>
+          </div>
+        ) : guests.length === 0 ? (
+          <div style={{ padding: '48px', textAlign: 'center', color: '#64748b' }}>
+            <UserGroupIcon size={36} color="#94a3b8" style={{ margin: '0 auto 12px', display: 'block' }} />
+            <h4 style={{ margin: '0 0 6px', color: '#373737' }}>No Guest Records Found</h4>
+            <p style={{ margin: 0, fontSize: '13px' }}>
+              {searchTerm ? 'No guests match your search filter.' : 'No guest contact details have been captured yet.'}
+            </p>
+          </div>
+        ) : (
+          <div className="admin-table-wrapper">
+            <table className="admin-booking-table">
+              <thead>
+                <tr>
+                  <th>Guest ID</th>
+                  <th>Guest Name</th>
+                  <th>Contact Details</th>
+                  <th>Conversations</th>
+                  <th>Registered On</th>
+                </tr>
+              </thead>
+              <tbody>
+                {guests.map((g) => (
+                  <tr key={g.id}>
+                    <td>
+                      <span className="admin-booking-id">#G-{String(g.id).padStart(3, '0')}</span>
+                    </td>
+                    <td className="admin-text-medium">{g.name}</td>
+                    <td>
+                      <div className="admin-cell-stack">
+                        <span>{g.email}</span>
+                        <span className="admin-cell-muted" style={{ fontSize: '11px' }}>{g.phone}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span className="admin-badge badge-info">{g.conversation_count || 0} {g.conversation_count === 1 ? 'Session' : 'Sessions'}</span>
+                    </td>
+                    <td>
+                      {g.created_at ? (
+                        <div className="admin-date-time-stack">
+                          <span>{formatDateNumeric(g.created_at)}</span>
+                          <span className="admin-time-sub">{formatBookingTime(g.created_at)}</span>
+                        </div>
+                      ) : '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Pagination Bar */}
+        {!loading && totalPages > 1 && (
+          <div className="admin-pagination">
+            <span className="admin-pagination-info">
+              Showing page <strong>{page}</strong> of <strong>{totalPages}</strong> ({total} total records)
+            </span>
+            <div className="admin-pagination-actions">
+              <button
+                className="admin-btn-sm admin-btn-outline"
+                disabled={page <= 1}
+                onClick={() => fetchGuests(page - 1, searchTerm)}
+              >
+                Previous
+              </button>
+              <button
+                className="admin-btn-sm admin-btn-outline"
+                disabled={page >= totalPages}
+                onClick={() => fetchGuests(page + 1, searchTerm)}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+function AdminChatbotConversationsTab() {
+  const [conversations, setConversations] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // Show Chat Modal state
+  const [selectedConvId, setSelectedConvId] = useState(null);
+  const [chatData, setChatData] = useState(null);
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatError, setChatError] = useState('');
+
+  const fetchConversations = useCallback(async (targetPage = 1, search = '') => {
+    setLoading(true);
+    setError('');
+    try {
+      const url = `${API_CONFIG_URL}/api_chatbot.php?action=admin_conversations&page=${targetPage}&limit=20&search=${encodeURIComponent(search)}`;
+      const res = await fetch(url, {
+        headers: { 'Authorization': 'Bearer superadmin' }
+      });
+      const data = await res.json();
+      if (data && data.status === 'success') {
+        setConversations(Array.isArray(data.data) ? data.data : []);
+        setTotal(data.total || 0);
+        setPage(data.page || targetPage);
+        setTotalPages(data.total_pages || 1);
+      } else {
+        setError(data?.message || 'Failed to fetch conversations.');
+      }
+    } catch {
+      setError('Unable to connect to the conversations server.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchConversations(1, searchTerm);
+  }, [fetchConversations, searchTerm]);
+
+  const openShowChat = async (convId) => {
+    setSelectedConvId(convId);
+    setChatLoading(true);
+    setChatError('');
+    setChatData(null);
+    try {
+      const url = `${API_CONFIG_URL}/api_chatbot.php?action=get_conversation&conversation_id=${encodeURIComponent(convId)}`;
+      const res = await fetch(url, {
+        headers: { 'Authorization': 'Bearer superadmin' }
+      });
+      const data = await res.json();
+      if (data && data.status === 'success' && data.data) {
+        setChatData(data.data);
+      } else {
+        setChatError(data?.message || 'Conversation history not found.');
+      }
+    } catch {
+      setChatError('Failed to load conversation messages.');
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <PageHeader
+        title="Chatbot Conversations"
+        subtitle="Review complete chronological chat transcripts and interactions across guest sessions."
+      />
+
+      {/* Search Bar */}
+      <div className="admin-chatbot-search-card">
+        <input
+          type="text"
+          className="admin-chatbot-search-input"
+          placeholder="Search by Conversation ID, Guest Name, Email, or Phone..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        {searchTerm && (
+          <button className="admin-btn-sm admin-btn-outline" onClick={() => setSearchTerm('')}>
+            Clear
+          </button>
+        )}
+      </div>
+
+      {/* Table Card */}
+      <div className="admin-card">
+        {loading ? (
+          <div style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
+            <div className="cb-spinner" style={{ margin: '0 auto 12px' }}></div>
+            <span>Loading conversation logs...</span>
+          </div>
+        ) : error ? (
+          <div style={{ padding: '40px', textAlign: 'center', color: '#dc2626' }}>
+            <p>{error}</p>
+            <button className="admin-btn-sm admin-btn-primary" onClick={() => fetchConversations(page, searchTerm)} style={{ marginTop: '12px' }}>
+              Retry
+            </button>
+          </div>
+        ) : conversations.length === 0 ? (
+          <div style={{ padding: '48px', textAlign: 'center', color: '#64748b' }}>
+            <Message01Icon size={36} color="#94a3b8" style={{ margin: '0 auto 12px', display: 'block' }} />
+            <h4 style={{ margin: '0 0 6px', color: '#373737' }}>No Conversations Found</h4>
+            <p style={{ margin: 0, fontSize: '13px' }}>
+              {searchTerm ? 'No sessions match your search query.' : 'No chatbot conversation sessions recorded yet.'}
+            </p>
+          </div>
+        ) : (
+          <div className="admin-table-wrapper">
+            <table className="admin-booking-table">
+              <thead>
+                <tr>
+                  <th>Conversation ID</th>
+                  <th>Guest Name</th>
+                  <th>Contact Details</th>
+                  <th>Messages</th>
+                  <th>Last Message</th>
+                  <th>Last Active</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {conversations.map((c) => (
+                  <tr key={c.id || c.conversation_id}>
+                    <td>
+                      <span className="admin-booking-id">
+                        {c.conversation_id}
+                      </span>
+                    </td>
+                    <td className="admin-text-medium">{c.guest_name || 'Guest'}</td>
+                    <td>
+                      <div className="admin-cell-stack">
+                        <span>{c.guest_email || '—'}</span>
+                        <span className="admin-cell-muted" style={{ fontSize: '11px' }}>{c.guest_phone || '—'}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span className="admin-badge badge-primary">{c.message_count || 0} msgs</span>
+                    </td>
+                    <td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={c.last_message}>
+                      {c.last_message ? `${c.last_sender === 'user' ? 'Guest: ' : 'Bot: '}${c.last_message}` : '—'}
+                    </td>
+                    <td>
+                      {c.updated_at ? (
+                        <div className="admin-date-time-stack">
+                          <span>{formatDateNumeric(c.updated_at)}</span>
+                          <span className="admin-time-sub">{formatBookingTime(c.updated_at)}</span>
+                        </div>
+                      ) : '—'}
+                    </td>
+                    <td>
+                      <button
+                        className="admin-btn-view"
+                        onClick={() => openShowChat(c.conversation_id)}
+                      >
+                        Show Chat
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Pagination Bar */}
+        {!loading && totalPages > 1 && (
+          <div className="admin-pagination">
+            <span className="admin-pagination-info">
+              Showing page <strong>{page}</strong> of <strong>{totalPages}</strong> ({total} total conversations)
+            </span>
+            <div className="admin-pagination-actions">
+              <button
+                className="admin-btn-sm admin-btn-outline"
+                disabled={page <= 1}
+                onClick={() => fetchConversations(page - 1, searchTerm)}
+              >
+                Previous
+              </button>
+              <button
+                className="admin-btn-sm admin-btn-outline"
+                disabled={page >= totalPages}
+                onClick={() => fetchConversations(page + 1, searchTerm)}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Complete Conversation "Show Chat" Modal */}
+      {selectedConvId && (
+        <div className="admin-modal-overlay admin-fade-in" style={{ zIndex: 9999 }}>
+          <div className="admin-modal-content" style={{ maxWidth: '720px' }}>
+            <div className="admin-modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #f1f5f9', paddingBottom: '14px' }}>
+              <div>
+                <h2 style={{ margin: 0, fontSize: '18px', color: '#373737', fontWeight: '700' }}>
+                  Conversation Transcript
+                </h2>
+                <span style={{ fontSize: '12px', color: '#64748b' }}>ID: {selectedConvId}</span>
+              </div>
+              <button
+                onClick={() => setSelectedConvId(null)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#817F7F', padding: '4px' }}
+                aria-label="Close Modal"
+              >
+                <Cancel01Icon size={22} strokeWidth={1.5} />
+              </button>
+            </div>
+
+            {chatLoading ? (
+              <div style={{ padding: '60px 20px', textAlign: 'center', color: '#64748b' }}>
+                <div className="cb-spinner" style={{ margin: '0 auto 12px' }}></div>
+                <span>Retrieving complete chat history...</span>
+              </div>
+            ) : chatError ? (
+              <div style={{ padding: '40px 20px', textAlign: 'center', color: '#dc2626' }}>
+                <p>{chatError}</p>
+                <button className="admin-btn-sm admin-btn-outline" onClick={() => openShowChat(selectedConvId)} style={{ marginTop: '12px' }}>
+                  Retry
+                </button>
+              </div>
+            ) : chatData ? (
+              <>
+                {/* Guest Overview Strip */}
+                <div style={{ background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px', fontSize: '13px' }}>
+                  <div><strong>Guest:</strong> {chatData.guest_name || 'Anonymous'}</div>
+                  {chatData.guest_email && <div><strong>Email:</strong> {chatData.guest_email}</div>}
+                  {chatData.guest_phone && <div><strong>Phone:</strong> {chatData.guest_phone}</div>}
+                  <div><strong>Total Messages:</strong> {chatData.messages?.length || 0}</div>
+                </div>
+
+                {/* Chronological Chat Messages Area */}
+                <div className="admin-chat-transcript-wrap">
+                  {!chatData.messages || chatData.messages.length === 0 ? (
+                    <div style={{ textAlign: 'center', color: '#64748b', padding: '30px' }}>
+                      No messages recorded in this conversation.
+                    </div>
+                  ) : (
+                    chatData.messages.map((m, idx) => {
+                      const isUser = m.sender === 'user';
+                      return (
+                        <div key={idx} className={`admin-chat-msg-row ${isUser ? 'user' : 'bot'}`}>
+                          <span className="admin-chat-sender-tag">
+                            {isUser ? (chatData.guest_name || 'Guest') : 'Meraki Concierge'}
+                          </span>
+                          <div className={`admin-chat-bubble ${isUser ? 'user' : 'bot'}`}>
+                            {m.text}
+                          </div>
+                          {m.timestamp && (
+                            <span className="admin-chat-timestamp">
+                              {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </>
+            ) : null}
+
+            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+              <button className="admin-btn-sm admin-btn-outline" onClick={() => setSelectedConvId(null)}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+function AdminChatbotRefundsTab() {
+  const [refunds, setRefunds] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // Detail & Status Modal State
+  const [selectedRefund, setSelectedRefund] = useState(null);
+  const [statusToUpdate, setStatusToUpdate] = useState('Pending');
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [statusError, setStatusError] = useState('');
+  const [statusSuccess, setStatusSuccess] = useState('');
+
+  const fetchRefunds = useCallback(async (targetPage = 1, search = '', status = 'All') => {
+    setLoading(true);
+    setError('');
+    try {
+      const url = `${API_CONFIG_URL}/api_chatbot.php?action=admin_refunds&page=${targetPage}&limit=20&search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}`;
+      const res = await fetch(url, {
+        headers: { 'Authorization': 'Bearer superadmin' }
+      });
+      const data = await res.json();
+      if (data && data.status === 'success') {
+        setRefunds(Array.isArray(data.data) ? data.data : []);
+        setTotal(data.total || 0);
+        setPage(data.page || targetPage);
+        setTotalPages(data.total_pages || 1);
+      } else {
+        setError(data?.message || 'Failed to fetch refund requests.');
+      }
+    } catch {
+      setError('Unable to connect to the refunds service.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchRefunds(1, searchTerm, statusFilter);
+  }, [fetchRefunds, searchTerm, statusFilter]);
+
+  const handleStatusUpdate = async (refundId, newStatus) => {
+    setUpdatingStatus(true);
+    setStatusError('');
+    setStatusSuccess('');
+    try {
+      const res = await fetch(`${API_CONFIG_URL}/api_chatbot.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer superadmin'
+        },
+        body: JSON.stringify({
+          action: 'admin_update_refund_status',
+          id: refundId,
+          status: newStatus
+        })
+      });
+      const data = await res.json();
+      if (data && data.status === 'success' && data.data) {
+        setSelectedRefund(data.data);
+        setStatusSuccess(`Refund request status updated to "${newStatus}" successfully.`);
+        fetchRefunds(page, searchTerm, statusFilter);
+      } else {
+        setStatusError(data?.message || 'Failed to update refund status.');
+      }
+    } catch {
+      setStatusError('Unable to update refund status. Please check your connection.');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  const getStatusBadgeClass = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'approved':
+      case 'processed':
+        return 'badge-success';
+      case 'rejected':
+        return 'badge-danger';
+      case 'pending':
+      default:
+        return 'badge-warning';
+    }
+  };
+
+  return (
+    <>
+      <PageHeader
+        title="Chatbot Refund Requests"
+        subtitle="Manage and process cancellation refund inquiries submitted via Concierge assistant."
+      />
+
+      {/* Filter and Search Bar */}
+      <div className="admin-card" style={{ marginBottom: '20px' }}>
+        <div className="admin-filter-bar">
+          {['All', 'Pending', 'Approved', 'Rejected', 'Processed'].map((st) => (
+            <button
+              key={st}
+              className={`admin-filter-btn ${statusFilter === st ? 'active' : ''}`}
+              onClick={() => setStatusFilter(st)}
+            >
+              {st}
+            </button>
+          ))}
+        </div>
+
+        <div style={{ padding: '16px 24px', display: 'flex', gap: '12px' }}>
+          <input
+            type="text"
+            className="admin-chatbot-search-input"
+            placeholder="Search by Booking ID, Guest Name, Email, Phone, or Reason..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          {searchTerm && (
+            <button className="admin-btn-sm admin-btn-outline" onClick={() => setSearchTerm('')}>
+              Clear
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Table Card */}
+      <div className="admin-card">
+        {loading ? (
+          <div style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
+            <div className="cb-spinner" style={{ margin: '0 auto 12px' }}></div>
+            <span>Loading refund requests...</span>
+          </div>
+        ) : error ? (
+          <div style={{ padding: '40px', textAlign: 'center', color: '#dc2626' }}>
+            <p>{error}</p>
+            <button className="admin-btn-sm admin-btn-primary" onClick={() => fetchRefunds(page, searchTerm, statusFilter)} style={{ marginTop: '12px' }}>
+              Retry
+            </button>
+          </div>
+        ) : refunds.length === 0 ? (
+          <div style={{ padding: '48px', textAlign: 'center', color: '#64748b' }}>
+            <File02Icon size={36} color="#94a3b8" style={{ margin: '0 auto 12px', display: 'block' }} />
+            <h4 style={{ margin: '0 0 6px', color: '#373737' }}>No Refund Requests Found</h4>
+            <p style={{ margin: 0, fontSize: '13px' }}>
+              {searchTerm || statusFilter !== 'All' ? 'No refund records match the specified filters.' : 'No refund requests have been submitted yet.'}
+            </p>
+          </div>
+        ) : (
+          <div className="admin-table-wrapper">
+            <table className="admin-booking-table">
+              <thead>
+                <tr>
+                  <th>Refund ID</th>
+                  <th>Booking ID</th>
+                  <th>Guest Name</th>
+                  <th>Contact Details</th>
+                  <th>Reason</th>
+                  <th>Status</th>
+                  <th>Submitted On</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {refunds.map((r) => (
+                  <tr key={r.id}>
+                    <td>
+                      <span className="admin-booking-id">#RF-{String(r.id).padStart(3, '0')}</span>
+                    </td>
+                    <td className="admin-text-medium" style={{ fontFamily: 'monospace', fontWeight: '600' }}>
+                      {r.booking_id}
+                    </td>
+                    <td>{r.guest_name}</td>
+                    <td>
+                      <div className="admin-cell-stack">
+                        <span>{r.guest_email}</span>
+                        <span className="admin-cell-muted" style={{ fontSize: '11px' }}>{r.guest_phone}</span>
+                      </div>
+                    </td>
+                    <td style={{ maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.reason}>
+                      {r.reason}
+                    </td>
+                    <td>
+                      <span className={`admin-badge ${getStatusBadgeClass(r.status)}`}>
+                        {r.status}
+                      </span>
+                    </td>
+                    <td>
+                      {r.created_at ? (
+                        <div className="admin-date-time-stack">
+                          <span>{formatDateNumeric(r.created_at)}</span>
+                          <span className="admin-time-sub">{formatBookingTime(r.created_at)}</span>
+                        </div>
+                      ) : '—'}
+                    </td>
+                    <td>
+                      <button
+                        className="admin-btn-view"
+                        onClick={() => {
+                          setSelectedRefund(r);
+                          setStatusToUpdate(r.status || 'Pending');
+                          setStatusError('');
+                          setStatusSuccess('');
+                        }}
+                      >
+                        View / Manage
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Pagination Bar */}
+        {!loading && totalPages > 1 && (
+          <div className="admin-pagination">
+            <span className="admin-pagination-info">
+              Showing page <strong>{page}</strong> of <strong>{totalPages}</strong> ({total} total requests)
+            </span>
+            <div className="admin-pagination-actions">
+              <button
+                className="admin-btn-sm admin-btn-outline"
+                disabled={page <= 1}
+                onClick={() => fetchRefunds(page - 1, searchTerm, statusFilter)}
+              >
+                Previous
+              </button>
+              <button
+                className="admin-btn-sm admin-btn-outline"
+                disabled={page >= totalPages}
+                onClick={() => fetchRefunds(page + 1, searchTerm, statusFilter)}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Refund Details & Status Management Modal */}
+      {selectedRefund && (
+        <div className="admin-modal-overlay admin-fade-in" style={{ zIndex: 9999 }}>
+          <div className="admin-modal-content" style={{ maxWidth: '640px' }}>
+            <div className="admin-modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #f1f5f9', paddingBottom: '16px' }}>
+              <div>
+                <h2 style={{ margin: 0, fontSize: '18px', color: '#373737', fontWeight: '700' }}>
+                  Refund Request #{String(selectedRefund.id).padStart(3, '0')}
+                </h2>
+                <span style={{ fontSize: '12px', color: '#64748b' }}>
+                  Booking ID: <strong>{selectedRefund.booking_id}</strong>
+                </span>
+              </div>
+              <button
+                onClick={() => setSelectedRefund(null)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#817F7F', padding: '4px' }}
+                aria-label="Close Modal"
+              >
+                <Cancel01Icon size={22} strokeWidth={1.5} />
+              </button>
+            </div>
+
+            {/* Refund Info Grid */}
+            <div className="admin-refund-details-grid">
+              <div className="admin-refund-detail-item">
+                <div className="admin-refund-detail-label">Guest Name</div>
+                <div className="admin-refund-detail-val">{selectedRefund.guest_name}</div>
+              </div>
+              <div className="admin-refund-detail-item">
+                <div className="admin-refund-detail-label">Current Status</div>
+                <div className="admin-refund-detail-val">
+                  <span className={`admin-badge ${getStatusBadgeClass(selectedRefund.status)}`}>
+                    {selectedRefund.status}
+                  </span>
+                </div>
+              </div>
+              <div className="admin-refund-detail-item">
+                <div className="admin-refund-detail-label">Email Address</div>
+                <div className="admin-refund-detail-val">{selectedRefund.guest_email}</div>
+              </div>
+              <div className="admin-refund-detail-item">
+                <div className="admin-refund-detail-label">Phone Number</div>
+                <div className="admin-refund-detail-val">{selectedRefund.guest_phone}</div>
+              </div>
+              <div className="admin-refund-detail-item full-width">
+                <div className="admin-refund-detail-label">Refund Reason</div>
+                <div className="admin-refund-detail-val">{selectedRefund.reason}</div>
+              </div>
+              {selectedRefund.message && (
+                <div className="admin-refund-detail-item full-width">
+                  <div className="admin-refund-detail-label">Additional Message / Notes</div>
+                  <div className="admin-refund-detail-val">{selectedRefund.message}</div>
+                </div>
+              )}
+              <div className="admin-refund-detail-item full-width">
+                <div className="admin-refund-detail-label">Submission Date</div>
+                <div className="admin-refund-detail-val">
+                  {selectedRefund.created_at ? new Date(selectedRefund.created_at).toLocaleString() : 'N/A'}
+                </div>
+              </div>
+            </div>
+
+            {/* Status Update Control */}
+            <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0', marginTop: '16px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#373737', marginBottom: '8px' }}>
+                Update Refund Status
+              </label>
+
+              {statusSuccess && (
+                <div style={{ padding: '8px 12px', background: '#ecfdf5', color: '#059669', borderRadius: '6px', fontSize: '13px', marginBottom: '12px' }}>
+                  {statusSuccess}
+                </div>
+              )}
+              {statusError && (
+                <div style={{ padding: '8px 12px', background: '#fef2f2', color: '#dc2626', borderRadius: '6px', fontSize: '13px', marginBottom: '12px' }}>
+                  {statusError}
+                </div>
+              )}
+
+              <div className="admin-status-select-wrap">
+                <select
+                  className="admin-select-input"
+                  value={statusToUpdate}
+                  onChange={(e) => setStatusToUpdate(e.target.value)}
+                  disabled={updatingStatus}
+                >
+                  <option value="Pending">Pending</option>
+                  <option value="Approved">Approved</option>
+                  <option value="Rejected">Rejected</option>
+                  <option value="Processed">Processed</option>
+                </select>
+
+                <button
+                  className="admin-btn-sm admin-btn-primary"
+                  disabled={updatingStatus || statusToUpdate === selectedRefund.status}
+                  onClick={() => handleStatusUpdate(selectedRefund.id, statusToUpdate)}
+                >
+                  {updatingStatus ? 'Updating...' : 'Save New Status'}
+                </button>
+              </div>
+            </div>
+
+            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+              <button className="admin-btn-sm admin-btn-outline" onClick={() => setSelectedRefund(null)}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

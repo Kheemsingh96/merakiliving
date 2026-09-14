@@ -12,6 +12,9 @@ import FAQ from './components/FAQ/FAQ';
 import CTA from './components/CTA/CTA';
 import Footer from './components/Footer/Footer';
 import CookieConsent from './components/CookieConsent/CookieConsent';
+import Chatbot from './components/Chatbot/Chatbot';
+import FloatingBookingDetails from './components/FloatingBookingDetails/FloatingBookingDetails';
+import Preloader from './components/Preloader/Preloader';
 
 import './App.css';
 
@@ -23,6 +26,7 @@ const PrivacyPolicy = React.lazy(() => import('./Pages/PrivacyPolicy/PrivacyPoli
 const TermsConditions = React.lazy(() => import('./Pages/TermsConditions/TermsConditions'));
 const CancellationPolicy = React.lazy(() => import('./Pages/CancellationPolicy/CancellationPolicy'));
 const CafePage = React.lazy(() => import('./Pages/CafePage/CafePage'));
+const SrotPage = React.lazy(() => import('./Pages/SrotPage/SrotPage'));
 const NotFound = React.lazy(() => import('./Pages/NotFound/NotFound'));
 
 // Admin Pages
@@ -45,6 +49,11 @@ function App() {
   const [selectedRoomId, setSelectedRoomId] = useState(() => {
     const stored = sessionStorage.getItem('meraki_selectedRoomId');
     return stored ? parseInt(stored, 10) : 1;
+  });
+  const [showPreloader, setShowPreloader] = useState(() => {
+    const path = window.location.pathname;
+    if (path.startsWith('/Pranay-admin')) return false;
+    return true;
   });
 
   const handleNavigate = useCallback((page, roomId = null, scrollToId = null) => {
@@ -149,6 +158,8 @@ function App() {
         return <AboutUs setCurrentPage={handleNavigate} />;
       case 'cafe':
         return <CafePage setCurrentPage={handleNavigate} />;
+      case 'srot':
+        return <SrotPage setCurrentPage={handleNavigate} />;
       case 'room-details':
         return <RoomDetails setCurrentPage={handleNavigate} selectedRoomId={selectedRoomId} />;
       case 'booking':
@@ -188,12 +199,15 @@ function App() {
 
     return (
       <>
+        {showPreloader && <Preloader onComplete={() => setShowPreloader(false)} />}
         <Navbar setCurrentPage={handleNavigate} currentPage={currentPage} />
         <React.Suspense fallback={<div className="suspense-loader"><div className="suspense-spinner"></div></div>}>
           {renderPage()}
         </React.Suspense>
         <div id="contact"><Footer setCurrentPage={handleNavigate} /></div>
         <CookieConsent setCurrentPage={handleNavigate} />
+        <Chatbot setCurrentPage={handleNavigate} />
+        <FloatingBookingDetails setCurrentPage={handleNavigate} />
       </>
     );
   };

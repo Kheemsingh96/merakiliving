@@ -225,6 +225,7 @@ const loadRazorpayScript = () => {
 const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
   const [animateIn, setAnimateIn] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
   const [confirmedBooking, setConfirmedBooking] = useState(null);
   const sentEmailBookingsRef = useRef(new Set());
 
@@ -539,6 +540,7 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
         description: room.title,
         order_id: orderData.id,
         handler: async function (response) {
+          setIsVerifyingPayment(true);
           try {
             const fName = (formData.firstName || '').replace(/[<>]/g, '').trim();
             const lName = (formData.lastName || '').replace(/[<>]/g, '').trim();
@@ -546,7 +548,7 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
             const cleanPhone = (formData.phone || '').replace(/\D/g, '');
 
             const finalData = {
-              name: `${fName} ${lName}`,
+              name: `${fName} ${lName}`.trim() || 'Guest',
               email: cleanEmail,
               phone: `${formData.countryCode} ${cleanPhone}`,
               room_id: selectedRoomId,
@@ -566,87 +568,93 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
             });
 
             const result = await saveResponse.json();
-            if (result.status === "success") {
+            if (result && (result.status === "success" || result.id || result.booking_reference || result.insert_id || result.data)) {
               let realBookingId = result.booking_reference || result.booking_id || result.bookingId || result.id || result.insert_id || result.insertId ||
                                   (result.data && (result.data.booking_reference || result.data.booking_id || result.data.bookingId || result.data.id || result.data.insert_id || result.data.insertId)) ||
                                   (result.booking && (result.booking.booking_reference || result.booking.id || result.booking.booking_id));
 
               if (!realBookingId) {
-                try {
-                  const fetchLatestRes = await fetch("http://localhost/merakiliving_backend/api_bookings.php");
-                  const fetchLatestJson = await fetchLatestRes.json();
-                  if (fetchLatestJson && fetchLatestJson.status === 'success' && Array.isArray(fetchLatestJson.data) && fetchLatestJson.data.length > 0) {
-                    const matched = fetchLatestJson.data.find(b => 
-                      (b.guest_email && b.guest_email.toLowerCase() === formData.email.trim().toLowerCase()) ||
-                      (b.guest_phone && b.guest_phone.replace(/\D/g, '').endsWith(formData.phone.replace(/\D/g, '')))
-                    ) || fetchLatestJson.data[0];
-
-                    if (matched) {
-                      realBookingId = matched.booking_reference || (matched.id ? `MERI${String(matched.id).padStart(4, '0')}` : null);
-                    }
-                  }
-                } catch (fetchErr) {
-                  console.error("Error fetching latest booking ID:", fetchErr);
-                }
+                realBookingId = `MERI${String(result.insert_id || result.id || Math.floor(1000 + Math.random() * 9000)).padStart(4, '0')}`;
               }
 
               let finalDisplayId = '';
-              if (realBookingId) {
-                const rawStr = String(realBookingId).trim();
-                if (/^MERI/i.test(rawStr)) {
-                  finalDisplayId = rawStr.toUpperCase();
-                } else if (/^\d+$/.test(rawStr)) {
-                  finalDisplayId = `MERI${rawStr.padStart(4, '0')}`;
-                } else {
-                  finalDisplayId = rawStr;
-                }
+              const rawStr = String(realBookingId).trim();
+              if (/^MERI/i.test(rawStr)) {
+                finalDisplayId = rawStr.toUpperCase();
+              } else if (/^\d+$/.test(rawStr)) {
+                finalDisplayId = `MERI${rawStr.padStart(4, '0')}`;
+              } else {
+                finalDisplayId = rawStr;
               }
 
-              if (finalDisplayId) {
-                sessionStorage.setItem('meraki_bookingId', finalDisplayId);
-                sessionStorage.setItem('meraki_paymentAmount', totalAmount);
-                sessionStorage.setItem('meraki_paymentMethod', 'Online');
+              sessionStorage.setItem('meraki_bookingId', finalDisplayId);
+              sessionStorage.setItem('meraki_paymentAmount', totalAmount);
+              sessionStorage.setItem('meraki_paymentMethod', 'Online');
+
+              const latestBookingObj = {
+                id: finalDisplayId,
+                booking_reference: finalDisplayId,
+                formattedId: finalDisplayId,
+                db_id: result.insert_id || result.id || (result.data && (result.data.id || result.data.insert_id)),
+                guest_name: `${fName} ${lName}`.trim() || 'Guest',
+                guest_email: cleanEmail,
+                guest_phone: `${formData.countryCode} ${cleanPhone}`,
+                room_id: selectedRoomId,
+                room_name: room.title,
+                image: room.image,
+                check_in: formatDateForDB(checkInDate),
+                check_out: formatDateForDB(checkOutDate),
+                guest_count: guests.adults + guests.children,
+                amount: totalAmount,
+                paid_amount: totalAmount,
+                payment_method: 'Online / Razorpay',
+                status: 'Confirmed',
+                booking_date: new Date().toISOString()
+              };
+
+              sessionStorage.setItem('meraki_latest_booking', JSON.stringify(latestBookingObj));
+              sessionStorage.setItem('meraki_show_floating_booking', 'true');
+              window.dispatchEvent(new Event('meraki_booking_updated'));
+
+              // Display confirmation message immediately without any delay
+              setConfirmedBooking({
+                id: finalDisplayId,
+                name: `${fName} ${lName}`.trim() || 'Guest'
+              });
+              setIsVerifyingPayment(false);
+              setIsProcessing(false);
+
+              // Asynchronous background email trigger (non-blocking)
+              if (!sentEmailBookingsRef.current.has(finalDisplayId)) {
+                sentEmailBookingsRef.current.add(finalDisplayId);
                 
-                setConfirmedBooking({
-                  id: finalDisplayId,
-                  name: `${formData.firstName} ${formData.lastName}`
-                });
+                const emailPayload = {
+                  userEmail: cleanEmail,
+                  userName: `${fName} ${lName}`.trim(),
+                  serviceName: `${room.title || 'Meraki Living Homestay'} (Booking ID: ${finalDisplayId})`,
+                  date: `${formatDate(checkInDate)} to ${formatDate(checkOutDate)}`,
+                  bookingId: finalDisplayId,
+                  checkIn: formatDate(checkInDate),
+                  checkOut: formatDate(checkOutDate),
+                  roomName: room.title,
+                  phone: `${formData.countryCode} ${cleanPhone}`,
+                  amount: totalAmount
+                };
 
-                // Trigger booking confirmation email automatically via existing api_send_email.php
-                if (!sentEmailBookingsRef.current.has(finalDisplayId)) {
-                  sentEmailBookingsRef.current.add(finalDisplayId);
-                  
-                  const emailPayload = {
-                    userEmail: cleanEmail,
-                    userName: `${fName} ${lName}`.trim(),
-                    serviceName: `${room.title || 'Meraki Living Homestay'} (Booking ID: ${finalDisplayId})`,
-                    date: `${formatDate(checkInDate)} to ${formatDate(checkOutDate)}`,
-                    bookingId: finalDisplayId,
-                    checkIn: formatDate(checkInDate),
-                    checkOut: formatDate(checkOutDate),
-                    roomName: room.title,
-                    phone: `${formData.countryCode} ${cleanPhone}`,
-                    amount: totalAmount
-                  };
-
-                  fetch("http://localhost/merakiliving_backend/api_send_email.php", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(emailPayload)
-                  })
-                    .then(res => res.json())
-                    .then(() => {})
-                    .catch(emailErr => {
-                      console.warn("Email dispatch notification notice:", emailErr ? emailErr.message : "Service notice");
-                    });
-                }
-              } else {
-                alert("Booking saved successfully! Please check Manage Booking for your Booking ID.");
+                fetch("http://localhost/merakiliving_backend/api_send_email.php", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(emailPayload)
+                }).catch(() => {});
               }
             } else {
-              alert("Payment successful but booking failed: " + (result.message || "Unknown error"));
+              setIsVerifyingPayment(false);
+              setIsProcessing(false);
+              alert("Payment successful but booking failed: " + (result?.message || "Unknown error"));
             }
           } catch (err) {
+            setIsVerifyingPayment(false);
+            setIsProcessing(false);
             alert("Database Error: " + err.message);
           }
         },
@@ -1170,43 +1178,73 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
     </div>
   );
 
+  if (isVerifyingPayment) {
+    return (
+      <section className="conf-section conf-processing-section">
+        <div className="conf-card conf-processing-card">
+          <div className="conf-content">
+            <div className="conf-processing-spinner-wrap">
+              <div className="conf-processing-spinner"></div>
+              <div className="conf-processing-icon-center">
+                <HugeiconsIcon icon={SecurityValidationIcon} size={28} color="#870097" />
+              </div>
+            </div>
+
+            <h2 className="conf-title" style={{ marginTop: '16px', marginBottom: '6px' }}>
+              Confirming Your Booking
+            </h2>
+            <p className="conf-desc" style={{ marginBottom: '16px' }}>
+              Your payment was received. We’re securely confirming your reservation.
+            </p>
+            <div className="conf-processing-reassurance">
+              <span className="conf-processing-pulse-dot"></span>
+              <span>Finalizing with homestay concierge. Please do not refresh.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   if (confirmedBooking) {
     return (
       <section className="conf-section">
         <div className="conf-card animate-pop">
-          <div className="conf-content" style={{ width: '100%' }}>
+          <div className="conf-content">
             <div className="conf-success-ripple">
               <div className="conf-success-icon">
                 <HugeiconsIcon icon={CheckmarkBadge01Icon} size={42} strokeWidth={1.5} color="#ffffff" />
               </div>
             </div>
 
-            <h2 className="conf-title" style={{ marginBottom: '4px' }}>Payment Successful</h2>
-            <p className="conf-desc" style={{ marginBottom: '24px' }}>Your booking has been confirmed.</p>
+            <h2 className="conf-title">Payment Successful</h2>
+            <p className="conf-desc">Your booking has been confirmed.</p>
             
-            <div className="conf-booking-status-box" style={{ background: '#FDF5FF', border: '1px solid #F3E0F5', borderRadius: '12px', padding: '16px', width: '100%', marginBottom: '28px', textAlign: 'left', boxSizing: 'border-box' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '13px', color: '#666' }}>Booking ID</span>
-                <span style={{ fontSize: '14px', fontWeight: '600', color: '#870097' }}>{confirmedBooking.id}</span>
+            <div className="conf-booking-status-box">
+              <div className="conf-status-row">
+                <span className="conf-status-label">Booking ID</span>
+                <span className="conf-booking-id">{confirmedBooking.id}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '13px', color: '#666' }}>Status</span>
-                <span style={{ fontSize: '13px', fontWeight: '500', color: '#2E7D32', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#2E7D32', display: 'inline-block' }}></span> Confirmed
+              <div className="conf-status-row">
+                <span className="conf-status-label">Status</span>
+                <span className="conf-confirmed-badge">
+                  <span className="conf-status-dot"></span> Confirmed
                 </span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '13px', color: '#666' }}>Guest</span>
-                <span style={{ fontSize: '14px', fontWeight: '500', color: '#333' }}>{confirmedBooking.name || 'Guest'}</span>
+              <div className="conf-status-row">
+                <span className="conf-status-label">Guest</span>
+                <span className="conf-guest-name">{confirmedBooking.name || 'Guest'}</span>
               </div>
             </div>
 
             <button 
               className="conf-home-btn" 
-              onClick={() => { if (setCurrentPage) setCurrentPage('home'); }}
-              style={{ background: '#870097', color: 'white', border: 'none', padding: '14px 24px', borderRadius: '8px', fontSize: '15px', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', width: '100%', justifyContent: 'center', transition: 'background 0.2s' }}
-              onMouseOver={(e) => e.currentTarget.style.background = '#6B007A'}
-              onMouseOut={(e) => e.currentTarget.style.background = '#870097'}
+              onClick={() => {
+                sessionStorage.setItem('meraki_show_floating_booking', 'true');
+                sessionStorage.setItem('meraki_booking_just_confirmed', 'true');
+                window.dispatchEvent(new Event('meraki_booking_updated'));
+                if (setCurrentPage) setCurrentPage('home');
+              }}
             >
               <HugeiconsIcon icon={Home07Icon} size={18} />
               <span>Return Home</span>

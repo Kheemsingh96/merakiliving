@@ -1,0 +1,1795 @@
+/* ==========================================================================
+   Meraki Living - Mountain Concierge Chatbot Styles
+   Theme & Typography: Outfit, #870097 Accent, #373737 Headings, #817F8F Text
+   ========================================================================== */
+
+.meraki-chatbot-wrapper {
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  position: relative;
+  z-index: 9999;
+}
+
+/* --------------------------------------------------------------------------
+   1. Floating Trigger Area - Single Unified Circular Trigger
+   -------------------------------------------------------------------------- */
+.cb-floating-trigger-wrap {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(10px) scale(0.96);
+  transition: opacity 0.28s ease, transform 0.28s ease, visibility 0.28s ease;
+}
+
+.cb-floating-trigger-wrap.visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.cb-floating-trigger-inner {
+  position: relative;
+  width: 58px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Premium Arched "We Are Here" Banner with Waving Hand */
+.cb-trigger-arch-banner {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 106px;
+  height: 106px;
+  pointer-events: none;
+  z-index: 2;
+  user-select: none;
+  animation: cbArchPop 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes cbArchPop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Arched SVG Text */
+.cb-arch-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.cb-arch-svg-text {
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  fill: #0ea5e9;
+  stroke: #ffffff;
+  stroke-width: 2.4px;
+  stroke-linejoin: round;
+  paint-order: stroke fill;
+  letter-spacing: 0.3px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.12));
+}
+
+/* Waving Hand Icon at bottom-left start of arch */
+.cb-arch-wave-hand {
+  position: absolute;
+  bottom: 15px;
+  left: 10px;
+  font-size: 18px;
+  line-height: 1;
+  pointer-events: none;
+  transform-origin: 70% 70%;
+  animation: cbWaveHand 2.2s infinite ease-in-out;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+}
+
+@keyframes cbWaveHand {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  20%, 60% {
+    transform: rotate(14deg);
+  }
+  40%, 80% {
+    transform: rotate(-10deg);
+  }
+}
+
+/* Main Single Circular Floating Chatbot Button */
+.cb-floating-btn {
+  width: 58px;
+  height: 58px;
+  border-radius: 50% !important;
+  background: var(--brand-primary, #87008B);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 22px rgba(135, 0, 139, 0.28);
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  z-index: 1;
+}
+
+.cb-floating-btn:hover {
+  background: var(--brand-primary-hover, #6F0073);
+  box-shadow: 0 8px 26px rgba(135, 0, 139, 0.38);
+  transform: scale(1.04);
+}
+
+.cb-floating-btn.active {
+  background: #373737;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
+}
+
+/* Filled Chat Icon with smile cutout */
+.cb-filled-chat-icon {
+  width: 32px;
+  height: 32px;
+  fill: #ffffff;
+  display: block;
+}
+
+/* Subtle Unread Notification Indicator "1" */
+.cb-notification-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 19px;
+  height: 19px;
+  background: #e11d48;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  line-height: 1;
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* --------------------------------------------------------------------------
+   2. Chatbot Main Panel Container
+   -------------------------------------------------------------------------- */
+.cb-panel-container {
+  position: fixed;
+  bottom: 94px;
+  right: 28px;
+  width: 400px;
+  max-width: calc(100vw - 32px);
+  height: 620px;
+  max-height: calc(100vh - 120px);
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 16px 44px -8px rgba(0, 0, 0, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 9999;
+  animation: cbFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes cbFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   3. Header
+   -------------------------------------------------------------------------- */
+.cb-header {
+  background: var(--brand-primary, #87008B);
+  color: #ffffff;
+  padding: 15px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  flex-shrink: 0;
+}
+
+.cb-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cb-header-avatar {
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+}
+
+.cb-header-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.cb-header-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+  line-height: 1.2;
+}
+
+.cb-header-status {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 2px;
+}
+
+.cb-status-dot {
+  width: 6px;
+  height: 6px;
+  background-color: #4ade80;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.cb-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cb-header-btn {
+  background: rgba(255, 255, 255, 0.16);
+  border: none;
+  color: #ffffff;
+  padding: 5px 10px;
+  border-radius: 10px;
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.cb-header-btn:hover {
+  background: rgba(255, 255, 255, 0.26);
+}
+
+.cb-close-btn {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 50% !important;
+}
+
+/* --------------------------------------------------------------------------
+   4. Back Navigation Bar
+   -------------------------------------------------------------------------- */
+.cb-nav-bar {
+  padding: 2px 0 4px 0;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.cb-back-btn {
+  background: none;
+  border: none;
+  color: var(--brand-primary, #87008B);
+  font-size: 12.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 4px 8px 4px 2px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.cb-back-btn:hover {
+  background: rgba(135, 0, 139, 0.08);
+}
+
+/* --------------------------------------------------------------------------
+   5. Body & Scroll Area
+   -------------------------------------------------------------------------- */
+.cb-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background-color: #faf8fb;
+  scroll-behavior: smooth;
+}
+
+.cb-body::-webkit-scrollbar {
+  width: 5px;
+}
+
+.cb-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.cb-body::-webkit-scrollbar-thumb {
+  background: #e2dfec;
+  border-radius: 4px;
+}
+
+.cb-body::-webkit-scrollbar-thumb:hover {
+  background: #cac6d6;
+}
+
+/* --------------------------------------------------------------------------
+   6. Conversational Rows & Small Avatar System
+   -------------------------------------------------------------------------- */
+.cb-bot-msg-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+}
+
+.cb-avatar {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1.5px solid rgba(135, 0, 139, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.cb-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 3px;
+}
+
+.cb-bot-content-col {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  flex: 1;
+  min-width: 0;
+}
+
+.cb-user-msg-row {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.cb-view-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   7. Conversational Bubbles (Bot & User)
+   -------------------------------------------------------------------------- */
+.cb-bubble {
+  padding: 12px 15px;
+  line-height: 1.45;
+  font-size: 13.5px;
+}
+
+.cb-bubble-bot {
+  background: #ffffff;
+  border: 1px solid #ece8f0;
+  border-radius: 16px 16px 16px 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  color: #373737;
+  align-self: flex-start;
+  max-width: 100%;
+}
+
+.cb-bubble-bot strong {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #373737;
+  margin-bottom: 4px;
+}
+
+.cb-bubble-bot p {
+  margin: 0;
+}
+
+.cb-bubble-user {
+  background: var(--brand-primary, #87008B);
+  color: #ffffff;
+  border-radius: 16px 16px 4px 16px;
+  align-self: flex-end;
+  font-weight: 500;
+  font-size: 13px;
+  padding: 9px 15px;
+  box-shadow: 0 2px 8px rgba(135, 0, 139, 0.2);
+  max-width: 86%;
+}
+
+.cb-greeting-bold {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #373737;
+  line-height: 1.4;
+}
+
+.cb-greeting-sub {
+  margin: 5px 0 0 0 !important;
+  font-size: 12.5px;
+  color: #817F8F;
+  line-height: 1.4;
+}
+
+/* Contextual Quick Actions Container */
+.cb-contextual-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   8. Guest Information & Refund Form Cards
+   -------------------------------------------------------------------------- */
+.cb-guest-form-card {
+  background: #ffffff;
+  border: 1px solid #ece8f0;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  width: 100%;
+}
+
+.cb-guest-form-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f2edf4;
+}
+
+.cb-guest-form-icon {
+  color: var(--brand-primary, #87008B);
+  flex-shrink: 0;
+}
+
+.cb-guest-form-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #373737;
+}
+
+.cb-refund-explainer {
+  font-size: 12px;
+  color: #817F8F;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.cb-guest-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cb-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cb-form-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #373737;
+}
+
+.cb-form-input-wrap {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.cb-form-field-icon {
+  position: absolute;
+  left: 11px;
+  color: #817F8F;
+  pointer-events: none;
+}
+
+.cb-form-input {
+  width: 100%;
+  padding: 8px 12px 8px 33px;
+  border: 1px solid var(--border-light, #E7E7EB);
+  border-radius: 9px;
+  font-size: 12.5px;
+  color: #373737;
+  outline: none;
+  font-family: inherit;
+  background: #fdfcfe;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+select.cb-form-input {
+  padding-left: 12px;
+  cursor: pointer;
+}
+
+.cb-form-textarea {
+  padding: 8px 12px;
+  resize: vertical;
+  min-height: 52px;
+}
+
+.cb-form-input:focus {
+  border-color: var(--brand-primary, #87008B);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(135, 0, 139, 0.08);
+}
+
+.cb-form-input.error {
+  border-color: var(--state-error, #D92D20);
+  background: #fff8f8;
+}
+
+.cb-form-error {
+  font-size: 11px;
+  color: var(--state-error, #D92D20);
+  font-weight: 500;
+}
+
+.cb-form-submit-btn {
+  margin-top: 4px;
+}
+
+.cb-form-privacy-note {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #817F8F;
+  line-height: 1.35;
+  margin-top: -2px;
+}
+
+.cb-privacy-icon {
+  color: var(--state-success, #16803C);
+  flex-shrink: 0;
+}
+
+/* Refund Success / Confirmation Card */
+.cb-refund-success-card {
+  border: 1px solid var(--state-success, #16803C);
+  background: #ffffff;
+}
+
+.cb-refund-success-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #065f46;
+  background: #ecfdf5;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12.5px;
+}
+
+.cb-refund-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 0;
+}
+
+.cb-status-pill.pending {
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 12px;
+  border: 1px solid #fde68a;
+}
+
+.cb-refund-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+/* --------------------------------------------------------------------------
+   9. Quick Actions Grid (Home View)
+   -------------------------------------------------------------------------- */
+.cb-quick-actions-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  width: 100%;
+}
+
+.cb-action-card {
+  background: #ffffff;
+  border: 1px solid #ece8f0;
+  border-radius: 12px;
+  padding: 11px 13px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  width: 100%;
+}
+
+.cb-action-card:hover {
+  border-color: rgba(135, 0, 151, 0.28);
+  background: #fdfbfd;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(135, 0, 151, 0.08);
+}
+
+.cb-action-icon {
+  width: 34px;
+  height: 34px;
+  background: #fbf3fc;
+  color: #870097;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cb-action-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.cb-action-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #373737;
+  line-height: 1.3;
+}
+
+.cb-action-desc {
+  font-size: 11.5px;
+  color: #817F8F;
+  margin-top: 2px;
+  line-height: 1.3;
+}
+
+.cb-action-arrow {
+  color: #b0a8b9;
+  transition: transform 0.2s ease, color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.cb-action-card:hover .cb-action-arrow {
+  color: #870097;
+  transform: translateX(2px);
+}
+
+/* WhatsApp Banner in Home */
+.cb-whatsapp-banner {
+  background: #f3faf5;
+  border: 1px solid #d1fae5;
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+
+.cb-whatsapp-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.cb-whatsapp-text strong {
+  font-size: 12px;
+  color: #166534;
+}
+
+.cb-whatsapp-text span {
+  font-size: 11px;
+  color: #15803d;
+}
+
+.cb-whatsapp-btn {
+  background: #25d366;
+  color: #ffffff;
+  padding: 6px 11px;
+  border-radius: 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+
+.cb-whatsapp-btn:hover {
+  background: #20ba5a;
+}
+
+/* --------------------------------------------------------------------------
+   10. Submenu Pill Buttons & Group Selectors
+   -------------------------------------------------------------------------- */
+.cb-pill-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.cb-pill-btn {
+  background: #ffffff;
+  border: 1px solid #ece8f0;
+  border-radius: 10px;
+  padding: 10px 13px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #373737;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  width: 100%;
+}
+
+.cb-pill-btn span {
+  flex: 1;
+}
+
+.cb-pill-arrow {
+  color: #b0a8b9;
+  transition: color 0.2s ease, transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.cb-pill-btn:hover {
+  border-color: #870097;
+  color: #870097;
+  background: #fbf3fc;
+}
+
+.cb-pill-btn:hover .cb-pill-arrow {
+  color: #870097;
+  transform: translateX(2px);
+}
+
+.cb-group-selector-pills {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.cb-group-pill {
+  background: #ffffff;
+  border: 1px solid #ece8f0;
+  border-radius: 11px;
+  padding: 10px 13px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #373737;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.cb-group-pill:hover {
+  border-color: #870097;
+  color: #870097;
+}
+
+.cb-group-pill.active {
+  background: #870097;
+  color: #ffffff;
+  border-color: #870097;
+  box-shadow: 0 3px 10px rgba(135, 0, 151, 0.22);
+}
+
+.cb-recommendations-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   11. Spacious, Enlarged Room Cards inside Chatbot
+   -------------------------------------------------------------------------- */
+.cb-rooms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  width: 100%;
+}
+
+.cb-room-card {
+  background: #ffffff;
+  border: 1px solid #ece8f0;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s ease;
+  width: 100%;
+}
+
+.cb-room-card:hover {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.cb-room-card-img-wrap {
+  position: relative;
+  width: 100%;
+  height: 145px;
+  background: #f2edf4;
+  overflow: hidden;
+}
+
+.cb-room-card-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.cb-room-card:hover .cb-room-card-img-wrap img {
+  transform: scale(1.03);
+}
+
+.cb-room-status-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 16px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.cb-room-status-badge.available {
+  background: rgba(22, 101, 52, 0.92);
+  color: #ffffff;
+}
+
+.cb-room-status-badge.booked {
+  background: rgba(185, 28, 28, 0.92);
+  color: #ffffff;
+}
+
+.cb-room-card-content {
+  padding: 14px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cb-room-card-title-row {
+  display: flex;
+  flex-direction: column;
+}
+
+.cb-room-card-name {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #373737;
+  line-height: 1.3;
+}
+
+.cb-room-card-sub {
+  font-size: 11.5px;
+  font-style: italic;
+  color: #870097;
+  margin-top: 2px;
+}
+
+.cb-room-card-type {
+  font-size: 11.5px;
+  color: #817F8F;
+}
+
+.cb-room-card-specs {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 12px;
+  color: #817F8F;
+  margin: 4px 0 2px 0;
+}
+
+.cb-room-card-specs span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.cb-room-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid #f4f0f6;
+}
+
+.cb-room-card-price {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.cb-room-amount {
+  font-size: 16px;
+  font-weight: 700;
+  color: #870097;
+}
+
+.cb-room-orig {
+  font-size: 11.5px;
+  color: #9ca3af;
+  text-decoration: line-through;
+}
+
+.cb-room-card-actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* --------------------------------------------------------------------------
+   12. Shared Buttons (Primary, Secondary, Outline)
+   -------------------------------------------------------------------------- */
+.cb-btn-primary {
+  background: #870097;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: background 0.2s ease;
+  text-decoration: none;
+}
+
+.cb-btn-primary:hover {
+  background: #6e007b;
+}
+
+.cb-btn-secondary {
+  background: #fbf3fc;
+  color: #870097;
+  border: 1px solid rgba(135, 0, 151, 0.18);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.cb-btn-secondary:hover {
+  background: #870097;
+  color: #ffffff;
+}
+
+.cb-btn-outline {
+  background: #ffffff;
+  color: #373737;
+  border: 1px solid #d8d4de;
+  border-radius: 10px;
+  padding: 9px 13px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.cb-btn-outline:hover {
+  border-color: #870097;
+  color: #870097;
+  background: #fbf3fc;
+}
+
+.cb-btn-block {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 13px;
+  border-radius: 10px;
+  margin-top: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   13. Info Cards (Policies, Timings, Charges, Location)
+   -------------------------------------------------------------------------- */
+.cb-info-card {
+  background: #ffffff;
+  border: 1px solid #ece8f0;
+  border-radius: 12px;
+  padding: 13px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  width: 100%;
+}
+
+.cb-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f6f3f8;
+}
+
+.cb-info-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.cb-info-label-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #373737;
+  font-weight: 500;
+}
+
+.cb-info-icon {
+  color: #870097;
+  flex-shrink: 0;
+}
+
+.cb-info-value {
+  color: #870097;
+  font-weight: 600;
+}
+
+.cb-text-green {
+  color: #166534 !important;
+}
+
+.cb-info-note {
+  font-size: 11.5px;
+  color: #817F8F;
+  font-style: italic;
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+.cb-feature-item {
+  display: flex;
+  gap: 10px;
+  font-size: 12.5px;
+}
+
+.cb-feature-icon {
+  color: #870097;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.cb-feature-item strong {
+  display: block;
+  color: #373737;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+
+.cb-feature-item p {
+  margin: 0;
+  color: #817F8F;
+  line-height: 1.4;
+}
+
+.cb-policy-highlight {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cb-policy-badge {
+  background: #ecfdf5;
+  color: #065f46;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  width: fit-content;
+  border: 1px solid #a7f3d0;
+}
+
+.cb-policy-highlight p {
+  margin: 0;
+  font-size: 13px;
+  color: #373737;
+}
+
+.cb-location-header {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.cb-location-pin {
+  color: #870097;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.cb-location-header strong {
+  font-size: 14px;
+  color: #373737;
+}
+
+.cb-location-header p {
+  margin: 2px 0 0 0;
+  font-size: 12px;
+  color: #817F8F;
+}
+
+.cb-distance-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #fbf9fb;
+  padding: 10px 12px;
+  border-radius: 9px;
+  border: 1px solid #f2edf4;
+}
+
+.cb-distance-item {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+}
+
+.cb-dist-mode {
+  font-weight: 600;
+  color: #870097;
+  font-size: 11px;
+}
+
+.cb-dist-name {
+  color: #373737;
+  margin-top: 1px;
+}
+
+/* --------------------------------------------------------------------------
+   14. Sightseeing / Viewpoint Cards
+   -------------------------------------------------------------------------- */
+.cb-sight-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.cb-sight-card {
+  background: #ffffff;
+  border: 1px solid #ece8f0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  width: 100%;
+}
+
+.cb-sight-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cb-sight-title-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cb-sight-pin-icon {
+  color: #870097;
+  flex-shrink: 0;
+}
+
+.cb-sight-title-group strong {
+  font-size: 13px;
+  color: #373737;
+}
+
+.cb-sight-badge {
+  background: #fbf2fc;
+  color: #870097;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.cb-sight-desc {
+  margin: 0;
+  font-size: 11.5px;
+  color: #817F8F;
+  line-height: 1.4;
+  padding-left: 22px;
+}
+
+/* --------------------------------------------------------------------------
+   15. Manage Booking Lookup Form & Results
+   -------------------------------------------------------------------------- */
+.cb-search-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.cb-search-input-wrap {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 100%;
+}
+
+.cb-search-input {
+  width: 100%;
+  padding: 9px 42px 9px 13px;
+  border: 1px solid #d8d4de;
+  border-radius: 10px;
+  font-size: 12.5px;
+  color: #373737;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
+}
+
+.cb-search-input:focus {
+  border-color: #870097;
+}
+
+.cb-search-submit-btn {
+  position: absolute;
+  right: 5px;
+  background: #870097;
+  color: #ffffff;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.cb-search-submit-btn:hover {
+  background: #6e007b;
+}
+
+.cb-search-error {
+  margin: 0;
+  font-size: 11.5px;
+  color: #b91c1c;
+  padding-left: 2px;
+}
+
+.cb-loader-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #817F8F;
+  padding: 12px 0;
+}
+
+.cb-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e2e2e8;
+  border-top-color: #870097;
+  border-radius: 50%;
+  animation: cbSpin 0.7s linear infinite;
+}
+
+@keyframes cbSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.cb-booking-result-card {
+  background: #ffffff;
+  border: 1px solid #870097;
+  border-radius: 12px;
+  padding: 13px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  width: 100%;
+}
+
+.cb-br-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 7px;
+  border-bottom: 1px solid #f2edf4;
+}
+
+.cb-br-id {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #870097;
+}
+
+.cb-br-status {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 16px;
+  text-transform: uppercase;
+}
+
+.cb-br-status.confirmed {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.cb-br-status.cancelled {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.cb-br-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cb-br-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+}
+
+.cb-br-row span {
+  color: #817F8F;
+}
+
+.cb-br-row strong {
+  color: #373737;
+}
+
+.cb-direct-manage-link {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+  width: 100%;
+}
+
+.cb-direct-manage-link span {
+  font-size: 12px;
+  color: #817F8F;
+  text-align: center;
+}
+
+.cb-cta-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+  width: 100%;
+}
+
+.cb-cta-desc {
+  margin: 0;
+  font-size: 12px;
+  color: #817F8F;
+  text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   16. Input Area at Bottom & Send Icon Button
+   -------------------------------------------------------------------------- */
+.cb-input-area {
+  background: #ffffff;
+  border-top: 1px solid #f0edf2;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cb-chat-input {
+  flex: 1;
+  border: 1px solid #d8d4de;
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 12.5px;
+  font-family: inherit;
+  outline: none;
+  color: #373737;
+  transition: border-color 0.2s ease;
+}
+
+.cb-chat-input:focus {
+  border-color: #870097;
+}
+
+.cb-chat-input:disabled {
+  background: #f8f6f9;
+  cursor: not-allowed;
+}
+
+.cb-send-btn {
+  background: #870097;
+  color: #ffffff;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease, opacity 0.2s ease, transform 0.15s ease;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(135, 0, 151, 0.2);
+}
+
+.cb-send-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.cb-send-btn:not(:disabled):hover {
+  background: #6e007b;
+  transform: scale(1.04);
+}
+
+.cb-send-btn:not(:disabled):active {
+  transform: scale(0.96);
+}
+
+/* --------------------------------------------------------------------------
+   17. Footer Bar
+   -------------------------------------------------------------------------- */
+.cb-footer {
+  background: #faf8fb;
+  border-top: 1px solid #f0edf2;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cb-footer-whatsapp-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #15803d;
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.cb-footer-whatsapp-link:hover {
+  color: #166534;
+  text-decoration: underline;
+}
+
+/* --------------------------------------------------------------------------
+   18. Responsive Media Queries
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .cb-floating-trigger-wrap {
+    bottom: 20px;
+    right: 20px;
+  }
+
+  .cb-floating-trigger-inner {
+    width: 54px;
+    height: 54px;
+  }
+
+  .cb-trigger-arch-banner {
+    width: 100px;
+    height: 100px;
+  }
+
+  .cb-arch-svg-text {
+    font-size: 11px;
+  }
+
+  .cb-arch-wave-hand {
+    bottom: 14px;
+    left: 9px;
+    font-size: 17px;
+  }
+
+  .cb-floating-btn {
+    width: 54px;
+    height: 54px;
+  }
+
+  .cb-filled-chat-icon {
+    width: 26px;
+    height: 26px;
+  }
+
+  .cb-notification-badge {
+    width: 18px;
+    height: 18px;
+    font-size: 10.5px;
+  }
+
+  .cb-panel-container {
+    bottom: 80px;
+    right: 20px;
+    width: 375px;
+    height: 560px;
+    max-height: calc(100vh - 100px);
+  }
+
+  .cb-room-card-img-wrap {
+    height: 135px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cb-floating-trigger-wrap {
+    bottom: 16px;
+    right: 16px;
+  }
+
+  .cb-floating-trigger-inner {
+    width: 50px;
+    height: 50px;
+  }
+
+  .cb-trigger-arch-banner {
+    width: 92px;
+    height: 92px;
+  }
+
+  .cb-arch-svg-text {
+    font-size: 10.5px;
+  }
+
+  .cb-arch-wave-hand {
+    bottom: 13px;
+    left: 8px;
+    font-size: 16px;
+  }
+
+  .cb-floating-btn {
+    width: 50px;
+    height: 50px;
+  }
+
+  .cb-filled-chat-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .cb-notification-badge {
+    width: 17px;
+    height: 17px;
+    font-size: 10px;
+  }
+
+  .cb-panel-container {
+    bottom: 72px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+    max-width: none;
+    height: 530px;
+    max-height: calc(100vh - 86px);
+    border-radius: 16px;
+  }
+
+  .cb-header {
+    padding: 13px 15px;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+  }
+
+  .cb-body {
+    padding: 14px 12px;
+    gap: 13px;
+  }
+
+  .cb-avatar {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+  }
+
+  .cb-guest-form-card {
+    padding: 12px 13px;
+  }
+
+  .cb-action-card {
+    padding: 10px 11px;
+    gap: 9px;
+  }
+
+  .cb-room-card-img-wrap {
+    height: 130px;
+  }
+
+  .cb-room-card-content {
+    padding: 12px 13px;
+  }
+}
+
+@media (max-width: 360px) {
+  .cb-floating-trigger-wrap {
+    bottom: 12px;
+    right: 12px;
+  }
+
+  .cb-floating-trigger-inner {
+    width: 46px;
+    height: 46px;
+  }
+
+  .cb-trigger-arch-banner {
+    width: 84px;
+    height: 84px;
+  }
+
+  .cb-arch-svg-text {
+    font-size: 9.5px;
+  }
+
+  .cb-arch-wave-hand {
+    bottom: 11px;
+    left: 7px;
+    font-size: 14px;
+  }
+
+  .cb-floating-btn {
+    width: 46px;
+    height: 46px;
+  }
+
+  .cb-filled-chat-icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .cb-notification-badge {
+    width: 16px;
+    height: 16px;
+    font-size: 9.5px;
+  }
+
+  .cb-panel-container {
+    bottom: 62px;
+    right: 8px;
+    left: 8px;
+    height: 490px;
+    max-height: calc(100vh - 72px);
+  }
+
+  .cb-header-title {
+    font-size: 14px;
+  }
+
+  .cb-action-title {
+    font-size: 12.5px;
+  }
+
+  .cb-action-desc {
+    font-size: 11px;
+  }
+
+  .cb-room-card-img-wrap {
+    height: 120px;
+  }
+}

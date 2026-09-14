@@ -115,4 +115,5 @@ function Viewpoints() {
   );
 }
 
+export { VIEWPOINTS_DATA };
 export default Viewpoints;

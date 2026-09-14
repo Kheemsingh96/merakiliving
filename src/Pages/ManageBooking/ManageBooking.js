@@ -9,12 +9,14 @@ import {
   Calendar02Icon,
   UserGroupIcon,
   Cancel01Icon,
+  Delete01Icon,
   ArrowRight01Icon,
   CheckmarkBadge01Icon,
   MailAtSign01Icon,
   CustomerSupportIcon,
   Copy01Icon,
-  ArrowDown01Icon
+  ArrowDown01Icon,
+  BedDoubleIcon
 } from '@hugeicons/core-free-icons';
 import roomImage from '../../assets/images/room-1.webp';
 
@@ -32,11 +34,30 @@ const ManageBooking = ({ setCurrentPage }) => {
   const [actionLoading, setActionLoading] = useState(false);
   const [showCancellationSuccess, setShowCancellationSuccess] = useState(false);
   const [roomsCache, setRoomsCache] = useState([]);
+  const [activeFaq, setActiveFaq] = useState(null);
 
-  // Change Dates Modal State
-  const [showDateModal, setShowDateModal] = useState(false);
-  const [newCheckIn, setNewCheckIn] = useState('');
-  const [newCheckOut, setNewCheckOut] = useState('');
+  const manageFaqs = [
+    {
+      question: "How can I access and view my booking details?",
+      answer: "You can access your reservation through the Manage Booking page by entering your booking reference and the required verification details. Once your booking is located, you can review important information such as your room, stay dates, guest details, booking status, and payment summary."
+    },
+    {
+      question: "Can I cancel my reservation through the Manage Booking page?",
+      answer: "Yes, you can request cancellation through the Manage Booking page if the cancellation option is available for your reservation. Before confirming the cancellation, carefully review the applicable cancellation policy, any associated charges, and the conditions related to your booking."
+    },
+    {
+      question: "How can I check the cancellation status and refund details of my booking?",
+      answer: "You can view your booking cancellation details, including the cancellation status and available refund information, directly through the Manage Booking page. Once your booking has been cancelled, you will also receive a cancellation confirmation message at your registered booking email address. If you need to request a refund again, you can submit a refund request through our chatbot, which will guide you through the next steps."
+    },
+    {
+      question: "Can I modify my check-in or check-out dates after making a reservation?",
+      answer: "Currently, you cannot modify your check-in or check-out dates directly through the Manage Booking page. If you need to change your reservation dates, please contact our Support Team for assistance. Our team will review your request and guide you through the available options based on your booking details and room availability."
+    },
+    {
+      question: "What should I do if I cannot find my booking or notice incorrect booking details?",
+      answer: "First, verify that your booking reference and required details have been entered correctly. If you still cannot locate your reservation or notice an error in your booking information, please contact our support team and provide your booking reference so we can assist you with resolving the issue."
+    }
+  ];
 
   useEffect(() => {
     // Pre-fetch rooms to map image
@@ -158,7 +179,18 @@ const ManageBooking = ({ setCurrentPage }) => {
       });
       const data = await res.json();
       if (data && data.status === 'success') {
-        setBookingData({ ...bookingData, status: 'Cancelled' });
+        const updated = { ...bookingData, status: 'Cancelled' };
+        setBookingData(updated);
+        try {
+          const rawLatest = sessionStorage.getItem('meraki_latest_booking');
+          if (rawLatest) {
+            const parsed = JSON.parse(rawLatest);
+            if (String(parsed.id) === String(bookingData.id) || String(parsed.formattedId) === String(bookingData.formattedId) || String(parsed.db_id) === String(bookingData.id)) {
+              sessionStorage.setItem('meraki_latest_booking', JSON.stringify({ ...parsed, status: 'Cancelled' }));
+            }
+          }
+        } catch (e) {}
+        window.dispatchEvent(new Event('meraki_booking_updated'));
         setIsCancelling(false);
         setShowCancellationSuccess(true);
       } else {
@@ -171,74 +203,41 @@ const ManageBooking = ({ setCurrentPage }) => {
     setActionLoading(false);
   };
 
-  const handleChangeDatesClick = () => {
-    setNewCheckIn(bookingData.check_in || '');
-    setNewCheckOut(bookingData.check_out || '');
-    setShowDateModal(true);
-  };
-
-  const submitChangeDates = async () => {
-    if (!newCheckIn || !newCheckOut) {
-      alert('Please select both dates');
-      return;
-    }
-    setShowDateModal(false);
-    await executeModify({ check_in: newCheckIn, check_out: newCheckOut });
-  };
-
-  const handleModifyDetails = async () => {
-    const newGuests = window.prompt("Enter new number of guests:", bookingData.guest_count);
-    if (!newGuests) return;
-
-    await executeModify({ guest_count: parseInt(newGuests, 10) });
-  };
-
-  const executeModify = async (updates) => {
-    setActionLoading(true);
-    try {
-      const res = await fetch(`${API_CONFIG_URL}/api_bookings.php`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: bookingData.id,
-          ...updates
-        })
-      });
-      const data = await res.json();
-      if (data && data.status === 'success') {
-        alert('Booking updated successfully.');
-        // Refresh the booking data
-        const refreshRes = await fetch(`${API_CONFIG_URL}/api_bookings.php`);
-        const refreshJson = await refreshRes.json();
-        const updatedBooking = refreshJson.data.find(b => b.id === bookingData.id);
-        if (updatedBooking) {
-          setBookingData(prev => ({
-            ...prev,
-            ...updatedBooking
-          }));
-        }
-      } else {
-        alert(data.message || 'Error updating booking');
-      }
-    } catch (err) {
-      console.error(err);
-      alert('An error occurred while updating.');
-    }
-    setActionLoading(false);
-  };
-
   const copyBookingId = () => {
     if (bookingData && bookingData.formattedId) {
       navigator.clipboard.writeText(bookingData.formattedId);
-      alert('Booking ID copied!');
+      alert('Booking ID copied to clipboard!');
     }
+  };
+
+  const calculateNights = (inDate, outDate) => {
+    if (!inDate || !outDate) return null;
+    const d1 = new Date(inDate);
+    const d2 = new Date(outDate);
+    if (isNaN(d1.getTime()) || isNaN(d2.getTime())) return null;
+    const diffTime = d2.getTime() - d1.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 1;
   };
   
   const formatDate = (dateStr) => {
-    if (!dateStr) return '';
+    if (!dateStr) return '—';
+    const cleanStr = String(dateStr).trim();
+    const parts = cleanStr.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+    if (parts) {
+      const year = parts[1];
+      const monthIndex = parseInt(parts[2], 10) - 1;
+      const day = parseInt(parts[3], 10);
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return `${day} ${months[monthIndex]} ${year}`;
+    }
     const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
     return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   };
+
+  const isBookingCancelled = bookingData?.status?.toLowerCase() === 'cancelled';
+  const nightsCount = bookingData ? calculateNights(bookingData.check_in, bookingData.check_out) : null;
 
   return (
     <section className="mb-section">
@@ -340,9 +339,13 @@ const ManageBooking = ({ setCurrentPage }) => {
                   <span className="mb-cs-value" style={{ color: '#870097', fontWeight: 600 }}>{bookingData.formattedId}</span>
                 </div>
                 <div className="mb-cs-row">
+                  <span className="mb-cs-label">Room</span>
+                  <span className="mb-cs-value">{bookingData.room_name || `Room ${bookingData.room_id}`}</span>
+                </div>
+                <div className="mb-cs-row">
                   <span className="mb-cs-label">Status</span>
                   <span className="mb-cs-value" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#d32f2f', fontWeight: 600 }}>
-                    <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#d32f2f' }}></span> Cancelled
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#d32f2f' }}></span> Cancelled
                   </span>
                 </div>
               </div>
@@ -358,116 +361,194 @@ const ManageBooking = ({ setCurrentPage }) => {
               <div className="mb-result-header">
                 <div>
                   <h2 className="mb-result-title">Booking Details</h2>
-                  <p className="mb-result-desc">Here are your booking details. You can review and modify your booking if needed.</p>
-                </div>
-                <div className={`mb-status-pill mb-status-${bookingData.status?.toLowerCase() === 'cancelled' ? 'cancelled' : 'confirmed'}`}>
-                   <span className="mb-dot"></span> {bookingData.status || 'Confirmed'}
+                  <p className="mb-result-desc">Review your reservation details and manage your booking below.</p>
                 </div>
               </div>
 
+              {/* Premium, Well-Structured Booking Details Box */}
               <div className="mb-details-card">
+                 {/* Left Column: Pure Room Image with no overlay text */}
                  <div className="mb-room-image-col">
                     <img 
                       src={(roomsCache.find(r => r.id === bookingData.room_id) || {}).image_url || roomImage} 
-                      alt="Room" 
+                      alt={bookingData.room_name || 'Room'} 
                       className="mb-room-image" 
                     />
-                    <div className="mb-room-name-overlay">{bookingData.room_name || `Room ${bookingData.room_id}`}</div>
                  </div>
+
+                 {/* Right Column: Structured Information */}
                  <div className="mb-details-info-col">
+                    {/* Top Row: Room Name & Status */}
+                    <div className="mb-info-header-row">
+                      <div className="mb-info-room-meta">
+                        <span className="mb-info-room-badge">
+                          <HugeiconsIcon icon={BedDoubleIcon} size={14} color="#870097" /> Homestay Room
+                        </span>
+                        <h3 className="mb-info-room-name">
+                          {bookingData.room_name || `Room ${bookingData.room_id}`}
+                        </h3>
+                      </div>
+                      <div className={`mb-status-pill mb-status-${isBookingCancelled ? 'cancelled' : 'confirmed'}`}>
+                         <span className="mb-dot"></span> {bookingData.status || 'Confirmed'}
+                      </div>
+                    </div>
+
+                    <div className="mb-info-divider"></div>
+
+                    {/* Balanced 2-Column Details Grid */}
                     <div className="mb-details-grid">
                       <div className="mb-d-item">
-                        <HugeiconsIcon icon={Ticket01Icon} size={20} color="#870097" />
+                        <div className="mb-d-icon-box">
+                          <HugeiconsIcon icon={Ticket01Icon} size={18} color="#870097" />
+                        </div>
                         <div className="mb-d-text">
                           <div className="mb-d-label">Booking ID</div>
                           <div className="mb-d-value" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            {bookingData.formattedId}
+                            <span className="mb-id-highlight">{bookingData.formattedId}</span>
                             <button 
                               type="button" 
                               onClick={copyBookingId}
                               title="Copy Booking ID"
-                              style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', padding: 0 }}
+                              className="mb-copy-btn"
                             >
-                              <HugeiconsIcon icon={Copy01Icon} size={16} color="#666" />
+                              <HugeiconsIcon icon={Copy01Icon} size={15} color="#817F8F" />
                             </button>
                           </div>
                         </div>
                       </div>
+
                       <div className="mb-d-item">
-                        <HugeiconsIcon icon={Calendar01Icon} size={20} color="#870097" />
+                        <div className="mb-d-icon-box">
+                          <HugeiconsIcon icon={Calendar01Icon} size={18} color="#870097" />
+                        </div>
                         <div className="mb-d-text">
                           <div className="mb-d-label">Booking Date</div>
                           <div className="mb-d-value">{formatDate(bookingData.booking_date || bookingData.created_at)}</div>
                         </div>
                       </div>
+
                       <div className="mb-d-item">
-                        <HugeiconsIcon icon={UserGroupIcon} size={20} color="#870097" />
+                        <div className="mb-d-icon-box">
+                          <HugeiconsIcon icon={UserGroupIcon} size={18} color="#870097" />
+                        </div>
                         <div className="mb-d-text">
                           <div className="mb-d-label">Guest Name</div>
-                          <div className="mb-d-value">{bookingData.guest_name || `Guest ${bookingData.guest_id}`}</div>
+                          <div className="mb-d-value">{bookingData.guest_name || `Guest ${bookingData.guest_id || ''}`}</div>
                         </div>
                       </div>
+
                       <div className="mb-d-item">
-                        <HugeiconsIcon icon={Calendar01Icon} size={20} color="#870097" />
+                        <div className="mb-d-icon-box">
+                          <HugeiconsIcon icon={CheckmarkBadge01Icon} size={18} color="#870097" />
+                        </div>
+                        <div className="mb-d-text">
+                          <div className="mb-d-label">Rooms & Guests</div>
+                          <div className="mb-d-value">1 Room &bull; {bookingData.guest_count || 1} {parseInt(bookingData.guest_count || 1, 10) === 1 ? 'Guest' : 'Guests'}</div>
+                        </div>
+                      </div>
+
+                      <div className="mb-d-item">
+                        <div className="mb-d-icon-box">
+                          <HugeiconsIcon icon={Calendar01Icon} size={18} color="#870097" />
+                        </div>
                         <div className="mb-d-text">
                           <div className="mb-d-label">Check In</div>
                           <div className="mb-d-value">{formatDate(bookingData.check_in)}</div>
                         </div>
                       </div>
+
                       <div className="mb-d-item">
-                        <HugeiconsIcon icon={CheckmarkBadge01Icon} size={20} color="#870097" />
-                        <div className="mb-d-text">
-                          <div className="mb-d-label">Rooms</div>
-                          <div className="mb-d-value">1 Room ({bookingData.guest_count} {parseInt(bookingData.guest_count) === 1 ? 'Guest' : 'Guests'})</div>
+                        <div className="mb-d-icon-box">
+                          <HugeiconsIcon icon={Calendar02Icon} size={18} color="#870097" />
                         </div>
-                      </div>
-                      <div className="mb-d-item">
-                        <HugeiconsIcon icon={Calendar02Icon} size={20} color="#870097" />
                         <div className="mb-d-text">
                           <div className="mb-d-label">Check Out</div>
-                          <div className="mb-d-value">{formatDate(bookingData.check_out)}</div>
+                          <div className="mb-d-value">
+                            {formatDate(bookingData.check_out)}
+                            {nightsCount && (
+                              <span className="mb-nights-badge">({nightsCount} {nightsCount === 1 ? 'Night' : 'Nights'})</span>
+                            )}
+                          </div>
                         </div>
                       </div>
+
                       <div className="mb-d-item">
-                        <HugeiconsIcon icon={MailAtSign01Icon} size={20} color="#870097" />
+                        <div className="mb-d-icon-box">
+                          <HugeiconsIcon icon={MailAtSign01Icon} size={18} color="#870097" />
+                        </div>
                         <div className="mb-d-text">
-                          <div className="mb-d-label">Total Amount</div>
-                          <div className="mb-d-value">₹{parseInt(bookingData.paid_amount || 0).toLocaleString('en-IN')}</div>
+                          <div className="mb-d-label">Total Paid</div>
+                          <div className="mb-d-value mb-amount-highlight">
+                            ₹{parseInt(bookingData.paid_amount || bookingData.room_price || 0, 10).toLocaleString('en-IN')}
+                          </div>
                         </div>
                       </div>
-                      <div className="mb-d-item mb-payment-method-item">
-                        <HugeiconsIcon icon={CallIcon} size={20} color="#870097" />
+
+                      <div className="mb-d-item">
+                        <div className="mb-d-icon-box">
+                          <HugeiconsIcon icon={CallIcon} size={18} color="#870097" />
+                        </div>
                         <div className="mb-d-text">
                           <div className="mb-d-label">Payment Method</div>
-                          <div className="mb-d-value">{bookingData.payment_method || 'Online'}</div>
+                          <div className="mb-d-value">{bookingData.payment_method || 'Online / Card'}</div>
                         </div>
                       </div>
                     </div>
-                    
-                    {!isCancelling ? (
-                      <div className="mb-details-actions">
-                         <button className="mb-btn-outline" onClick={handleChangeDatesClick} disabled={actionLoading || bookingData.status === 'Cancelled'}>
-                           <HugeiconsIcon icon={Calendar01Icon} size={16} /> {actionLoading ? 'Updating...' : 'Change Dates'}
-                         </button>
-                         <button className="mb-btn-outline" onClick={handleModifyDetails} disabled={actionLoading || bookingData.status === 'Cancelled'}>
-                           <HugeiconsIcon icon={Ticket01Icon} size={16} /> {actionLoading ? 'Updating...' : 'Modify Booking'}
-                         </button>
-                         <button className="mb-btn-filled" onClick={handleCancelClick} disabled={bookingData.status === 'Cancelled' || actionLoading}>
-                           <HugeiconsIcon icon={Cancel01Icon} size={16} /> Cancel Booking
-                         </button>
-                      </div>
-                    ) : (
-                      <div className="mb-cancel-confirm-area">
-                        <div className="mb-cancel-warning">
-                          <h5>Cancel this booking?</h5>
-                          <p>This action cannot be undone. Please review our policy.</p>
+
+                    {/* Bottom Action Area: Only Cancel Booking */}
+                    <div className="mb-card-footer-action">
+                      {!isCancelling ? (
+                        isBookingCancelled ? (
+                          <div className="mb-already-cancelled-banner">
+                            <HugeiconsIcon icon={Cancel01Icon} size={18} color="#d32f2f" />
+                            <span>This reservation has been cancelled.</span>
+                          </div>
+                        ) : (
+                          <div className="mb-cancel-action-wrapper">
+                            <button 
+                              type="button"
+                              className="mb-btn-cancel-trigger" 
+                              onClick={handleCancelClick} 
+                              disabled={actionLoading}
+                            >
+                              <HugeiconsIcon icon={Delete01Icon} size={15} /> Cancel
+                            </button>
+                          </div>
+                        )
+                      ) : (
+                        <div className="mb-cancel-confirm-box">
+                          <div className="mb-cancel-confirm-header">
+                            <div className="mb-cancel-confirm-icon-wrap">
+                              <HugeiconsIcon icon={Delete01Icon} size={20} color="#d32f2f" />
+                            </div>
+                            <div>
+                              <h5 className="mb-cancel-confirm-title">Cancel this reservation?</h5>
+                              <p className="mb-cancel-confirm-text">
+                                This action cannot be undone. Applicable refunds will be processed according to our policy.
+                              </p>
+                            </div>
+                          </div>
+                          <div className="mb-cancel-confirm-buttons">
+                            <button 
+                              type="button"
+                              className="mb-btn-resume" 
+                              onClick={abortCancel} 
+                              disabled={actionLoading}
+                            >
+                              Keep Booking
+                            </button>
+                            <button 
+                              type="button"
+                              className="mb-btn-confirm-cancel" 
+                              onClick={confirmCancel} 
+                              disabled={actionLoading}
+                            >
+                              {actionLoading ? 'Cancelling...' : 'Yes, Cancel Booking'}
+                            </button>
+                          </div>
                         </div>
-                        <div className="mb-cancel-confirm-actions">
-                          <button className="mb-btn-outline" onClick={abortCancel} disabled={actionLoading}>Keep Booking</button>
-                          <button className="mb-btn-filled" onClick={confirmCancel} disabled={actionLoading}>{actionLoading ? 'Cancelling...' : 'Yes, Cancel'}</button>
-                        </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                  </div>
               </div>
             </div>
@@ -492,65 +573,40 @@ const ManageBooking = ({ setCurrentPage }) => {
              </button>
           </div>
           
-          <div className="mb-faq-section">
-             <h3 className="mb-faq-title">Frequently Asked Questions</h3>
-             
-             <details className="mb-faq-item">
-               <summary className="mb-faq-summary">How do I find my booking ID? <HugeiconsIcon icon={ArrowDown01Icon} size={20} className="mb-faq-arrow" /></summary>
-               <div className="mb-faq-content">Your booking ID is sent to your registered email address and mobile number upon successful payment. It usually starts with MERI.</div>
-             </details>
-
-             <details className="mb-faq-item">
-               <summary className="mb-faq-summary">What is the cancellation policy? <HugeiconsIcon icon={ArrowDown01Icon} size={20} className="mb-faq-arrow" /></summary>
-               <div className="mb-faq-content">Cancellations made 48 hours before check-in are eligible for a full refund. Cancellations made within 48 hours will incur a 1-night charge.</div>
-             </details>
-
-             <details className="mb-faq-item">
-               <summary className="mb-faq-summary">Will I get a full refund? <HugeiconsIcon icon={ArrowDown01Icon} size={20} className="mb-faq-arrow" /></summary>
-               <div className="mb-faq-content">Yes, if you cancel within the eligible free-cancellation window, the full amount will be refunded to your original payment method.</div>
-             </details>
-
-             <details className="mb-faq-item">
-               <summary className="mb-faq-summary">How long does the refund take? <HugeiconsIcon icon={ArrowDown01Icon} size={20} className="mb-faq-arrow" /></summary>
-               <div className="mb-faq-content">Refunds typically take 5-7 business days to reflect in your bank account, depending on your bank's processing time.</div>
-             </details>
-          </div>
+           <div className="mb-faq-section">
+              <h3 className="mb-faq-title">Frequently Asked Questions</h3>
+              
+              <div className="mb-faq-list">
+                {manageFaqs.map((faq, index) => {
+                  const isOpen = activeFaq === index;
+                  return (
+                    <div
+                      key={index}
+                      className={`mb-faq-item ${isOpen ? 'active' : ''}`}
+                    >
+                      <button
+                        type="button"
+                        className="mb-faq-summary"
+                        onClick={() => setActiveFaq(isOpen ? null : index)}
+                        aria-expanded={isOpen}
+                      >
+                        <span className="mb-faq-question-text">{faq.question}</span>
+                        <div className="mb-faq-icon-wrapper">
+                          <HugeiconsIcon icon={ArrowDown01Icon} size={18} className="mb-faq-arrow" />
+                        </div>
+                      </button>
+                      <div className="mb-faq-answer-wrapper">
+                        <div className="mb-faq-content">
+                          <p>{faq.answer}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+           </div>
 
         </div>
-
-        {/* Change Dates Modal */}
-        {showDateModal && (
-          <div className="mb-modal-overlay">
-            <div className="mb-modal-content">
-              <h3>Change Booking Dates</h3>
-              <p>Select your new check-in and check-out dates.</p>
-              <div className="mb-modal-inputs">
-                <div className="mb-input-group">
-                  <label>Check-in Date</label>
-                  <input 
-                    type="date" 
-                    value={newCheckIn} 
-                    onChange={(e) => setNewCheckIn(e.target.value)} 
-                    min={new Date().toISOString().split('T')[0]} 
-                  />
-                </div>
-                <div className="mb-input-group">
-                  <label>Check-out Date</label>
-                  <input 
-                    type="date" 
-                    value={newCheckOut} 
-                    onChange={(e) => setNewCheckOut(e.target.value)} 
-                    min={newCheckIn || new Date().toISOString().split('T')[0]} 
-                  />
-                </div>
-              </div>
-              <div className="mb-modal-actions">
-                <button className="mb-btn-outline" onClick={() => setShowDateModal(false)}>Cancel</button>
-                <button className="mb-btn-filled" onClick={submitChangeDates}>Confirm</button>
-              </div>
-            </div>
-          </div>
-        )}
 
       </div>
     </section>

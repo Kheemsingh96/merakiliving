@@ -235,30 +235,34 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .mb-result-title {
   font-size: 24px;
-  font-weight: 600;
+  font-weight: 700;
   color: #373737;
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.4px;
 }
 
 .mb-result-desc {
-  font-size: 15px;
+  font-size: 14px;
   color: #817F8F;
   margin: 0;
+  line-height: 1.4;
 }
 
 .mb-status-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 14px;
+  padding: 5px 12px;
   border-radius: 20px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
+  letter-spacing: 0.3px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .mb-status-pill .mb-dot {
@@ -268,195 +272,342 @@
 }
 
 .mb-status-confirmed {
-  background: rgba(46, 125, 50, 0.1);
-  color: #2E7D32;
+  background: #ebf8ee;
+  color: #1b7a34;
+  border: 1px solid #c7eed0;
 }
 
 .mb-status-confirmed .mb-dot {
-  background: #2E7D32;
+  background: #1b7a34;
 }
 
 .mb-status-cancelled {
-  background: rgba(211, 47, 47, 0.1);
-  color: #d32f2f;
+  background: #fdf2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
 }
 
 .mb-status-cancelled .mb-dot {
-  background: #d32f2f;
+  background: #dc2626;
 }
 
+/* Premium, Luxury-Style Booking Details Card */
 .mb-details-card {
   background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 18px;
+  box-shadow: 0 16px 40px -10px rgba(135, 0, 151, 0.05), 0 2px 10px rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(135, 0, 151, 0.08);
   display: flex;
   overflow: hidden;
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.mb-details-card:hover {
+  box-shadow: 0 20px 48px -10px rgba(135, 0, 151, 0.08), 0 4px 14px rgba(0, 0, 0, 0.03);
+  border-color: rgba(135, 0, 151, 0.12);
 }
 
 .mb-room-image-col {
-  width: 320px;
+  width: 330px;
   position: relative;
   flex-shrink: 0;
-  padding: 16px;
+  padding: 18px;
+  display: flex;
 }
 
 .mb-room-image {
   width: 100%;
   height: 100%;
+  min-height: 270px;
   object-fit: cover;
-  border-radius: 12px;
-}
-
-.mb-room-name-overlay {
-  position: absolute;
-  bottom: 28px;
-  left: 28px;
-  background: rgba(0, 0, 0, 0.6);
-  color: #ffffff;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  backdrop-filter: blur(4px);
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
 }
 
 .mb-details-info-col {
   flex: 1;
-  padding: 32px;
+  padding: 26px 32px;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
 }
 
-.mb-details-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  row-gap: 24px;
-  column-gap: 16px;
-  margin-bottom: 32px;
-  flex: 1;
-}
-
-.mb-d-item {
+.mb-info-header-row {
   display: flex;
+  justify-content: space-between;
   align-items: flex-start;
-  gap: 12px;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
-.mb-d-text {
+.mb-info-room-meta {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.mb-d-label {
-  font-size: 12px;
-  color: #817F8F;
-  font-weight: 500;
+.mb-info-room-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #870097;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
+.mb-info-room-name {
+  font-size: 21px;
+  font-weight: 700;
+  color: #373737;
+  margin: 0;
+  letter-spacing: -0.3px;
+  line-height: 1.25;
+}
+
+.mb-info-divider {
+  height: 1px;
+  background: #f0eaf1;
+  margin: 18px 0;
+  width: 100%;
+}
+
+.mb-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  row-gap: 16px;
+  column-gap: 24px;
+}
+
+.mb-d-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mb-d-icon-box {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #faf3fb;
+  border: 1px solid rgba(135, 0, 151, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.mb-d-item:hover .mb-d-icon-box {
+  background: #f5e4f7;
+  transform: translateY(-1px);
+}
+
+.mb-d-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.mb-d-label {
+  font-size: 11px;
+  color: #817F8F;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
 .mb-d-value {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: #373737;
+  word-break: break-word;
+  line-height: 1.35;
 }
 
-.mb-details-actions {
-  display: flex;
-  gap: 16px;
-  padding-top: 24px;
-  border-top: 1px solid #f0f0f0;
-}
-
-.mb-btn-outline {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: transparent;
-  border: 1px solid #870097;
+.mb-id-highlight {
   color: #870097;
-  border-radius: 10px;
-  padding: 14px 24px;
-  font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
+}
+
+.mb-copy-btn {
+  background: transparent;
+  border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.mb-btn-outline:hover {
-  background: rgba(135, 0, 151, 0.05);
-}
-
-.mb-btn-filled {
-  flex: 1;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: #870097;
-  border: 1px solid #870097;
-  color: #ffffff;
-  border-radius: 10px;
-  padding: 14px 24px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
+  padding: 3px 5px;
+  border-radius: 4px;
+  color: #817F8F;
   transition: all 0.2s ease;
 }
 
-.mb-btn-filled:hover {
-  background: #6B007A;
+.mb-copy-btn:hover {
+  color: #870097;
+  background: rgba(135, 0, 151, 0.06);
 }
 
-.mb-btn-outline:disabled, .mb-btn-filled:disabled {
+.mb-nights-badge {
+  font-size: 12px;
+  font-weight: 500;
+  color: #817F8F;
+  margin-left: 6px;
+}
+
+.mb-amount-highlight {
+  color: #870097;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* Card Bottom Action Area */
+.mb-card-footer-action {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #f0eaf1;
+}
+
+.mb-cancel-action-wrapper {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.mb-btn-cancel-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #ffffff;
+  border: 1px solid #fca5a5;
+  color: #dc2626;
+  border-radius: 9px;
+  padding: 9px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(220, 38, 38, 0.04);
+}
+
+.mb-btn-cancel-trigger:hover {
+  background: #fef2f2;
+  border-color: #ef4444;
+  color: #b91c1c;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.1);
+}
+
+.mb-btn-cancel-trigger:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-/* Cancellation Confirmation Area */
-.mb-cancel-confirm-area {
-  padding-top: 24px;
-  border-top: 1px solid #f0f0f0;
-}
-
-.mb-cancel-warning {
-  margin-bottom: 16px;
-}
-
-.mb-cancel-warning h5 {
-  font-size: 15px;
-  color: #d32f2f;
-  margin: 0 0 4px 0;
-}
-
-.mb-cancel-warning p {
-  font-size: 13px;
-  color: #817F8F;
-  margin: 0;
-}
-
-.mb-cancel-confirm-actions {
+.mb-already-cancelled-banner {
   display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 9px;
+  color: #b91c1c;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Cancel Confirmation Box */
+.mb-cancel-confirm-box {
+  background: #fef6f6;
+  border: 1px solid #fcd4d4;
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.mb-cancel-confirm-header {
+  display: flex;
+  align-items: flex-start;
   gap: 12px;
 }
 
-.mb-cancel-confirm-actions .mb-btn-outline {
-  border-color: #e0e0e0;
+.mb-cancel-confirm-icon-wrap {
+  width: 38px;
+  height: 38px;
+  background: #fee2e2;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mb-cancel-confirm-title {
+  margin: 0 0 3px 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #991b1b;
+}
+
+.mb-cancel-confirm-text {
+  margin: 0;
+  font-size: 12.5px;
+  color: #7f1d1d;
+  line-height: 1.45;
+}
+
+.mb-cancel-confirm-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.mb-btn-resume {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
   color: #373737;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
-.mb-cancel-confirm-actions .mb-btn-outline:hover {
-  background: #f5f5f5;
+
+.mb-btn-resume:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
 }
-.mb-cancel-confirm-actions .mb-btn-filled {
-  background: #d32f2f;
-  border-color: #d32f2f;
+
+.mb-btn-confirm-cancel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #dc2626;
+  border: 1px solid #dc2626;
+  color: #ffffff;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
 }
-.mb-cancel-confirm-actions .mb-btn-filled:hover {
-  background: #b71c1c;
+
+.mb-btn-confirm-cancel:hover {
+  background: #b91c1c;
+  border-color: #b91c1c;
+}
+
+.mb-btn-resume:disabled, .mb-btn-confirm-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Cancellation Success Area */
@@ -637,126 +788,106 @@
 }
 
 .mb-faq-item {
-  border: 1px solid #f0f0f0;
+  border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: 12px;
   margin-bottom: 12px;
   overflow: hidden;
+  background: #ffffff;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .mb-faq-item:last-child {
   margin-bottom: 0;
 }
 
+.mb-faq-item:hover {
+  border-color: rgba(135, 0, 151, 0.25);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+.mb-faq-item.active {
+  border-color: rgba(135, 0, 151, 0.4);
+  box-shadow: 0 6px 20px rgba(135, 0, 151, 0.06);
+}
+
 .mb-faq-summary {
+  width: 100%;
   padding: 16px 20px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #373737;
   cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #ffffff;
-  list-style: none;
+  background: transparent;
+  border: none;
+  text-align: left;
+  font-family: inherit;
 }
 
-.mb-faq-summary::-webkit-details-marker {
-  display: none;
-}
-
-.mb-faq-arrow {
-  transition: transform 0.3s ease;
-  color: #817F8F;
-}
-
-.mb-faq-item[open] .mb-faq-arrow {
-  transform: rotate(180deg);
-}
-
-.mb-faq-content {
-  padding: 0 20px 20px;
+.mb-faq-question-text {
   font-size: 15px;
-  color: #817F8F;
-  line-height: 1.6;
-  border-top: 1px solid transparent;
-}
-.mb-faq-item[open] .mb-faq-content {
-  border-top: 1px solid #f0f0f0;
-  padding-top: 16px;
+  font-weight: 600;
+  color: #373737;
+  line-height: 1.4;
+  padding-right: 12px;
+  transition: color 0.3s ease;
 }
 
-/* --- Date Change Modal --- */
-.mb-modal-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5);
+.mb-faq-item:hover .mb-faq-question-text,
+.mb-faq-item.active .mb-faq-question-text {
+  color: #870097;
+}
+
+.mb-faq-icon-wrapper {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f8f8f8;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(4px);
-  padding: 20px;
+  flex-shrink: 0;
+  transition: background-color 0.3s ease;
 }
 
-.mb-modal-content {
-  background: #fff;
-  border-radius: 16px;
-  padding: 32px;
-  width: 100%;
-  max-width: 400px;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+.mb-faq-item.active .mb-faq-icon-wrapper {
+  background: rgba(135, 0, 151, 0.1);
 }
 
-.mb-modal-content h3 {
-  margin: 0 0 8px;
-  font-size: 20px;
-  color: #373737;
+.mb-faq-arrow {
+  transition: transform 0.3s ease, color 0.3s ease;
+  color: #555555;
 }
 
-.mb-modal-content p {
-  margin: 0 0 24px;
+.mb-faq-item.active .mb-faq-arrow {
+  transform: rotate(180deg);
+  color: #870097;
+}
+
+.mb-faq-answer-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease;
+}
+
+.mb-faq-item.active .mb-faq-answer-wrapper {
+  grid-template-rows: 1fr;
+}
+
+.mb-faq-content {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.mb-faq-content p {
+  margin: 0;
+  padding: 0 20px 18px 20px;
   font-size: 14px;
   color: #817F8F;
+  line-height: 1.65;
+  font-weight: 400;
 }
 
-.mb-modal-inputs {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.mb-input-group label {
-  display: block;
-  font-size: 13px;
-  color: #373737;
-  font-weight: 500;
-  margin-bottom: 6px;
-}
-
-.mb-input-group input {
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  font-size: 15px;
-  color: #373737;
-  outline: none;
-  background: #f9f9f9;
-  box-sizing: border-box;
-}
-
-.mb-input-group input:focus {
-  border-color: #870097;
-  background: #fff;
-}
-
-.mb-modal-actions {
-  display: flex;
-  gap: 12px;
-}
-
-/* --- Responsive --- */
+/* --- Responsive Styles --- */
 @media (max-width: 1024px) {
   .mb-top-grid {
     grid-template-columns: 1fr;
@@ -770,9 +901,6 @@
   .mb-help-icon-box {
     margin: 0 20px 0 0;
   }
-  .mb-help-card-top h3 {
-    margin-bottom: 4px;
-  }
   .mb-help-card-top p {
     margin-bottom: 0;
   }
@@ -785,7 +913,8 @@
   }
   .mb-room-image-col {
     width: 100%;
-    height: 300px;
+    height: 260px;
+    padding: 16px;
   }
   .mb-policy-card {
     flex-direction: column;
@@ -793,28 +922,48 @@
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .mb-section {
-    padding: 40px 16px 60px;
+    padding: 48px 16px 60px;
   }
-  .mb-help-card-top {
-    flex-direction: column;
-    align-items: flex-start;
+  .mb-details-info-col {
+    padding: 20px;
   }
-  .mb-help-icon-box {
-    margin: 0 0 16px 0;
+  .mb-details-grid {
+    grid-template-columns: 1fr;
+    row-gap: 14px;
   }
-  .mb-contact-support-btn {
-    margin-top: 20px;
-    margin-left: 0;
+  .mb-cancel-action-wrapper {
+    justify-content: stretch;
+  }
+  .mb-btn-cancel-trigger {
     width: 100%;
     justify-content: center;
   }
+  .mb-cancel-confirm-buttons {
+    flex-direction: column-reverse;
+  }
+  .mb-btn-resume, .mb-btn-confirm-cancel {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .mb-section {
+    padding: 32px 14px 48px;
+  }
+  .mb-section-title {
+    font-size: 24px;
+  }
+  .mb-section-desc {
+    font-size: 14px;
+  }
   .mb-search-card {
-    padding: 24px;
+    padding: 20px 16px;
   }
   .mb-search-methods {
     flex-direction: column;
+    gap: 8px;
   }
   .mb-method-btn {
     width: 100%;
@@ -829,28 +978,45 @@
   }
   .mb-submit-btn-lg {
     width: 100%;
-    font-size: 16px;
-  }
-  .mb-details-grid {
-    grid-template-columns: 1fr;
-  }
-  .mb-details-actions {
-    flex-direction: column;
-  }
-  .mb-btn-outline, .mb-btn-filled {
     font-size: 15px;
   }
-  .mb-cancel-confirm-actions {
+  .mb-help-card-top {
     flex-direction: column;
+    align-items: flex-start;
+    padding: 20px 16px;
   }
-  .mb-cancel-success-card {
-    padding: 32px 20px;
+  .mb-help-icon-box {
+    margin: 0 0 14px 0;
   }
-  .mb-cancel-success-title {
+  .mb-contact-support-btn {
+    margin-top: 16px;
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+  }
+  .mb-result-title {
+    font-size: 20px;
+  }
+  .mb-room-image-col {
+    height: 220px;
+    padding: 12px;
+  }
+  .mb-info-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .mb-info-room-name {
     font-size: 18px;
   }
+  .mb-cancel-success-card {
+    padding: 28px 16px;
+  }
+  .mb-cancel-success-title {
+    font-size: 20px;
+  }
   .mb-cancel-success-details {
-    padding: 20px;
+    padding: 16px;
   }
   .mb-cs-row {
     flex-direction: column;
@@ -861,13 +1027,13 @@
     text-align: left;
   }
   .mb-policy-card {
-    padding: 20px;
+    padding: 20px 16px;
   }
   .mb-policy-left {
     flex-direction: column;
     gap: 12px;
   }
   .mb-faq-section {
-    padding: 20px;
+    padding: 20px 16px;
   }
 }

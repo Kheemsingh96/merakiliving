@@ -101,7 +101,7 @@
 }
 
 .hero-pre-title {
-  color: #f89c0e;
+  color: #F79D00;
   font-size: 13px;
   font-weight: 600;
   margin: 0;
@@ -111,7 +111,7 @@
 }
 
 .hero-title {
-  color: #fff;
+  color: #FFFFFF;
   font-size: 76px;
   font-weight: 700;
   line-height: 1.1;
@@ -151,12 +151,12 @@
 }
 
 .location-icon {
-  color: #f89c0e;
+  color: #F79D00;
   flex-shrink: 0;
 }
 
 .hero-tagline {
-  color: #f89c0e;
+  color: #F79D00;
   font-size: 22px;
   font-weight: 500;
   margin: 10px 0 4px;
@@ -183,7 +183,7 @@
 .hero-btn,
 .hero-btn-outline {
   padding: 16px 42px;
-  border-radius: 50px;
+  border-radius: 10px;
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
@@ -199,28 +199,28 @@
 }
 
 .hero-btn {
-  background-color: #8a158f;
-  color: #fff;
-  border: 1px solid #8a158f;
+  background-color: #87008B;
+  color: #FFFFFF;
+  border: 1px solid #87008B;
   box-shadow: 0 6px 20px rgba(138, 21, 143, 0.3);
 }
 
 .hero-btn:hover {
-  background-color: #a01ba6;
-  border-color: #a01ba6;
+  background-color: #87008B;
+  border-color: #87008B;
   transform: translateY(-3px);
   box-shadow: 0 10px 30px rgba(138, 21, 143, 0.5);
 }
 
 .hero-btn-outline {
   background-color: transparent;
-  color: #fff;
+  color: #FFFFFF;
   border: 1.5px solid rgba(255, 255, 255, 0.6);
 }
 
 .hero-btn-outline:hover {
   background-color: rgba(255, 255, 255, 0.15);
-  border-color: #fff;
+  border-color: #FFFFFF;
   transform: translateY(-3px);
 }
 
