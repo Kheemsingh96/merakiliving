@@ -25,9 +25,9 @@
 }
 
 .privacy-policy-title {
-  font-size: 36px;
-  color: #373737;
-  font-weight: 500;
+  font-size: 30px;
+  color: #242424;
+  font-weight: 600;
   margin: 0 0 16px 0;
   line-height: 1.15;
   letter-spacing: -0.6px;
@@ -35,7 +35,7 @@
 
 .privacy-policy-intro {
   font-size: 16px;
-  color: #817F8F;
+  color: #64748B;
   margin: 0;
   font-weight: 400;
   line-height: 1.7;
@@ -48,7 +48,7 @@
 
 .privacy-policy-body h2 {
   font-size: 17px;
-  color: #373737;
+  color: #242424;
   font-weight: 600;
   margin: 0 0 16px 0;
   line-height: 1.4;
@@ -57,7 +57,7 @@
 
 .privacy-policy-body p {
   font-size: 15px;
-  color: #817F8F;
+  color: #64748B;
   margin: 0 0 16px 0;
   font-weight: 400;
   line-height: 1.75;
@@ -77,7 +77,7 @@
   position: relative;
   padding-left: 24px;
   font-size: 15px;
-  color: #817F8F;
+  color: #64748B;
   line-height: 1.75;
   margin-bottom: 10px;
 }

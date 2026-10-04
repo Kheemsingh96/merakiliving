@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { API_CONFIG_URL } from '../../config/api';
+import { safeParseResponse } from '../../utils/apiHelper';
 import './CancellationPolicy.css';
-
-const API_CONFIG_URL = 'http://localhost/merakiliving_backend';
 
 const DEFAULT_CANCELLATION_POLICY = `
 <div className="cancellation-policy-header">
@@ -68,27 +69,69 @@ const DEFAULT_CANCELLATION_POLICY = `
 </div>
 `;
 
+const cancellationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: 'Cancellation Policy | Meraki Living',
+  url: 'https://www.merakiliving.in/cancellation-policy',
+  description: 'Understand the booking cancellation, refund timelines, and rescheduling policy for Meraki Living Farmstay in Peora, Mukteshwar.',
+  publisher: {
+    '@type': 'Organization',
+    name: 'Meraki Living',
+    url: 'https://www.merakiliving.in'
+  }
+};
+
 const CancellationPolicy = () => {
-  const [content, setContent] = useState('');
+  const [content, setContent] = useState(DEFAULT_CANCELLATION_POLICY);
 
   useEffect(() => {
+    let isMounted = true;
     fetch(`${API_CONFIG_URL}/api_settings.php`)
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.status === 'success' && Array.isArray(data.data) && data.data.length > 0 && data.data[0].cancellation_policy) {
+      .then(res => safeParseResponse(res))
+      .then(parsed => {
+        if (!isMounted) return;
+        const data = parsed.data;
+        if (parsed.ok && data && data.status === 'success' && Array.isArray(data.data) && data.data.length > 0 && data.data[0].cancellation_policy) {
           setContent(data.data[0].cancellation_policy);
         } else {
           setContent(DEFAULT_CANCELLATION_POLICY);
         }
       })
       .catch(e => {
-        console.error("Error fetching policy:", e);
-        setContent(DEFAULT_CANCELLATION_POLICY);
+        if (isMounted) setContent(DEFAULT_CANCELLATION_POLICY);
       });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return (
     <div className="cancellation-policy-wrapper">
+      <Helmet>
+        <title>Cancellation Policy | Meraki Living</title>
+        <meta
+          name="description"
+          content="Understand the booking cancellation, refund timelines, and rescheduling policy for Meraki Living Farmstay in Peora, Mukteshwar."
+        />
+        <link rel="canonical" href="https://www.merakiliving.in/cancellation-policy" />
+        <meta name="robots" content="index, follow" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Cancellation Policy | Meraki Living" />
+        <meta
+          property="og:description"
+          content="Understand the booking cancellation, refund timelines, and rescheduling policy for Meraki Living Farmstay in Peora, Mukteshwar."
+        />
+        <meta property="og:url" content="https://www.merakiliving.in/cancellation-policy" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="Cancellation Policy | Meraki Living" />
+        <meta
+          name="twitter:description"
+          content="Understand the booking cancellation, refund timelines, and rescheduling policy for Meraki Living Farmstay in Peora, Mukteshwar."
+        />
+        <script type="application/ld+json">{JSON.stringify(cancellationSchema)}</script>
+      </Helmet>
       <div className="cancellation-policy-outer">
         <div 
           className="cancellation-policy-content" 

@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useRooms } from '../../hooks/useRooms';
+import { ROOMS_DATA } from '../../components/Rooms/Rooms';
+import OptimizedImage from '../../components/Common/OptimizedImage';
 import './ManageBooking.css';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { 
@@ -18,9 +21,20 @@ import {
   ArrowDown01Icon,
   BedDoubleIcon
 } from '@hugeicons/core-free-icons';
-import roomImage from '../../assets/images/room-1.webp';
+import room1 from '../../assets/images/room-1.avif';
+import room2 from '../../assets/images/room-2.avif';
+import room3 from '../../assets/images/room-3.avif';
+import room4 from '../../assets/images/room-4.avif';
+import { API_CONFIG_URL } from '../../config/api';
+import { safeParseResponse } from '../../utils/apiHelper';
+import { markBookingAsCancelled } from '../../utils/dateAvailability';
 
-const API_CONFIG_URL = 'http://localhost/merakiliving_backend';
+const ROOM_IMAGES = {
+  1: room1,
+  2: room2,
+  3: room3,
+  4: room4
+};
 
 const ManageBooking = ({ setCurrentPage }) => {
   const [searchMethod, setSearchMethod] = useState('bookingId');
@@ -33,8 +47,16 @@ const ManageBooking = ({ setCurrentPage }) => {
   const [isCancelling, setIsCancelling] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [showCancellationSuccess, setShowCancellationSuccess] = useState(false);
-  const [roomsCache, setRoomsCache] = useState([]);
+  const { rooms: roomsCache } = useRooms(ROOMS_DATA);
   const [activeFaq, setActiveFaq] = useState(null);
+
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const manageFaqs = [
     {
@@ -59,15 +81,7 @@ const ManageBooking = ({ setCurrentPage }) => {
     }
   ];
 
-  useEffect(() => {
-    // Pre-fetch rooms to map image
-    fetch(`${API_CONFIG_URL}/api_rooms.php`)
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.status === 'success') setRoomsCache(data.data);
-      })
-      .catch(err => console.error("Error fetching rooms", err));
-  }, []);
+
 
   const validateSearchValue = (method, value) => {
     const trimmed = (value || '').trim();
@@ -102,11 +116,14 @@ const ManageBooking = ({ setCurrentPage }) => {
         fetch(`${API_CONFIG_URL}/api_bookings.php`),
         fetch(`${API_CONFIG_URL}/api_payments.php`)
       ]);
-      const bookingsJson = await bookingsRes.json();
-      const paymentsJson = await paymentsRes.json();
+      const parsedBookings = await safeParseResponse(bookingsRes);
+      const parsedPayments = await safeParseResponse(paymentsRes);
+      const bookingsJson = (parsedBookings.ok && parsedBookings.data) ? parsedBookings.data : { status: 'error', data: [] };
+      const paymentsJson = (parsedPayments.ok && parsedPayments.data) ? parsedPayments.data : { status: 'error', data: [] };
       
-      if (bookingsJson.status !== 'success' || !bookingsJson.data) {
-        setErrorMsg('Booking not found');
+      if (!isMountedRef.current) return;
+      if (bookingsJson.status !== 'success' || !Array.isArray(bookingsJson.data)) {
+        setErrorMsg(parsedBookings.error || 'Booking not found');
         setIsLoading(false);
         return;
       }
@@ -136,6 +153,7 @@ const ManageBooking = ({ setCurrentPage }) => {
         }
       }
       
+      if (!isMountedRef.current) return;
       if (!foundBooking) {
         setErrorMsg('Booking not found');
         setHasSearched(false);
@@ -151,10 +169,13 @@ const ManageBooking = ({ setCurrentPage }) => {
         setHasSearched(true);
       }
     } catch (err) {
-      console.error(err);
-      setErrorMsg('An error occurred while searching.');
+      if (isMountedRef.current) {
+        setErrorMsg('An error occurred while searching.');
+      }
     }
-    setIsLoading(false);
+    if (isMountedRef.current) {
+      setIsLoading(false);
+    }
   };
 
   const handleCancelClick = () => {
@@ -177,30 +198,26 @@ const ManageBooking = ({ setCurrentPage }) => {
           status: 'Cancelled'
         })
       });
-      const data = await res.json();
-      if (data && data.status === 'success') {
+      const parsed = await safeParseResponse(res);
+      const data = parsed.data;
+      if (!isMountedRef.current) return;
+      if (parsed.ok && data && data.status === 'success') {
         const updated = { ...bookingData, status: 'Cancelled' };
         setBookingData(updated);
-        try {
-          const rawLatest = sessionStorage.getItem('meraki_latest_booking');
-          if (rawLatest) {
-            const parsed = JSON.parse(rawLatest);
-            if (String(parsed.id) === String(bookingData.id) || String(parsed.formattedId) === String(bookingData.formattedId) || String(parsed.db_id) === String(bookingData.id)) {
-              sessionStorage.setItem('meraki_latest_booking', JSON.stringify({ ...parsed, status: 'Cancelled' }));
-            }
-          }
-        } catch (e) {}
-        window.dispatchEvent(new Event('meraki_booking_updated'));
+        markBookingAsCancelled(updated);
         setIsCancelling(false);
         setShowCancellationSuccess(true);
       } else {
-        alert(data.message || 'Error cancelling booking');
+        alert(parsed.error || data?.message || 'Error cancelling booking');
       }
     } catch (err) {
-      console.error(err);
-      alert('An error occurred.');
+      if (isMountedRef.current) {
+        alert('An error occurred while cancelling booking.');
+      }
     }
-    setActionLoading(false);
+    if (isMountedRef.current) {
+      setActionLoading(false);
+    }
   };
 
   const copyBookingId = () => {
@@ -236,6 +253,24 @@ const ManageBooking = ({ setCurrentPage }) => {
     return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
+  const getBookingRoomImage = (booking) => {
+    if (!booking) return room1;
+    const roomId = Number(booking.room_id);
+    if (roomId && ROOM_IMAGES[roomId]) {
+      return ROOM_IMAGES[roomId];
+    }
+    const matchedCache = roomsCache.find(r => Number(r.id) === roomId);
+    if (matchedCache && (matchedCache.image || matchedCache.image_url)) {
+      return matchedCache.image || matchedCache.image_url;
+    }
+    const name = (booking.room_name || '').toLowerCase();
+    if (name.includes('entire')) return room4;
+    if (name.includes('luxury') || name.includes('family') || name.includes('suite') || name.includes('grand')) return room3;
+    if (name.includes('premium') || name.includes('valley')) return room2;
+    if (name.includes('himalayan') || name.includes('view')) return room1;
+    return booking.image || booking.image_url || room1;
+  };
+
   const isBookingCancelled = bookingData?.status?.toLowerCase() === 'cancelled';
   const nightsCount = bookingData ? calculateNights(bookingData.check_in, bookingData.check_out) : null;
 
@@ -243,9 +278,8 @@ const ManageBooking = ({ setCurrentPage }) => {
     <section className="mb-section">
       <div className="mb-container">
         
-        {/* Top Section: Search & Help */}
-        <div className="mb-top-grid">
-          {/* Left: Search Area */}
+        {/* Top Section: Search Area */}
+        <div className="mb-search-section">
           <div className="mb-search-area">
             <h1 className="mb-section-title">Find Your Booking</h1>
             <p className="mb-section-desc">Enter your Booking ID, email address or phone number to view your booking details.</p>
@@ -257,21 +291,24 @@ const ManageBooking = ({ setCurrentPage }) => {
                   className={`mb-method-btn ${searchMethod === 'bookingId' ? 'active' : ''}`}
                   onClick={() => setSearchMethod('bookingId')}
                 >
-                  <HugeiconsIcon icon={Ticket01Icon} size={18} /> Booking ID
+                  <HugeiconsIcon icon={Ticket01Icon} size={18} />
+                  <span>Booking ID</span>
                 </button>
                 <button 
                   type="button" 
                   className={`mb-method-btn ${searchMethod === 'email' ? 'active' : ''}`}
                   onClick={() => setSearchMethod('email')}
                 >
-                  <HugeiconsIcon icon={Mail01Icon} size={18} /> Email Address
+                  <HugeiconsIcon icon={Mail01Icon} size={18} />
+                  <span>Email</span>
                 </button>
                 <button 
                   type="button" 
                   className={`mb-method-btn ${searchMethod === 'phone' ? 'active' : ''}`}
                   onClick={() => setSearchMethod('phone')}
                 >
-                  <HugeiconsIcon icon={CallIcon} size={18} /> Phone Number
+                  <HugeiconsIcon icon={CallIcon} size={18} />
+                  <span>Mobile</span>
                 </button>
               </div>
 
@@ -299,22 +336,6 @@ const ManageBooking = ({ setCurrentPage }) => {
                 </div>
                 {errorMsg && <div className="mb-error-msg">{errorMsg}</div>}
               </form>
-            </div>
-          </div>
-          
-          {/* Right: Help Area */}
-          <div className="mb-help-area">
-            <h2 className="mb-section-title">Need Help?</h2>
-            <p className="mb-section-desc">Can't find your booking or facing any issues?</p>
-
-            <div className="mb-help-card-top">
-               <div className="mb-help-icon-box">
-                 <HugeiconsIcon icon={CustomerSupportIcon} size={28} color="#870097" />
-               </div>
-               <p className="mb-help-card-text">Our dedicated support team is available to assist you with any questions or modifications.</p>
-               <button className="mb-contact-support-btn" onClick={() => window.open('https://wa.me/919456103445?text=Hi%20Meraki%20Living,%20I%20need%20help%20with%20my%20booking.', '_blank')}>
-                 Contact Support <HugeiconsIcon icon={ArrowRight01Icon} size={16} />
-               </button>
             </div>
           </div>
         </div>
@@ -367,12 +388,18 @@ const ManageBooking = ({ setCurrentPage }) => {
 
               {/* Premium, Well-Structured Booking Details Box */}
               <div className="mb-details-card">
-                 {/* Left Column: Pure Room Image with no overlay text */}
+                 {/* Left Column: Room Image */}
                  <div className="mb-room-image-col">
-                    <img 
-                      src={(roomsCache.find(r => r.id === bookingData.room_id) || {}).image_url || roomImage} 
+                    <OptimizedImage 
+                      src={getBookingRoomImage(bookingData)} 
                       alt={bookingData.room_name || 'Room'} 
                       className="mb-room-image" 
+                      width="330"
+                      height="270"
+                      loading="eager"
+                      fetchPriority="high"
+                      decoding="async"
+                      noWrapper={true}
                     />
                  </div>
 
@@ -495,7 +522,7 @@ const ManageBooking = ({ setCurrentPage }) => {
                       </div>
                     </div>
 
-                    {/* Bottom Action Area: Only Cancel Booking */}
+                    {/* Bottom Action Area: Cancel Booking */}
                     <div className="mb-card-footer-action">
                       {!isCancelling ? (
                         isBookingCancelled ? (
@@ -530,7 +557,7 @@ const ManageBooking = ({ setCurrentPage }) => {
                           </div>
                           <div className="mb-cancel-confirm-buttons">
                             <button 
-                              type="button"
+                              type="button" 
                               className="mb-btn-resume" 
                               onClick={abortCancel} 
                               disabled={actionLoading}
@@ -538,7 +565,7 @@ const ManageBooking = ({ setCurrentPage }) => {
                               Keep Booking
                             </button>
                             <button 
-                              type="button"
+                              type="button" 
                               className="mb-btn-confirm-cancel" 
                               onClick={confirmCancel} 
                               disabled={actionLoading}
@@ -554,6 +581,24 @@ const ManageBooking = ({ setCurrentPage }) => {
             </div>
           )
         )}
+
+        {/* Need Help Section - directly below Booking Details / Search Area */}
+        <div className="mb-help-section">
+          <div className="mb-help-card-full">
+            <div className="mb-help-content-left">
+              <div className="mb-help-icon-box">
+                <HugeiconsIcon icon={CustomerSupportIcon} size={28} color="#870097" />
+              </div>
+              <div>
+                <h3 className="mb-help-title">Need Help?</h3>
+                <p className="mb-help-card-text">Can't find your booking or facing any issues? Our dedicated support team is available to assist you with any questions or modifications.</p>
+              </div>
+            </div>
+            <button className="mb-contact-support-btn" onClick={() => window.open('https://wa.me/919456103445?text=Hi%20Meraki%20Living!%20%0A%0AI%20need%20help%20with%20my%20booking.', '_blank')}>
+              Contact Support <HugeiconsIcon icon={ArrowRight01Icon} size={16} />
+            </button>
+          </div>
+        </div>
 
         {/* Bottom Sections: Cancellation Policy, FAQ */}
         <div className="mb-bottom-sections">

@@ -439,12 +439,15 @@
 .admin-badge {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.2px;
-  white-space: nowrap;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  text-align: center;
 }
 
 .badge-success { background: #ecfdf5; color: #059669; }
@@ -1010,8 +1013,25 @@
 .logout-top-btn { color: #dc2626; border-color: #fca5a5; background: #fef2f2; }
 .logout-top-btn:hover { background: #fee2e2; border-color: #f87171; }
 
-.admin-grid-2-layout { display: flex; gap: 24px; margin-bottom: 32px; flex-wrap: wrap; }
-@media(max-width: 1000px) { .admin-grid-2-layout { flex-direction: column; } }
+.admin-grid-2-layout {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 32px;
+  align-items: stretch;
+}
+.admin-grid-2-layout > .admin-card {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.admin-grid-2-layout > .admin-card > div:last-child {
+  flex: 1;
+}
+@media(max-width: 1000px) {
+  .admin-grid-2-layout {
+    flex-direction: column;
+  }
+}
 
 .gradient-card {
   background: linear-gradient(135deg, #ffffff 0%, #fdf6fe 100%);
@@ -1087,43 +1107,59 @@
   margin-bottom: 20px;
 }
 .recent-booking-item:last-child { padding-bottom: 0; border-bottom: none; margin-bottom: 0; }
-.recent-booking-item img { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; }
-.recent-booking-info { flex: 1; }
-.recent-booking-info h4 { margin: 0; font-size: 14px; font-weight: 600; color: #373737; margin-bottom: 4px; }
-.recent-booking-info p { margin: 0; font-size: 12px; color: #64748b; margin-bottom: 4px; }
+.recent-booking-item img,
+.recent-booking-item .optimized-image-lazy-wrapper,
+.recent-booking-item .lazy-load-image-background,
+.recent-booking-item .lazy-load-image-loaded {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  max-width: 48px !important;
+  border-radius: 8px !important;
+  object-fit: cover !important;
+  flex-shrink: 0 !important;
+  display: block !important;
+}
+.recent-booking-info { flex: 1; min-width: 0; }
+.recent-booking-info h4 { margin: 0; font-size: 14px; font-weight: 600; color: #373737; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.recent-booking-info p { margin: 0; font-size: 12px; color: #64748b; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .recent-booking-info span { font-size: 11px; color: #94a3b8; }
 .admin-badge.badge-danger { background: #fef2f2; color: #dc2626; }
 
 .admin-sidebar-footer-profile {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: white;
-  border: 1px solid rgba(138, 21, 143, 0.1);
-  border-radius: 12px;
-  margin: 16px;
-  cursor: pointer;
-  transition: all 0.2s;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 12px 16px !important;
+  background: transparent !important;
+  border: none !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  border-radius: 8px !important;
 }
-.admin-sidebar-footer-profile:hover { background: #f8fafc; }
-.admin-sidebar-footer-profile-img {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(138, 21, 143, 0.1);
-  color: #8A158F;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 16px;
-  flex-shrink: 0;
+.admin-sidebar-footer-profile:hover { background: rgba(138, 21, 143, 0.05) !important; }
+.admin-sidebar-footer-profile-img,
+.admin-sidebar-footer-profile .optimized-image-lazy-wrapper,
+.admin-sidebar-footer-profile .lazy-load-image-background,
+.admin-sidebar-footer-profile img {
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  max-width: 40px !important;
+  aspect-ratio: 1 / 1 !important;
+  border-radius: 50% !important;
+  flex-shrink: 0 !important;
+  object-fit: cover !important;
+  display: block !important;
+  overflow: hidden !important;
 }
 .admin-sidebar-footer-profile-info {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
+  flex: 1;
 }
 .admin-sidebar-footer-profile-name { font-size: 14px; font-weight: 600; color: #373737; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 .admin-sidebar-footer-profile-role { font-size: 12px; color: #817F7F; white-space: nowrap; display: block; }
@@ -1302,20 +1338,31 @@ p, span, .admin-item-desc, .admin-page-subtitle, .admin-stat-subtext, label, .ad
   border-bottom: none;
   margin-bottom: 0;
 }
-.admin-room-list-item img {
-  width: 48px;
-  height: 48px;
-  border-radius: 8px;
-  object-fit: cover;
+.admin-room-list-item img,
+.admin-room-list-item .optimized-image-lazy-wrapper,
+.admin-room-list-item .lazy-load-image-background,
+.admin-room-list-item .lazy-load-image-loaded {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  max-width: 48px !important;
+  border-radius: 8px !important;
+  object-fit: cover !important;
+  flex-shrink: 0 !important;
+  display: block !important;
 }
 .admin-room-list-info {
   flex: 1;
+  min-width: 0;
 }
 .admin-room-list-info h4 {
   margin: 0 0 4px 0;
   font-size: 14px;
   font-weight: 600 !important;
   color: #373737;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .admin-room-list-info p {
   margin: 0;
@@ -1327,6 +1374,8 @@ p, span, .admin-item-desc, .admin-page-subtitle, .admin-stat-subtext, label, .ad
   cursor: pointer;
   user-select: none;
   transition: all 0.2s ease;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
 }
 .admin-status-toggle:hover {
   transform: scale(1.05);
@@ -1996,5 +2045,581 @@ p, span, .admin-item-desc, .admin-page-subtitle, .admin-stat-subtext, label, .ad
   .admin-modal-btn-edit {
     justify-content: center;
     width: 100%;
+  }
+}/* ==========================================================================
+   Room Availability Calendar Popup Modal (Room Status Overview)
+   ========================================================================== */
+
+.admin-room-calendar-modal-content {
+  background: #ffffff;
+  border-radius: 16px;
+  width: 94%;
+  max-width: 640px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  animation: adminModalScaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid #e2e8f0;
+}
+
+@keyframes adminModalScaleIn {
+  from { opacity: 0; transform: scale(0.97) translateY(6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Header */
+.admin-room-calendar-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+}
+
+.admin-room-calendar-header-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.admin-room-calendar-thumb,
+.admin-room-calendar-header-info .optimized-image-lazy-wrapper,
+.admin-room-calendar-header-info .lazy-load-image-background,
+.admin-room-calendar-header-info .lazy-load-image-loaded,
+.admin-room-calendar-header-info img {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  max-width: 44px !important;
+  border-radius: 6px !important;
+  object-fit: cover !important;
+  border: 1px solid #e2e8f0 !important;
+  flex-shrink: 0 !important;
+  display: block !important;
+}
+
+.admin-room-calendar-title {
+  margin: 0 0 2px 0;
+  font-size: 15.5px;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: -0.2px;
+}
+
+.admin-room-calendar-meta {
+  font-size: 12px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.admin-room-calendar-dot {
+  color: #cbd5e1;
+}
+
+.admin-modal-close-btn {
+  background: transparent;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.admin-modal-close-btn:hover {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+/* Modal Body */
+.admin-room-calendar-body {
+  padding: 16px 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+}
+
+/* Month Navigation */
+.admin-room-calendar-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  padding: 2px 0 4px;
+}
+
+.admin-cal-month-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15.5px;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: -0.2px;
+}
+
+.admin-cal-nav-btn {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-cal-nav-btn:hover {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.admin-cal-nav-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.admin-cal-today-btn {
+  background: #faf5ff;
+  border: 1px solid rgba(138, 21, 143, 0.25);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #8A158F;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.admin-cal-today-btn:hover {
+  background: rgba(138, 21, 143, 0.08);
+  border-color: rgba(138, 21, 143, 0.4);
+}
+
+/* Calendar Grid - Plain White Line-Based Grid */
+.admin-room-calendar-grid-wrap {
+  border: 1px solid #e2e8f0;
+  border-radius: 0;
+  overflow: hidden;
+  background: #ffffff;
+  width: 100%;
+}
+
+.admin-room-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: #ffffff;
+  width: 100%;
+}
+
+.admin-room-calendar-day-header {
+  background: #ffffff;
+  padding: 10px 4px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  border-bottom: 1px solid #e2e8f0;
+  border-right: 1px solid #e2e8f0;
+  border-radius: 0;
+  text-transform: none;
+}
+
+.admin-room-calendar-day-header:nth-child(7n) {
+  border-right: none;
+}
+
+.admin-room-calendar-day-cell {
+  background: #ffffff !important;
+  min-height: 52px;
+  padding: 6px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  border: none;
+  border-bottom: 1px solid #e2e8f0;
+  border-right: 1px solid #e2e8f0;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.15s ease;
+  font-family: inherit;
+  user-select: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.admin-room-calendar-day-cell:nth-child(7n) {
+  border-right: none;
+}
+
+.admin-room-calendar-day-cell.other-month {
+  background: #ffffff;
+  cursor: default;
+}
+
+.admin-room-calendar-day-cell.other-month .admin-cal-date-number {
+  color: #cbd5e1 !important;
+  font-weight: 500;
+}
+
+
+
+.admin-cal-date-number {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #1e293b;
+  line-height: 1.2;
+}
+
+/* Today styling */
+
+
+.admin-room-calendar-day-cell.today:not(.selected) .admin-cal-date-number {
+  color: #8A158F;
+  font-weight: 800;
+}
+
+.admin-room-calendar-day-cell.today::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  right: 6px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #8A158F;
+}
+
+/* Status Text - Pure clean text without background box, pill, card, or border */
+.admin-cal-status-pill {
+  font-size: 10.5px;
+  font-weight: 400;
+  opacity: 0.85;
+  padding: 0;
+  border: none !important;
+  background: transparent !important;
+  text-transform: none;
+  letter-spacing: 0;
+  line-height: 1.2;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+.admin-cal-status-pill.available {
+  color: #16a34a !important;
+}
+
+.admin-cal-status-pill.booked {
+  color: #dc2626 !important;
+}
+
+.admin-cal-status-pill.blocked {
+  color: #ea580c !important;
+}
+
+.admin-room-calendar-day-cell.past.disabled {
+  background: #ffffff !important;
+  cursor: not-allowed;
+}
+
+.admin-room-calendar-day-cell.past .admin-cal-date-number {
+  color: #94a3b8;
+}
+
+.admin-cal-status-pill.past {
+  color: #94a3b8 !important;
+}
+
+/* Selection Range Styling - Dark Theme Color */
+.admin-room-calendar-day-cell.selected.check-in,
+.admin-room-calendar-day-cell.selected.check-out {
+  background: #8A158F !important;
+  border-color: #8A158F !important;
+  border-radius: 0 !important;
+  z-index: 2;
+}
+
+.admin-room-calendar-day-cell.selected.check-in .admin-cal-date-number,
+.admin-room-calendar-day-cell.selected.check-out .admin-cal-date-number {
+  color: #ffffff !important;
+  font-weight: 800;
+}
+
+.admin-room-calendar-day-cell.selected.check-in .admin-cal-status-pill,
+.admin-room-calendar-day-cell.selected.check-out .admin-cal-status-pill {
+  color: #ffffff !important;
+}
+
+.admin-room-calendar-day-cell.selected.in-range {
+  background: #580063 !important;
+  border-color: #580063 !important;
+  border-radius: 0 !important;
+  z-index: 1;
+}
+
+.admin-room-calendar-day-cell.selected.in-range .admin-cal-date-number {
+  color: #ffffff !important;
+  font-weight: 700;
+}
+
+.admin-room-calendar-day-cell.selected.in-range .admin-cal-status-pill {
+  color: #ffffff !important;
+}
+
+/* Legend */
+.admin-room-calendar-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 2px 0;
+  font-size: 11.5px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.admin-cal-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-cal-legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.admin-cal-legend-dot.available { background: #16a34a; }
+.admin-cal-legend-dot.booked { background: #dc2626; }
+.admin-cal-legend-dot.blocked { background: #ea580c; }
+.admin-cal-legend-dot.selected { background: #8A158F; }
+
+/* Alerts */
+.admin-cal-alert {
+  padding: 9px 12px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.admin-cal-alert.error {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.admin-cal-alert.success {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+/* Action Control Panel */
+.admin-room-calendar-action-panel {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 14px 18px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.admin-cal-selection-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.admin-cal-selection-info {
+  flex: 1;
+  min-width: 200px;
+}
+
+.admin-cal-selection-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #8A158F;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.admin-cal-selection-dates {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-cal-range-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+  flex-shrink: 0;
+}
+
+.admin-cal-nights-text,
+.admin-cal-nights-badge {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #0f172a;
+  background: transparent !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.admin-cal-selection-placeholder {
+  margin: 0;
+  font-size: 12.5px;
+  color: #475569;
+  line-height: 1.4;
+}
+
+.admin-cal-action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-cal-btn-clear {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.admin-cal-btn-clear:hover:not(:disabled) {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #94a3b8;
+}
+
+.admin-cal-btn-available {
+  background: #16a34a;
+  border: none;
+  color: #ffffff;
+  border-radius: 6px;
+  padding: 9px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.admin-cal-btn-available:hover:not(:disabled) {
+  background: #15803d;
+}
+
+.admin-cal-btn-booked {
+  background: #dc2626;
+  border: none;
+  color: #ffffff;
+  border-radius: 6px;
+  padding: 9px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.admin-cal-btn-booked:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.admin-cal-btn-available:disabled,
+.admin-cal-btn-booked:disabled,
+.admin-cal-btn-clear:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Footer */
+.admin-room-calendar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid #f1f5f9;
+  background: #f8fafc;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.admin-room-calendar-done-btn {
+  background: #8A158F;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.admin-room-calendar-done-btn:hover {
+  background: #6e1173;
+}
+
+@media (max-width: 640px) {
+  .admin-room-calendar-modal-content {
+    width: 100%;
+    height: 100%;
+    max-height: 100vh;
+    border-radius: 0;
   }
 }

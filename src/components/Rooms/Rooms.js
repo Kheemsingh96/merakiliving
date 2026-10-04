@@ -1,17 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useRooms } from '../../hooks/useRooms';
 import './Rooms.css';
 
-import room1 from '../../assets/images/room-1.webp';
-import room2 from '../../assets/images/room-2.webp';
-import room3 from '../../assets/images/room-3.webp';
-import room4 from '../../assets/images/room-4.webp';
+import room1 from '../../assets/images/room-1.avif';
+import room2 from '../../assets/images/room-2.avif';
+import room3 from '../../assets/images/room-3.avif';
+import room4 from '../../assets/images/room-4.avif';
+import OptimizedImage from '../Common/OptimizedImage';
 
 export const ROOMS_DATA = [
   {
     id: 4,
     image: room4,
-    title: 'Entire Homestay',
-    desc: 'Book the entire Meraki Living homestay for complete privacy and a memorable stay with your loved ones.',
+    title: 'SROT Anant The Infinite Himalayan 3 Bedroom Villa',
+    desc: 'Book the entire Meraki Living homestay for privacy comfort and a memorable mountain stay Enjoy spacious living areas peaceful surroundings fresh mountain air and access to amenities Perfect for large groups family gatherings and special occasions offering a welcoming space where everyone can relax connect and enjoy their time together',
     originalPrice: '30,000',
     price: '22,000',
     buttonText: 'View'
@@ -19,8 +21,8 @@ export const ROOMS_DATA = [
   {
     id: 3,
     image: room3,
-    title: 'Luxury Family Suite',
-    desc: 'A spacious stay experience crafted for families and unforgettable mountain moments.',
+    title: 'SROT Shikhar The Summit Himalayan Royal Suite',
+    desc: 'Experience our Luxury Family Suite at Meraki Living with spacious interiors comfortable furnishings and thoughtful modern amenities Enjoy peaceful mountain surroundings fresh air and beautiful views with plenty of room to relax together Designed for families and longer stays this suite offers a refined atmosphere warm comfort and memorable moments',
     originalPrice: '8,000',
     price: '6,000',
     buttonText: 'View'
@@ -28,8 +30,8 @@ export const ROOMS_DATA = [
   {
     id: 2,
     image: room2,
-    title: 'Premium Valley Room',
-    desc: 'Wake up to breathtaking valley views with elegant comfort and peaceful Himalayan charm.',
+    title: 'SROT Aaroh The Ascent Himalayan Grand Suite',
+    desc: 'Enjoy our Premium Valley Room at Meraki Living featuring elegant interiors comfortable furnishings and beautiful valley views Wake up to fresh mountain air and peaceful surroundings while relaxing in a designed space Perfect for couples and travellers seeking a refined stay with modern comfort natural beauty and a calm atmosphere.',
     originalPrice: '6,500',
     price: '4,500',
     buttonText: 'View'
@@ -37,8 +39,8 @@ export const ROOMS_DATA = [
   {
     id: 1,
     image: room1,
-    title: 'Himalayan View Room',
-    desc: 'Enjoy breathtaking Himalayan views with cozy interiors and peaceful mountain-inspired comfort.',
+    title: 'SROT Prarambh The Beginning King Room',
+    desc: 'Relax in our Himalayan View Room at Meraki Living with wooden interiors comfortable furnishings and peaceful surroundings Enjoy fresh mountain air Himalayan views and a cozy atmosphere designed for restful stays Whether you are travelling for leisure or seeking quiet moments this room offers comfort charm and a refreshing mountain experience',
     originalPrice: '5,000',
     price: '3,500',
     buttonText: 'View'
@@ -55,7 +57,6 @@ export function parseRoomTitle(rawTitle) {
     return { mainName: '', subtitle: '', roomType: '' };
   }
 
-  // 1. If contains newlines
   if (clean.includes('\n')) {
     const lines = clean.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
     if (lines.length >= 3) {
@@ -82,7 +83,6 @@ export function parseRoomTitle(rawTitle) {
     }
   }
 
-  // 2. If contains delimiters like " - ", " – ", " — ", " | "
   const parts = clean.split(/\s*(?:[-–—|]|\s\/\s)\s*/).map(s => s.trim()).filter(Boolean);
   if (parts.length >= 3) {
     return {
@@ -105,7 +105,6 @@ export function parseRoomTitle(rawTitle) {
     };
   }
 
-  // 3. Fallback: single name
   return {
     mainName: clean,
     subtitle: '',
@@ -114,32 +113,7 @@ export function parseRoomTitle(rawTitle) {
 }
 
 function Rooms({ setCurrentPage }) {
-  const [rooms, setRooms] = useState(ROOMS_DATA);
-
-  useEffect(() => {
-    fetch('http://localhost/merakiliving_backend/api_rooms.php')
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === 'success' && data.data) {
-          const merged = ROOMS_DATA.map(localRoom => {
-            const backendRoom = data.data.find(r => r.id === localRoom.id);
-            if (backendRoom) {
-              return {
-                ...localRoom,
-                title: backendRoom.name || localRoom.title,
-                desc: backendRoom.description || localRoom.desc,
-                price: backendRoom.price?.toLocaleString() || localRoom.price,
-                originalPrice: backendRoom.original_price?.toLocaleString() || localRoom.originalPrice,
-                image: backendRoom.image_url || localRoom.image
-              };
-            }
-            return localRoom;
-          });
-          setRooms(merged);
-        }
-      })
-      .catch(err => console.error(err));
-  }, []);
+  const { rooms } = useRooms(ROOMS_DATA);
 
   const handleViewRoom = (roomId) => {
     if (setCurrentPage) {
@@ -150,20 +124,28 @@ function Rooms({ setCurrentPage }) {
   return (
     <section className="rooms-section" aria-label="Stay in Timeless Comfort">
       <div className="rooms-container">
-        <div className="rooms-header">
+        <div className="rooms-header reveal-fade-up">
           <h2 className="rooms-title">Stay in Timeless Comfort</h2>
           <p className="rooms-subtitle">
             Discover thoughtfully designed rooms at Meraki Living, where modern comfort, peaceful interiors, and breathtaking Himalayan surroundings create the perfect mountain escape.
           </p>
         </div>
 
-        <div className="rooms-grid">
+        <div className="rooms-grid reveal-stagger">
           {rooms.map((room) => {
             const titleData = parseRoomTitle(room.title);
             return (
               <article className="room-card" key={room.id}>
                 <div className="room-image-box">
-                  <img src={room.image} alt={titleData.mainName || room.title} width="640" height="480" loading="lazy" decoding="async" />
+                  <OptimizedImage
+                    src={room.image}
+                    alt={titleData.mainName || room.title}
+                    width="640"
+                    height="480"
+                    loading="lazy"
+                    decoding="async"
+                    noWrapper={true}
+                  />
                 </div>
                 <div className="room-body">
                   <div className="room-title-block">
@@ -184,7 +166,7 @@ function Rooms({ setCurrentPage }) {
                     </div>
                     <button
                       className="room-btn"
-                      onClick={() => handleViewRoom(room.id)}
+                      onClick={() => handleViewRoom(Number(room.id))}
                       aria-label={`View ${titleData.mainName || room.title} details`}
                     >
                       <span>{room.buttonText}</span>

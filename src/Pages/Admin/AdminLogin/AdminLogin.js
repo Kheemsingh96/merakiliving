@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import './AdminLogin.css';
-import logo from '../../../assets/images/logo.webp';
+import logo from '../../../assets/images/logo.avif';
+import { API_CONFIG_URL } from '../../../config/api';
+import { safeParseResponse } from '../../../utils/apiHelper';
+import OptimizedImage from '../../../components/Common/OptimizedImage';
 
 export default function AdminLogin({ setCurrentPage }) {
   const [username, setUsername] = useState('');
@@ -23,15 +26,16 @@ export default function AdminLogin({ setCurrentPage }) {
     
     try {
       // 1. Fetch all admins to get the ID for the entered username
-      const resAdmins = await fetch('http://localhost/merakiliving_backend/api_settings.php', {
+      const resAdmins = await fetch(`${API_CONFIG_URL}/api_settings.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'get_admins' })
       });
-      const dataAdmins = await resAdmins.json();
+      const parsedAdmins = await safeParseResponse(resAdmins);
+      const dataAdmins = parsedAdmins.data;
       
-      if (dataAdmins.status !== 'success' || !Array.isArray(dataAdmins.data)) {
-        setError('Login failed. Cannot connect to authentication service.');
+      if (!dataAdmins || dataAdmins.status !== 'success' || !Array.isArray(dataAdmins.data)) {
+        setError(parsedAdmins.error || 'Login failed. Cannot connect to authentication service.');
         setIsLoading(false);
         return;
       }
@@ -46,7 +50,7 @@ export default function AdminLogin({ setCurrentPage }) {
       }
       
       // 2. Validate the password by using the existing update_account verification logic
-      const resAuth = await fetch('http://localhost/merakiliving_backend/api_settings.php', {
+      const resAuth = await fetch(`${API_CONFIG_URL}/api_settings.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -55,7 +59,8 @@ export default function AdminLogin({ setCurrentPage }) {
           current_password: password
         })
       });
-      const dataAuth = await resAuth.json();
+      const parsedAuth = await safeParseResponse(resAuth);
+      const dataAuth = parsedAuth.data || {};
       
       // If the backend returns "Current password is incorrect.", authentication failed.
       // If it returns "No changes provided." (with status error), the password was verified successfully!
@@ -80,7 +85,7 @@ export default function AdminLogin({ setCurrentPage }) {
   return (
     <div className="admin-login-container">
       <div className="admin-login-card">
-        <img src={logo} alt="Meraki Logo" className="admin-login-logo" />
+        <OptimizedImage src={logo} alt="Meraki Logo" className="admin-login-logo" loading="eager" fetchPriority="high" decoding="async" noWrapper={true} />
         <h2 className="admin-login-title">Admin Access</h2>
         <p className="admin-login-subtitle">Secure login for Homestay management</p>
         

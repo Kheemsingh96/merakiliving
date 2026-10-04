@@ -25,9 +25,9 @@
 }
 
 .terms-conditions-title {
-  font-size: 36px;
-  color: #373737;
-  font-weight: 500;
+  font-size: 30px;
+  color: #242424;
+  font-weight: 600;
   margin: 0 0 16px 0;
   line-height: 1.15;
   letter-spacing: -0.6px;
@@ -35,7 +35,7 @@
 
 .terms-conditions-intro {
   font-size: 16px;
-  color: #817F8F;
+  color: #64748B;
   margin: 0;
   font-weight: 400;
   line-height: 1.7;
@@ -48,7 +48,7 @@
 
 .terms-conditions-body h2 {
   font-size: 17px;
-  color: #373737;
+  color: #242424;
   font-weight: 600;
   margin: 0 0 16px 0;
   line-height: 1.4;
@@ -57,7 +57,7 @@
 
 .terms-conditions-body p {
   font-size: 15px;
-  color: #817F8F;
+  color: #64748B;
   margin: 0 0 16px 0;
   font-weight: 400;
   line-height: 1.75;
@@ -68,7 +68,7 @@
 }
 
 .terms-conditions-body strong {
-  color: #373737;
+  color: #242424;
   font-weight: 600;
 }
 

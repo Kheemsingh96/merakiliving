@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { 
   Location01Icon,
   DropletIcon, 
@@ -13,11 +14,17 @@ import {
 } from 'hugeicons-react';
 import './SrotPage.css';
 
-import srotHeroImg from '../../assets/images/srot-hero.jpg';
-import srotStreamImg from '../../assets/images/srot-stream.jpg';
-import srotPoolImg from '../../assets/images/srot-pool.jpg';
-import srotRetreatImg from '../../assets/images/srot-retreat.jpg';
-import pineWoodsImg from '../../assets/images/garden-main.webp';
+import srotHeroImg from '../../assets/images/srot-hero.avif';
+import srotPoolImg from '../../assets/images/srot-pool.avif';
+import OptimizedImage from '../../components/Common/OptimizedImage';
+
+const SROT_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  'name': 'SROT - Meraki Living',
+  'description': 'Discover SROT at Meraki Living—a natural mountain spring water sanctuary surrounded by pine forests, organic orchards, and tranquil streams in Peora, Mukteshwar.',
+  'url': 'https://www.merakiliving.in/srot'
+};
 
 const JOURNEY_STEPS = [
   {
@@ -69,7 +76,7 @@ const STORY_FEATURES = [
 ];
 
 function SrotPage({ setCurrentPage }) {
-  const [isHeroLoaded, setIsHeroLoaded] = useState(false);
+  const [isHeroLoaded, setIsHeroLoaded] = useState(() => typeof navigator !== 'undefined' && /ReactSnap/i.test(navigator.userAgent));
 
   useEffect(() => {
     const timer = setTimeout(() => setIsHeroLoaded(true), 150);
@@ -103,10 +110,27 @@ function SrotPage({ setCurrentPage }) {
 
   return (
     <div className="srot-page">
+      <Helmet>
+        <title>Srot | Meraki Living</title>
+        <meta name="description" content="Discover SROT at Meraki Living—a natural mountain spring water sanctuary surrounded by pine forests, organic orchards, and tranquil streams in Peora, Mukteshwar." />
+        <link rel="canonical" href="https://www.merakiliving.in/srot" />
+        <meta name="robots" content="index, follow" />
+        <meta property="og:site_name" content="Meraki Living" />
+        <meta property="og:title" content="Srot | Meraki Living" />
+        <meta property="og:description" content="Discover SROT at Meraki Living—a natural mountain spring water sanctuary surrounded by pine forests, organic orchards, and tranquil streams in Peora, Mukteshwar." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://www.merakiliving.in/srot" />
+        <meta property="og:image" content={srotHeroImg} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Srot | Meraki Living" />
+        <meta name="twitter:description" content="Discover SROT at Meraki Living—a natural mountain spring water sanctuary surrounded by pine forests, organic orchards, and tranquil streams in Peora, Mukteshwar." />
+        <meta name="twitter:image" content={srotHeroImg} />
+        <script type="application/ld+json">{JSON.stringify(SROT_SCHEMA)}</script>
+      </Helmet>
       {/* 1. HERO SECTION */}
       <section className="srot-hero-section">
         <div className="srot-hero-bg-wrapper">
-          <img
+          <OptimizedImage
             src={srotHeroImg}
             alt="Natural Himalayan water spring (Srot) in Peora, Mukteshwar"
             className="srot-hero-bg"
@@ -115,6 +139,7 @@ function SrotPage({ setCurrentPage }) {
             loading="eager"
             fetchPriority="high"
             decoding="async"
+            noWrapper={true}
           />
         </div>
 
@@ -174,7 +199,7 @@ function SrotPage({ setCurrentPage }) {
           <div className="srot-story-grid">
             <div className="srot-story-image-col">
               <div className="srot-image-card">
-                <img
+                <OptimizedImage
                   src={srotPoolImg}
                   alt="Crystal-clear natural water spring pool in Peora, Mukteshwar"
                   className="srot-story-img"
@@ -182,6 +207,7 @@ function SrotPage({ setCurrentPage }) {
                   height="600"
                   loading="lazy"
                   decoding="async"
+                  noWrapper={true}
                 />
                 <div className="srot-img-badge">
                   <DropletIcon size={18} variant="stroke" />

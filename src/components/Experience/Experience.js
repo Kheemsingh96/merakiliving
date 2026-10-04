@@ -1,12 +1,13 @@
 import React from 'react';
 import './Experience.css';
 
-import iconHimalayas from '../../assets/images/image (1).webp';
-import iconForest from '../../assets/images/image (2).webp';
-import iconBonfire from '../../assets/images/image (3).webp';
-import iconCafe from '../../assets/images/image (4).webp';
-import iconSunrise from '../../assets/images/image (5).webp';
-import iconFood from '../../assets/images/image (6).webp';
+import iconHimalayas from '../../assets/images/image (1).avif';
+import iconForest from '../../assets/images/image (2).avif';
+import iconBonfire from '../../assets/images/image (3).avif';
+import iconCafe from '../../assets/images/image (4).avif';
+import iconSunrise from '../../assets/images/image (5).avif';
+import iconFood from '../../assets/images/image (6).avif';
+import OptimizedImage from '../Common/OptimizedImage';
 
 const FEATURES = [
   { title: 'Himalayan Views', image: iconHimalayas },
@@ -20,25 +21,27 @@ const FEATURES = [
 function Experience() {
   return (
     <section className="experience-section" aria-label="The Meraki Living Experience">
-      <div className="experience-header">
+      <div className="experience-header reveal-fade-up">
         <h2 className="experience-title">The Meraki Living Experience</h2>
         <p className="experience-subtitle">
           Experience peaceful mountain mornings, breathtaking Himalayan views, cozy cafe moments, authentic Kumaoni hospitality, and unforgettable memories only at Meraki Living.
         </p>
       </div>
 
-      <div className="experience-row">
+      <div className="experience-row reveal-stagger">
         {FEATURES.map((feature) => (
           <div className="experience-card" key={feature.title}>
             <div className="experience-icon-wrapper">
-              <img
+              <OptimizedImage
                 src={feature.image}
                 alt={feature.title}
                 className="experience-icon"
                 width="110"
                 height="100"
-                loading="eager"
+                loading="lazy"
                 decoding="async"
+                objectFit="contain"
+                placeholderBg="transparent"
               />
             </div>
             <h3 className="experience-card-title">{feature.title}</h3>

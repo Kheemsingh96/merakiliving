@@ -1,3 +1,4 @@
+import { FaWhatsapp } from 'react-icons/fa';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './FloatingBookingDetails.css';
 import { HugeiconsIcon } from '@hugeicons/react';
@@ -7,17 +8,19 @@ import {
   Calendar01Icon,
   UserGroupIcon,
   Cancel01Icon,
-  Delete01Icon,
-  WhatsappIcon,
-  Copy01Icon,
+  Delete01Icon,  Copy01Icon,
   CheckmarkBadge01Icon,
   RupeeShieldIcon
 } from '@hugeicons/core-free-icons';
 
-import room1 from '../../assets/images/room-1.webp';
-import room2 from '../../assets/images/room-2.webp';
-import room3 from '../../assets/images/room-3.webp';
-import room4 from '../../assets/images/room-4.webp';
+import room1 from '../../assets/images/room-1.avif';
+import room2 from '../../assets/images/room-2.avif';
+import room3 from '../../assets/images/room-3.avif';
+import room4 from '../../assets/images/room-4.avif';
+
+import { safeParseResponse, formatImageUrl } from '../../utils/apiHelper';
+import { markBookingAsCancelled } from '../../utils/dateAvailability';
+import OptimizedImage from '../Common/OptimizedImage';
 
 const API_CONFIG_URL = 'http://localhost/merakiliving_backend';
 const ADMIN_WHATSAPP_NUMBER = '919456103445';
@@ -63,6 +66,15 @@ const FloatingBookingDetails = ({ setCurrentPage }) => {
     }
   }, []);
 
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   const syncWithBackend = useCallback(async (currentBooking) => {
     if (!currentBooking) return;
     const targetRef = currentBooking.booking_reference || currentBooking.id;
@@ -70,7 +82,9 @@ const FloatingBookingDetails = ({ setCurrentPage }) => {
 
     try {
       const res = await fetch(`${API_CONFIG_URL}/api_bookings.php`);
-      const json = await res.json();
+      const parsed = await safeParseResponse(res);
+      if (!isMountedRef.current) return;
+      const json = parsed.ok ? parsed.data : null;
       if (json && json.status === 'success' && Array.isArray(json.data)) {
         const cleanRef = String(targetRef).toUpperCase().trim();
         const matched = json.data.find(b => {
@@ -79,7 +93,7 @@ const FloatingBookingDetails = ({ setCurrentPage }) => {
           return bRef === cleanRef || bId === cleanRef || (currentBooking.db_id && String(b.id) === String(currentBooking.db_id));
         });
 
-        if (matched) {
+        if (matched && isMountedRef.current) {
           setBookingData(prev => {
             const updated = {
               ...prev,
@@ -151,7 +165,8 @@ const FloatingBookingDetails = ({ setCurrentPage }) => {
 
   const isCancelled = (bookingData.status || '').toLowerCase() === 'cancelled';
   const displayId = bookingData.formattedId || bookingData.booking_reference || bookingData.id || 'MERI0001';
-  const roomImg = (bookingData.room_id && ROOM_IMAGES[bookingData.room_id]) ? ROOM_IMAGES[bookingData.room_id] : (bookingData.image || room1);
+  const rawImg = bookingData.room_image || bookingData.image_url || bookingData.image;
+  const roomImg = rawImg ? formatImageUrl(rawImg) : ((bookingData.room_id && ROOM_IMAGES[bookingData.room_id]) ? ROOM_IMAGES[bookingData.room_id] : room1);
 
   const calculateNights = (inDate, outDate) => {
     if (!inDate || !outDate) return 1;
@@ -209,22 +224,21 @@ const FloatingBookingDetails = ({ setCurrentPage }) => {
           status: 'Cancelled'
         })
       });
-      const data = await res.json();
-      if (data && data.status === 'success') {
+      const parsed = await safeParseResponse(res);
+      const data = parsed.data;
+      if (parsed.ok && data && data.status === 'success') {
         const updatedBooking = { ...bookingData, status: 'Cancelled' };
         setBookingData(updatedBooking);
-        sessionStorage.setItem('meraki_latest_booking', JSON.stringify(updatedBooking));
-        window.dispatchEvent(new Event('meraki_booking_updated'));
+        markBookingAsCancelled(updatedBooking);
         setIsCancelling(false);
         setShowCancellationSuccess(true);
       } else {
-        alert(data?.message || 'Error cancelling booking. Please contact support.');
+        alert(parsed.error || data?.message || 'Error cancelling booking. Please contact support.');
       }
     } catch (err) {
       const updatedBooking = { ...bookingData, status: 'Cancelled' };
       setBookingData(updatedBooking);
-      sessionStorage.setItem('meraki_latest_booking', JSON.stringify(updatedBooking));
-      window.dispatchEvent(new Event('meraki_booking_updated'));
+      markBookingAsCancelled(updatedBooking);
       setIsCancelling(false);
       setShowCancellationSuccess(true);
     } finally {
@@ -237,15 +251,15 @@ const FloatingBookingDetails = ({ setCurrentPage }) => {
     const formattedAmount = parseInt(String(rawAmount).replace(/,/g, ''), 10).toLocaleString('en-IN');
     
     const message = encodeURIComponent(
-      `Hi Meraki Living! \n\n` +
-      `I have an inquiry regarding my booking:\n` +
-      `• *Booking ID:* ${displayId}\n` +
+      `Hi Meraki Living! ✨\n\n` +
+      `I have an inquiry regarding my booking:\n\n` +
+      `• *Booking ID:* ${displayId} 🆔\n` +
       `• *Guest Name:* ${bookingData.guest_name || 'Guest'}\n` +
-      `• *Room:* ${bookingData.room_name || 'Meraki Homestay'}\n` +
-      `• *Check-in:* ${formatDate(bookingData.check_in)}\n` +
+      `• *Room:* ${bookingData.room_name || 'Meraki Homestay'} 🛏️\n` +
+      `• *Check-in:* ${formatDate(bookingData.check_in)} 📅\n` +
       `• *Check-out:* ${formatDate(bookingData.check_out)} (${nights} ${nights === 1 ? 'Night' : 'Nights'})\n` +
       `• *Guests:* ${bookingData.guest_count || 2} Guests\n` +
-      `• *Total Amount:* Rs.${formattedAmount}\n` +
+      `• *Total Amount:* Rs.${formattedAmount} 💳\n` +
       `• *Status:* ${bookingData.status || 'Confirmed'}\n\n` +
       `Please assist me with my reservation. Thank you!`
     );
@@ -338,7 +352,17 @@ const FloatingBookingDetails = ({ setCurrentPage }) => {
             ) : (
               <>
                 <div className="fb-room-snapshot">
-                  <img src={roomImg} alt={bookingData.room_name || 'Room'} className="fb-room-thumb" />
+                  <OptimizedImage
+                    src={roomImg}
+                    alt={bookingData.room_name || 'Room'}
+                    className="fb-room-thumb"
+                    width="66"
+                    height="66"
+                    loading="eager"
+                    fetchPriority="high"
+                    decoding="async"
+                    noWrapper={true}
+                  />
                   <div className="fb-room-info">
                     <div className="fb-room-badge">
                       <HugeiconsIcon icon={BedDoubleIcon} size={12} color="#870097" /> Homestay Room
@@ -425,8 +449,8 @@ const FloatingBookingDetails = ({ setCurrentPage }) => {
                         onClick={handleWhatsApp}
                         title="Contact Admin on WhatsApp"
                       >
-                        <HugeiconsIcon icon={WhatsappIcon} size={16} />
-                        <span>Hello</span>
+                        <FaWhatsapp size={16} />
+                        <span>WhatsApp</span>
                       </button>
                     </div>
                   ) : (

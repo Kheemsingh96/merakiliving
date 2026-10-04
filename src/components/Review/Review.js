@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { API_CONFIG_URL } from '../../config/api';
+import { safeParseResponse } from '../../utils/apiHelper';
 import './Review.css';
-
-const API_CONFIG_URL = 'http://localhost/merakiliving_backend';
 
 const DEFAULT_REVIEW_DATA = [
   {
@@ -57,10 +57,13 @@ const Review = () => {
   const [reviews, setReviews] = useState(DEFAULT_REVIEW_DATA);
 
   useEffect(() => {
+    let isMounted = true;
     fetch(`${API_CONFIG_URL}/api_reviews.php`)
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.status === 'success' && Array.isArray(data.data)) {
+      .then(res => safeParseResponse(res))
+      .then(parsed => {
+        if (!isMounted) return;
+        const data = parsed.data;
+        if (parsed.ok && data && data.status === 'success' && Array.isArray(data.data)) {
           const homestayReviews = data.data
             .filter(r => r.visibility === 'Visible' && (!r.type || r.type === 'Homestay'))
             .map(r => ({
@@ -76,7 +79,15 @@ const Review = () => {
           }
         }
       })
-      .catch(e => console.error("Error fetching reviews:", e));
+      .catch(e => {
+        if (process.env.NODE_ENV === 'development') {
+          console.error("Error fetching reviews:", e);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {

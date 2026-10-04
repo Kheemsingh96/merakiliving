@@ -2,22 +2,30 @@ import React, { useState, useEffect, useRef, memo } from 'react';
 import { Location01Icon } from 'hugeicons-react';
 import './Hero.css';
 
-import hero1 from '../../assets/images/hero1.webp';
-import hero2 from '../../assets/images/hero2.webp';
-import hero3 from '../../assets/images/hero3.webp';
+import hero1 from '../../assets/images/hero1.avif';
+import hero2 from '../../assets/images/hero2.avif';
+import hero3 from '../../assets/images/hero3.avif';
+
+import OptimizedImage from '../Common/OptimizedImage';
 
 const SLIDES = [hero1, hero2, hero3];
 const SLIDE_INTERVAL = 4000;
 
 function Hero({ setCurrentPage }) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [prevIndex, setPrevIndex] = useState(null);
+  const [isLoaded, setIsLoaded] = useState(() => typeof navigator !== 'undefined' && /ReactSnap/i.test(navigator.userAgent));
+  const [mountedSlides] = useState([0, 1, 2]);
   const intervalRef = useRef(null);
 
   useEffect(() => {
-    const loadTimer = setTimeout(() => setIsLoaded(true), 200);
+    const loadTimer = setTimeout(() => setIsLoaded(true), 50);
+
     intervalRef.current = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % SLIDES.length);
+      setActiveIndex((current) => {
+        setPrevIndex(current);
+        return (current + 1) % SLIDES.length;
+      });
     }, SLIDE_INTERVAL);
 
     return () => {
@@ -29,21 +37,32 @@ function Hero({ setCurrentPage }) {
   return (
     <section className="hero-section">
       <div className="hero-bg-wrapper">
-        {SLIDES.map((slide, index) => (
-          <img
-            key={index}
-            src={slide}
-            alt={`Hero Background ${index + 1}`}
-            className={index === activeIndex ? 'hero-bg active' : 'hero-bg'}
-            width="1920"
-            height="1080"
-            loading={index === 0 ? 'eager' : 'lazy'}
-            fetchPriority={index === 0 ? 'high' : 'low'}
-            decoding="async"
-            draggable="false"
-            aria-hidden="true"
-          />
-        ))}
+        {SLIDES.map((slide, index) => {
+          if (!mountedSlides.includes(index)) return null;
+          let slideClass = 'hero-bg';
+          if (index === activeIndex) {
+            slideClass = 'hero-bg active';
+          } else if (index === prevIndex) {
+            slideClass = 'hero-bg prev';
+          }
+
+          return (
+            <OptimizedImage
+              key={index}
+              src={slide}
+              alt={`Hero Background ${index + 1}`}
+              className={slideClass}
+              width="1920"
+              height="1080"
+              loading="eager"
+              fetchPriority={index === 0 ? 'high' : 'low'}
+              decoding="async"
+              draggable="false"
+              aria-hidden="true"
+              noWrapper={true}
+            />
+          );
+        })}
       </div>
 
       <div className="hero-overlay-main" aria-hidden="true" />

@@ -1,3 +1,12 @@
-# https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /Pranay-admin
+Disallow: /Pranay-admin/
+Disallow: /manage-booking
+Disallow: /booking
+Disallow: /room-details
+Disallow: /guest-details
+Disallow: /api/
+Disallow: /*.php$
+
+Sitemap: https://www.merakiliving.in/sitemap.xml

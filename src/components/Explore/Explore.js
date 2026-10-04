@@ -1,36 +1,39 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { API_CONFIG_URL } from '../../config/api';
+import { safeParseResponse, formatImageUrl } from '../../utils/apiHelper';
 import './Explore.css';
 
-import luxuryMain from '../../assets/images/luxury-main.webp';
-import luxury1 from '../../assets/images/luxury-1.webp';
-import luxury2 from '../../assets/images/luxury-2.webp';
-import luxury3 from '../../assets/images/luxury-3.webp';
+import luxuryMain from '../../assets/images/luxury-main.avif';
+import luxury1 from '../../assets/images/luxury-1.avif';
+import luxury2 from '../../assets/images/luxury-2.avif';
+import luxury3 from '../../assets/images/luxury-3.avif';
 
-import exteriorMain from '../../assets/images/exterior-main.webp';
-import exterior1 from '../../assets/images/exterior-1.webp';
-import exterior2 from '../../assets/images/exterior-2.webp';
+import exteriorMain from '../../assets/images/exterior-main.avif';
+import exterior1 from '../../assets/images/exterior-1.avif';
+import exterior2 from '../../assets/images/exterior-2.avif';
 
-import himalayanMain from '../../assets/images/himalayan-main.webp';
-import himalayan1 from '../../assets/images/himalayan-1.webp';
-import himalayan2 from '../../assets/images/himalayan-2.webp';
-import himalayan3 from '../../assets/images/himalayan-3.webp';
+import himalayanMain from '../../assets/images/himalayan-main.avif';
+import himalayan1 from '../../assets/images/himalayan-1.avif';
+import himalayan2 from '../../assets/images/himalayan-2.avif';
+import himalayan3 from '../../assets/images/himalayan-3.avif';
 
-import gardenMain from '../../assets/images/garden-main.webp';
-import garden1 from '../../assets/images/garden-1.webp';
-import garden2 from '../../assets/images/garden-2.webp';
-import garden3 from '../../assets/images/garden-3.webp';
-import garden4 from '../../assets/images/garden-4.webp';
-import garden5 from '../../assets/images/garden-5.webp';
-import garden6 from '../../assets/images/garden-6.webp';
+import gardenMain from '../../assets/images/garden-main.avif';
+import garden1 from '../../assets/images/garden-1.avif';
+import garden2 from '../../assets/images/garden-2.avif';
+import garden3 from '../../assets/images/garden-3.avif';
+import garden4 from '../../assets/images/garden-4.avif';
+import garden5 from '../../assets/images/garden-5.avif';
+import garden6 from '../../assets/images/garden-6.avif';
 
-import cafeMain from '../../assets/images/cafe-main.webp';
-import cafe1 from '../../assets/images/cafe-1.webp';
-import cafe2 from '../../assets/images/cafe-2.webp';
-import cafe3 from '../../assets/images/cafe-3.webp';
-import cafe4 from '../../assets/images/cafe-4.webp';
-import cafe5 from '../../assets/images/cafe-5.webp';
-import cafe6 from '../../assets/images/cafe-6.webp';
-import cafe7 from '../../assets/images/cafe-7.webp';
+import cafeMain from '../../assets/images/cafe-main.avif';
+import cafe1 from '../../assets/images/cafe-1.avif';
+import cafe2 from '../../assets/images/cafe-2.avif';
+import cafe3 from '../../assets/images/cafe-3.avif';
+import cafe4 from '../../assets/images/cafe-4.avif';
+import cafe5 from '../../assets/images/cafe-5.avif';
+import cafe6 from '../../assets/images/cafe-6.avif';
+import cafe7 from '../../assets/images/cafe-7.avif';
+import OptimizedImage from '../Common/OptimizedImage';
 
 const EXPLORE_DATA = [
   {
@@ -105,12 +108,22 @@ function Explore() {
   const [activeGallery, setActiveGallery] = useState(null);
   const [exploreData, setExploreData] = useState(EXPLORE_DATA);
 
-  // Fetch explore data from backend
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   const fetchExploreData = useCallback(() => {
-    fetch('http://localhost/merakiliving_backend/api_gallery.php')
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.status === 'success' && data.data) {
+    fetch(`${API_CONFIG_URL}/api_gallery.php`)
+      .then(res => safeParseResponse(res))
+      .then(parsed => {
+        if (!isMountedRef.current) return;
+        const data = parsed.data;
+        if (parsed.ok && data && data.status === 'success' && Array.isArray(data.data)) {
           const apiImages = data.data;
           const updatedData = EXPLORE_DATA.map(item => {
             const catName = `Explore - ${item.title}`;
@@ -118,9 +131,9 @@ function Explore() {
             if (imagesForCat.length > 0) {
               return {
                 ...item,
-                coverImage: imagesForCat[0].image_url,
+                coverImage: formatImageUrl(imagesForCat[0].image_url),
                 photosCount: `${imagesForCat.length} Photos`,
-                gallery: imagesForCat.map(img => ({ src: img.image_url }))
+                gallery: imagesForCat.map(img => ({ src: formatImageUrl(img.image_url) }))
               };
             }
             return item;
@@ -128,16 +141,15 @@ function Explore() {
           setExploreData(updatedData);
         }
       })
-      .catch(err => console.error("Error fetching explore images:", err));
+      .catch(err => {
+        if (process.env.NODE_ENV === 'development') {
+          console.error("Error fetching explore images:", err);
+        }
+      });
   }, []);
 
-  // Initial load
   useEffect(() => {
     fetchExploreData();
-  }, [fetchExploreData]);
-
-  // Listen for updates from admin panel
-  useEffect(() => {
     const handler = () => {
       fetchExploreData();
     };
@@ -146,7 +158,6 @@ function Explore() {
       window.removeEventListener('galleryUpdated', handler);
     };
   }, [fetchExploreData]);
-
 
   const handleOpenGallery = useCallback((item) => {
     setActiveGallery(item);
@@ -170,7 +181,7 @@ function Explore() {
 
   return (
     <section className="explore-section" aria-label="Explore Meraki Living">
-      <div className="explore-header">
+      <div className="explore-header reveal-fade-up">
         <h2 className="explore-title">
           Explore <span className="explore-highlight">Meraki Living</span>
         </h2>
@@ -179,7 +190,7 @@ function Explore() {
         </p>
       </div>
 
-      <div className="explore-grid">
+      <div className="explore-grid reveal-stagger">
         {exploreData.map((item) => (
           <article
             className="explore-card"
@@ -191,7 +202,16 @@ function Explore() {
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleOpenGallery(item); }}
           >
             <div className="explore-image-wrapper">
-              <img src={item.coverImage} alt={item.title} className="explore-image" width="600" height="400" loading="lazy" decoding="async" />
+              <OptimizedImage
+                src={item.coverImage}
+                alt={item.title}
+                className="explore-image"
+                width="600"
+                height="400"
+                loading="lazy"
+                decoding="async"
+                noWrapper={true}
+              />
               <div className="explore-overlay" />
             </div>
             
@@ -230,7 +250,15 @@ function Explore() {
               <div className="gallery-grid">
                 {activeGallery.gallery.map((photo, index) => (
                   <div className="gallery-card" key={index}>
-                    <img src={photo.src} alt={`${activeGallery.title} - ${index + 1}`} width="800" height="600" loading="lazy" decoding="async" />
+                    <OptimizedImage
+                      src={photo.src}
+                      alt={`${activeGallery.title} - ${index + 1}`}
+                      width="800"
+                      height="600"
+                      loading="lazy"
+                      decoding="async"
+                      noWrapper={true}
+                    />
                   </div>
                 ))}
               </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './Chatbot.css';
-import logo from '../../assets/images/logo.webp';
+import merakiIcon from '../../assets/images/meraki_icon.avif';
+import { useRooms } from '../../hooks/useRooms';
 import { ROOMS_DATA, parseRoomTitle } from '../Rooms/Rooms';
 import { VIEWPOINTS_DATA } from '../Viewpoints/Viewpoints';
 import { matchUserIntent } from './chatbotRules';
@@ -27,15 +28,16 @@ import {
   File02Icon
 } from '@hugeicons/core-free-icons';
 import { FaWhatsapp } from 'react-icons/fa';
-import { IoSend } from 'react-icons/io5';
-
-const API_CONFIG_URL = 'http://localhost/merakiliving_backend';
-const WHATSAPP_LINK = 'https://wa.me/919456103445?text=Hi%20Meraki%20Living!%20I%20need%20assistance%20with%20my%20stay.';
+import { IoSend, IoChatbubbleEllipses } from 'react-icons/io5';
+import { API_CONFIG_URL } from '../../config/api';
+import { safeParseResponse } from '../../utils/apiHelper';
+import OptimizedImage from '../Common/OptimizedImage';
+const WHATSAPP_LINK = 'https://wa.me/919456103445?text=Hi%20Meraki%20Living!%20%0A%0AI%20need%20assistance%20with%20my%20stay.';
 const MAPS_LINK = 'https://maps.app.goo.gl/kL6fpQpMUpJ4nMAr9?g_st=aw';
 
 const BotAvatar = () => (
   <div className="cb-avatar" aria-hidden="true">
-    <img src={logo} alt="Meraki Concierge" className="cb-avatar-img" />
+    <OptimizedImage src={merakiIcon} alt="Meraki Concierge" className="cb-avatar-img" width="40" height="40" loading="lazy" decoding="async" objectFit="contain" placeholderBg="transparent" noWrapper={true} />
   </div>
 );
 
@@ -90,9 +92,9 @@ const Chatbot = ({ setCurrentPage }) => {
   const unsavedQueueRef = useRef([]);
   const isSyncingRef = useRef(false);
 
-  // Conversational Navigation & Context State
+  // Conversational Navifation & Context State
   const [history, setHistory] = useState(['home']);
-  const [rooms, setRooms] = useState(ROOMS_DATA);
+  const { rooms } = useRooms(ROOMS_DATA);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [chatContext, setChatContext] = useState(null);
   const [activeBotMessage, setActiveBotMessage] = useState(null);
@@ -157,7 +159,8 @@ const Chatbot = ({ setCurrentPage }) => {
       });
 
       if (res.ok) {
-        const data = await res.json();
+        const parsed = await safeParseResponse(res);
+        const data = parsed.data || {};
         if (data && data.status === 'success') {
           // Successfully committed batch, remove from pending queue
           unsavedQueueRef.current = unsavedQueueRef.current.slice(batchToSend.length);
@@ -186,40 +189,6 @@ const Chatbot = ({ setCurrentPage }) => {
       setIsVisible(true);
     }
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Live room data synchronization
-  useEffect(() => {
-    fetch(`${API_CONFIG_URL}/api_rooms.php`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data && data.status === 'success' && data.data) {
-          const merged = ROOMS_DATA.map((localRoom) => {
-            const backendRoom = data.data.find((r) => r.id === localRoom.id);
-            if (backendRoom) {
-              const origPrice = parseFloat(String(backendRoom.original_price || localRoom.originalPrice).replace(/,/g, ''));
-              const currPrice = parseFloat(String(backendRoom.price || localRoom.price).replace(/,/g, ''));
-              let disc = localRoom.discount || '20';
-              if (origPrice > 0 && origPrice > currPrice) {
-                disc = Math.round(((origPrice - currPrice) / origPrice) * 100).toString();
-              }
-              return {
-                ...localRoom,
-                title: backendRoom.name || localRoom.title,
-                desc: backendRoom.description || localRoom.desc,
-                price: backendRoom.price?.toLocaleString() || localRoom.price,
-                originalPrice: backendRoom.original_price?.toLocaleString() || localRoom.originalPrice,
-                discount: disc,
-                image: backendRoom.image_url || localRoom.image,
-                status: backendRoom.status || 'Available'
-              };
-            }
-            return localRoom;
-          });
-          setRooms(merged);
-        }
-      })
-      .catch(() => {});
   }, []);
 
   const currentView = history[history.length - 1];
@@ -447,9 +416,10 @@ const Chatbot = ({ setCurrentPage }) => {
         body: JSON.stringify(guestPayload)
       });
 
-      const result = await response.json();
+      const parsed = await safeParseResponse(response);
+      const result = parsed.data;
 
-      if (result && result.status === 'success' && result.data) {
+      if (parsed.ok && result && result.status === 'success' && result.data) {
         const savedGuest = {
           id: result.data.id,
           name: result.data.name,
@@ -554,9 +524,10 @@ const Chatbot = ({ setCurrentPage }) => {
         body: JSON.stringify(refundPayload)
       });
 
-      const result = await response.json();
+      const parsed = await safeParseResponse(response);
+      const result = parsed.data || {};
 
-      if (result && (result.status === 'success' || response.ok)) {
+      if (parsed.ok && (result.status === 'success' || response.ok)) {
         setRefundResponseData(result.data || {});
         setRefundEmailSent(typeof result.email_sent === 'boolean' ? result.email_sent : true);
         setRefundSubmitted(true);
@@ -577,7 +548,7 @@ const Chatbot = ({ setCurrentPage }) => {
         syncConversationMessages(refundMsgs);
       } else {
         setRefundErrors({
-          submit: result?.message || 'Unable to register refund request. Please verify your booking details and try again.'
+          submit: result?.message || parsed.error || 'Unable to register refund request. Please verify your booking details and try again.'
         });
       }
     } catch {
@@ -614,8 +585,10 @@ const Chatbot = ({ setCurrentPage }) => {
         fetch(`${API_CONFIG_URL}/api_bookings.php`),
         fetch(`${API_CONFIG_URL}/api_payments.php`)
       ]);
-      const bookingsJson = await bookingsRes.json();
-      const paymentsJson = await paymentsRes.json();
+      const parsedBookings = await safeParseResponse(bookingsRes);
+      const parsedPayments = await safeParseResponse(paymentsRes);
+      const bookingsJson = (parsedBookings.ok && parsedBookings.data) ? parsedBookings.data : { status: 'error', data: [] };
+      const paymentsJson = (parsedPayments.ok && parsedPayments.data) ? parsedPayments.data : { status: 'error', data: [] };
 
       if (bookingsJson.status !== 'success' || !bookingsJson.data) {
         setSearchError('No booking found matching your details.');
@@ -670,7 +643,15 @@ const Chatbot = ({ setCurrentPage }) => {
     return (
       <div className="cb-room-card" key={room.id}>
         <div className="cb-room-card-img-wrap">
-          <img src={room.image} alt={titleData.mainName || room.title} loading="lazy" />
+          <OptimizedImage
+            src={room.image}
+            alt={titleData.mainName || room.title}
+            width="280"
+            height="180"
+            loading="lazy"
+            decoding="async"
+            noWrapper={true}
+          />
           {room.status && (
             <span className={`cb-room-status-badge ${room.status.toLowerCase() === 'booked' || room.status.toLowerCase() === 'not available' ? 'booked' : 'available'}`}>
               {room.status}
@@ -720,30 +701,10 @@ const Chatbot = ({ setCurrentPage }) => {
       <div className={`cb-floating-trigger-wrap ${isVisible || isOpen ? 'visible' : ''}`}>
         {/* Single Trigger Layout Container */}
         <div className="cb-floating-trigger-inner">
-          {/* Arched "We Are Here!" Curved Banner with Waving Hand */}
+          {/* Waving Hand Indicator */}
           {!isOpen && (
-            <div className="cb-trigger-arch-banner" role="status" aria-label="We Are Here!">
-              {/* Curved "We Are Here!" SVG Text */}
-              <svg className="cb-arch-svg" viewBox="0 0 100 100" aria-hidden="true">
-                <defs>
-                  <path
-                    id="cbWeAreHereArc"
-                    d="M 13.5,60 A 38,38 0 0,1 84.5,34"
-                    fill="none"
-                  />
-                </defs>
-                <text className="cb-arch-svg-text">
-                  <textPath
-                    href="#cbWeAreHereArc"
-                    startOffset="50%"
-                    textAnchor="middle"
-                  >
-                    We Are Here!
-                  </textPath>
-                </text>
-              </svg>
-
-              {/* Waving Hand at bottom-left start of arch */}
+            <div className="cb-trigger-arch-banner" role="status" aria-label="Welcome">
+              {/* Waving Hand */}
               <span className="cb-arch-wave-hand" role="img" aria-label="wave">
                 👋
               </span>
@@ -761,22 +722,7 @@ const Chatbot = ({ setCurrentPage }) => {
               <HugeiconsIcon icon={Cancel01Icon} size={22} />
             ) : (
               <>
-                {/* Premium filled chat message icon with smile cutout */}
-                <svg
-                  viewBox="0 0 32 32"
-                  width="28"
-                  height="28"
-                  className="cb-filled-chat-icon"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M16 4.5C9.649 4.5 4.5 9.38 4.5 15.4c0 2.87 1.164 5.48 3.08 7.38-.28 1.8-1.33 3.56-1.35 3.6-.21.36-.08.82.28 1.01.15.08.31.11.47.11.41 0 1.95-.28 4.2-1.71 1.5.41 3.2.62 4.82.62 6.351 0 11.5-4.88 11.5-10.9S22.351 4.5 16 4.5zm-4.7 12c.58 2.6 2.5 4 4.7 4s4.12-1.4 4.7-4c-1.37 1.7-3.2 2.38-4.7 2.38s-3.33-.68-4.7-2.38z"
-                  />
-                </svg>
-                {/* Subtle Unread "1" Indicator */}
+                <IoChatbubbleEllipses className="cb-trigger-chat-icon" aria-hidden="true" />
                 <span className="cb-notification-badge" aria-label="1 unread message">1</span>
               </>
             )}
@@ -791,12 +737,12 @@ const Chatbot = ({ setCurrentPage }) => {
           <div className="cb-header">
             <div className="cb-header-brand">
               <div className="cb-header-avatar">
-                <HugeiconsIcon icon={SparklesIcon} size={16} />
+                <OptimizedImage src={merakiIcon} alt="Meraki Host" className="cb-header-avatar-img" width="28" height="28" loading="eager" decoding="async" objectFit="contain" noWrapper={true} />
               </div>
               <div className="cb-header-info">
-                <h3 className="cb-header-title">Meraki Concierge</h3>
+                <h3 className="cb-header-title">Meraki Mountain Assistant</h3>
                 <span className="cb-header-status">
-                  <span className="cb-status-dot"></span> Mountain Stay Assistant
+                  <span className="cb-status-dot"></span> Mountain Stay Host
                 </span>
               </div>
             </div>
@@ -809,7 +755,7 @@ const Chatbot = ({ setCurrentPage }) => {
               <button
                 className="cb-header-btn cb-close-btn"
                 onClick={() => setIsOpen(false)}
-                aria-label="Close Concierge"
+                aria-label="Close Assistant"
               >
                 <HugeiconsIcon icon={Cancel01Icon} size={16} />
               </button>
@@ -828,13 +774,13 @@ const Chatbot = ({ setCurrentPage }) => {
               </div>
             )}
 
-            {/* INITIAL WELCOME MESSAGE WITH SMALL CHATBOT AVATAR */}
+            {/* INITIAL WELCOME MESSAGE WITH BRAND AVATAR */}
             <div className="cb-bot-msg-row">
               <BotAvatar />
               <div className="cb-bot-content-col">
                 <div className="cb-bubble cb-bubble-bot">
-                  <p className="cb-greeting-bold">Namaste &amp; Welcome to Meraki Living, Mukteshwar.</p>
-                  <p className="cb-greeting-sub">How may I assist your mountain getaway today?</p>
+                  <p className="cb-greeting-bold">Namaste &amp; Welcome to Meraki Living Peora</p>
+                  <p className="cb-greeting-sub">How can we help plan your mountain stay today</p>
                 </div>
               </div>
             </div>
@@ -853,26 +799,20 @@ const Chatbot = ({ setCurrentPage }) => {
                   <div className="cb-bot-content-col">
                     <div className="cb-bubble cb-bubble-bot">
                       <p>
-                        To help our concierge assist you personally and provide tailored room, pricing, and stay details, please share your contact info:
+                        Please share your contact details to get instant room options and stay help
                       </p>
                     </div>
 
                     {/* Guest Information Form */}
                     <div className="cb-guest-form-card">
-                      <div className="cb-guest-form-header">
-                        <HugeiconsIcon icon={UserIcon} size={16} className="cb-guest-form-icon" />
-                        <span className="cb-guest-form-title">Guest Information</span>
-                      </div>
-
                       <form onSubmit={handleGuestFormSubmit} className="cb-guest-form">
                         <div className="cb-form-group">
-                          <label className="cb-form-label">Full Name</label>
                           <div className="cb-form-input-wrap">
-                            <HugeiconsIcon icon={UserIcon} size={15} className="cb-form-field-icon" />
+                            <HugeiconsIcon icon={UserIcon} size={16} className="cb-form-field-icon" />
                             <input
                               type="text"
                               className={`cb-form-input ${formErrors.name ? 'error' : ''}`}
-                              placeholder="e.g. Rahul Sharma"
+                              placeholder="Full Name *"
                               value={formName}
                               onChange={(e) => {
                                 setFormName(e.target.value);
@@ -884,13 +824,12 @@ const Chatbot = ({ setCurrentPage }) => {
                         </div>
 
                         <div className="cb-form-group">
-                          <label className="cb-form-label">Email Address</label>
                           <div className="cb-form-input-wrap">
-                            <HugeiconsIcon icon={Mail01Icon} size={15} className="cb-form-field-icon" />
+                            <HugeiconsIcon icon={Mail01Icon} size={16} className="cb-form-field-icon" />
                             <input
                               type="email"
                               className={`cb-form-input ${formErrors.email ? 'error' : ''}`}
-                              placeholder="e.g. rahul@example.com"
+                              placeholder="Email Address *"
                               value={formEmail}
                               onChange={(e) => {
                                 setFormEmail(e.target.value);
@@ -902,13 +841,12 @@ const Chatbot = ({ setCurrentPage }) => {
                         </div>
 
                         <div className="cb-form-group">
-                          <label className="cb-form-label">Mobile Number</label>
                           <div className="cb-form-input-wrap">
-                            <HugeiconsIcon icon={CallIcon} size={15} className="cb-form-field-icon" />
+                            <HugeiconsIcon icon={CallIcon} size={16} className="cb-form-field-icon" />
                             <input
                               type="tel"
                               className={`cb-form-input ${formErrors.phone ? 'error' : ''}`}
-                              placeholder="e.g. +91 98765 43210"
+                              placeholder="Mobile Number *"
                               value={formPhone}
                               onChange={(e) => {
                                 setFormPhone(e.target.value);
@@ -919,17 +857,17 @@ const Chatbot = ({ setCurrentPage }) => {
                           {formErrors.phone && <span className="cb-form-error">{formErrors.phone}</span>}
                         </div>
 
-                        {formErrors.submit && <div className="cb-form-error" style={{ marginBottom: '12px' }}>{formErrors.submit}</div>}
+                        {formErrors.submit && <div className="cb-form-error" style={{ marginBottom: '8px' }}>{formErrors.submit}</div>}
 
                         <button type="submit" className="cb-btn-primary cb-btn-block cb-form-submit-btn" disabled={isSavingGuest}>
-                          <span>{isSavingGuest ? 'Saving Details...' : 'Continue to Concierge'}</span>
+                          <span>{isSavingGuest ? 'Saving Details...' : 'Continue'}</span>
                           {!isSavingGuest && <HugeiconsIcon icon={ArrowRight01Icon} size={15} />}
                         </button>
                       </form>
 
                       <div className="cb-form-privacy-note">
                         <HugeiconsIcon icon={CheckmarkBadge01Icon} size={13} className="cb-privacy-icon" />
-                        <span>Your details are kept secure and used solely to personalize your stay.</span>
+                        <span>Your details are completely safe and used only to help you plan your stay</span>
                       </div>
                     </div>
                   </div>
@@ -999,7 +937,7 @@ const Chatbot = ({ setCurrentPage }) => {
                             </span>
                             <div className="cb-action-text">
                               <span className="cb-action-title">Explore Rooms &amp; Pricing</span>
-                              <span className="cb-action-desc">Compare rooms, capacities &amp; rates</span>
+                              <span className="cb-action-desc">Compare rooms capacities and rates</span>
                             </div>
                             <HugeiconsIcon icon={ArrowRight01Icon} size={15} className="cb-action-arrow" />
                           </button>
@@ -1009,8 +947,19 @@ const Chatbot = ({ setCurrentPage }) => {
                               <HugeiconsIcon icon={Clock01Icon} size={18} />
                             </span>
                             <div className="cb-action-text">
-                              <span className="cb-action-title">Check-in, Amenities &amp; Policies</span>
-                              <span className="cb-action-desc">Timings, breakfast, Wi-Fi &amp; refunds</span>
+                              <span className="cb-action-title">Check-in Amenities &amp; Policies</span>
+                              <span className="cb-action-desc">Timings breakfast Wi-Fi and refunds</span>
+                            </div>
+                            <HugeiconsIcon icon={ArrowRight01Icon} size={15} className="cb-action-arrow" />
+                          </button>
+
+                          <button className="cb-action-card" onClick={() => navigateTo('dining', 'Meraki Mountain Café')}>
+                            <span className="cb-action-icon">
+                              <HugeiconsIcon icon={Coffee02Icon} size={18} />
+                            </span>
+                            <div className="cb-action-text">
+                              <span className="cb-action-title">Meraki Mountain Café</span>
+                              <span className="cb-action-desc">Explore food menu coffee and mountain ambience</span>
                             </div>
                             <HugeiconsIcon icon={ArrowRight01Icon} size={15} className="cb-action-arrow" />
                           </button>
@@ -1021,7 +970,7 @@ const Chatbot = ({ setCurrentPage }) => {
                             </span>
                             <div className="cb-action-text">
                               <span className="cb-action-title">Location &amp; Nearby Sights</span>
-                              <span className="cb-action-desc">How to reach &amp; scenic viewpoints</span>
+                              <span className="cb-action-desc">How to reach and scenic viewpoints</span>
                             </div>
                             <HugeiconsIcon icon={ArrowRight01Icon} size={15} className="cb-action-arrow" />
                           </button>
@@ -1032,7 +981,7 @@ const Chatbot = ({ setCurrentPage }) => {
                             </span>
                             <div className="cb-action-text">
                               <span className="cb-action-title">Manage / Track My Booking</span>
-                              <span className="cb-action-desc">Look up reservation status &amp; details</span>
+                              <span className="cb-action-desc">Look up reservation status and details</span>
                             </div>
                             <HugeiconsIcon icon={ArrowRight01Icon} size={15} className="cb-action-arrow" />
                           </button>
@@ -1348,37 +1297,122 @@ const Chatbot = ({ setCurrentPage }) => {
                   <div className="cb-view-container">
                     <div className="cb-user-msg-row">
                       <div className="cb-bubble cb-bubble-user">
-                        <span>Breakfast &amp; Cafe</span>
+                        <span>Meraki Mountain Café</span>
                       </div>
                     </div>
 
                     <div className="cb-bot-msg-row">
                       <BotAvatar />
                       <div className="cb-bot-content-col">
-                        <div className="cb-info-card">
-                          <div className="cb-feature-item">
-                            <HugeiconsIcon icon={Coffee02Icon} size={18} className="cb-feature-icon" />
+                        <div className="cb-cafe-card">
+                          <div className="cb-cafe-header">
+                            <HugeiconsIcon icon={Coffee02Icon} size={20} color="#870097" />
                             <div>
-                              <strong>Complimentary Breakfast</strong>
-                              <p>Freshly prepared mountain breakfast is included with your stay every morning.</p>
+                              <h4 className="cb-cafe-title">Meraki Mountain Café</h4>
+                              <p className="cb-cafe-desc">
+                                Enjoy freshly cooked Pahadi specials all day snacks and organic herbal teas right at Peora
+                              </p>
                             </div>
                           </div>
-                          <div className="cb-feature-item">
-                            <HugeiconsIcon icon={Coffee02Icon} size={18} className="cb-feature-icon" />
-                            <div>
-                              <strong>Meraki Mountain Cafe</strong>
-                              <p>Handcrafted coffees, teas, authentic Kumaoni dishes, and continental comfort meals.</p>
+
+                          <div className="cb-cafe-categories">
+                            <div className="cb-cafe-cat-group">
+                              <div className="cb-cafe-cat-title">
+                                <HugeiconsIcon icon={SparklesIcon} size={13} color="#870097" />
+                                <span>Breakfast &amp; Pahadi Khana</span>
+                              </div>
+                              <div className="cb-cafe-items-list">
+                                <div className="cb-cafe-item">
+                                  <span>Aloo / Paneer Paratha</span>
+                                  <strong>&#8377;150</strong>
+                                </div>
+                                <div className="cb-cafe-item">
+                                  <span>Cheese Vegetable Omelette</span>
+                                  <strong>&#8377;150</strong>
+                                </div>
+                                <div className="cb-cafe-item">
+                                  <span>Authentic Pahadi Rajma</span>
+                                  <strong>&#8377;400</strong>
+                                </div>
+                                <div className="cb-cafe-item">
+                                  <span>Bhat Ki Dal (Organic Black Soy)</span>
+                                  <strong>&#8377;400</strong>
+                                </div>
+                                <div className="cb-cafe-item">
+                                  <span>Pahadi Mutton / Chicken Curry</span>
+                                  <strong>&#8377;500</strong>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="cb-cafe-cat-group">
+                              <div className="cb-cafe-cat-title">
+                                <HugeiconsIcon icon={SparklesIcon} size={13} color="#870097" />
+                                <span>All Day Snacks</span>
+                              </div>
+                              <div className="cb-cafe-items-list">
+                                <div className="cb-cafe-item">
+                                  <span>Pahadi Masala Maggie</span>
+                                  <strong>&#8377;120</strong>
+                                </div>
+                                <div className="cb-cafe-item">
+                                  <span>Mix Pakode with Mint Chutney</span>
+                                  <strong>&#8377;150</strong>
+                                </div>
+                                <div className="cb-cafe-item">
+                                  <span>French Fries with Cheese Dip</span>
+                                  <strong>&#8377;150</strong>
+                                </div>
+                                <div className="cb-cafe-item">
+                                  <span>Bambaiya Grilled Sandwich</span>
+                                  <strong>&#8377;150</strong>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="cb-cafe-cat-group">
+                              <div className="cb-cafe-cat-title">
+                                <HugeiconsIcon icon={SparklesIcon} size={13} color="#870097" />
+                                <span>Garden Herbal Teas &amp; Drinks</span>
+                              </div>
+                              <div className="cb-cafe-items-list">
+                                <div className="cb-cafe-item">
+                                  <span>Detox Tea with Honey</span>
+                                  <strong>&#8377;150</strong>
+                                </div>
+                                <div className="cb-cafe-item">
+                                  <span>Mint Ginger Herbal Tea</span>
+                                  <strong>&#8377;120</strong>
+                                </div>
+                                <div className="cb-cafe-item">
+                                  <span>Pahadi Chay with Jaggery</span>
+                                  <strong>&#8377;120</strong>
+                                </div>
+                                <div className="cb-cafe-item">
+                                  <span>Espresso Hot Coffee</span>
+                                  <strong>&#8377;120</strong>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>
 
-                        <button
-                          className="cb-btn-primary cb-btn-block"
-                          onClick={() => handleNavPage('cafe')}
-                        >
-                          <HugeiconsIcon icon={Coffee02Icon} size={15} />
-                          <span>Explore Mountain Cafe</span>
-                        </button>
+                        <div className="cb-cafe-actions">
+                          <button
+                            className="cb-btn-secondary cb-btn-block"
+                            onClick={() => handleNavPage('cafe')}
+                          >
+                            <HugeiconsIcon icon={Coffee02Icon} size={15} />
+                            <span>View Full Menu</span>
+                          </button>
+                          <button
+                            className="cb-btn-primary cb-btn-block"
+                            onClick={() => handleNavPage('cafe')}
+                          >
+                            <span>Visit Café Page</span>
+                            <HugeiconsIcon icon={ArrowRight01Icon} size={15} />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -2052,19 +2086,6 @@ const Chatbot = ({ setCurrentPage }) => {
               <IoSend size={15} />
             </button>
           </form>
-
-          {/* Footer Bar */}
-          <div className="cb-footer">
-            <a
-              href={WHATSAPP_LINK}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="cb-footer-whatsapp-link"
-            >
-              <FaWhatsapp size={14} />
-              <span>WhatsApp Mountain Concierge: +91 94561 03445</span>
-            </a>
-          </div>
         </div>
       )}
     </div>

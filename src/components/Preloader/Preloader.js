@@ -1,36 +1,41 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './Preloader.css';
-import logo from '../../assets/images/logo.webp';
-import animationArt from '../../assets/images/animation.png';
+import logo from '../../assets/images/logo.avif';
+import animationArt from '../../assets/images/animation.avif';
 import introWav from '../../assets/images/intro.wav';
+import OptimizedImage from '../Common/OptimizedImage';
 
 function Preloader({ onComplete }) {
   const [phase, setPhase] = useState('initial');
   const [targetStyles, setTargetStyles] = useState({});
   const splashLogoRef = useRef(null);
-  const audioRef = useRef(typeof Audio !== "undefined" ? new Audio(introWav) : null);
+  const audioRef = useRef(null);
   const hasPlayedRef = useRef(false);
 
   useEffect(() => {
-    const audio = audioRef.current;
-    
-    if (audio) {
-      audio.volume = 0.75;
-      audio.load();
-    }
+    try {
+      if (typeof Audio !== 'undefined') {
+        const audio = new Audio(introWav);
+        audio.volume = 0.75;
+        audioRef.current = audio;
+      }
+    } catch (e) {}
 
     const forcePlayAudio = () => {
+      const audio = audioRef.current;
       if (!audio || hasPlayedRef.current) return;
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          hasPlayedRef.current = true;
-          removeInteractionListeners();
-        }).catch(() => {});
-      }
+      try {
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            hasPlayedRef.current = true;
+            removeInteractionListeners();
+          }).catch(() => {});
+        }
+      } catch (e) {}
     };
 
-    const interactionEvents = ['mousemove', 'scroll', 'touchstart', 'click', 'keydown', 'wheel'];
+    const interactionEvents = ['touchstart', 'click', 'keydown'];
     
     const handleUserInteraction = () => {
       forcePlayAudio();
@@ -57,7 +62,7 @@ function Preloader({ onComplete }) {
     const revealTimer = setTimeout(() => {
       setPhase('revealed');
       forcePlayAudio();
-    }, 80);
+    }, 40);
 
     const travelTimer = setTimeout(() => {
       if (splashLogoRef.current) {
@@ -68,16 +73,20 @@ function Preloader({ onComplete }) {
 
         if (targetNavLogo && splashRect.height > 0) {
           const targetRect = targetNavLogo.getBoundingClientRect();
-          const targetWidth = targetRect.width || 150;
           const targetHeight =
-            targetRect.height ||
-            (window.innerWidth <= 380
-              ? 32
-              : window.innerWidth <= 640
-              ? 36
-              : window.innerWidth <= 950
-              ? 40
-              : 44);
+            targetRect.height > 0
+              ? targetRect.height
+              : (window.innerWidth <= 480
+                ? 32
+                : window.innerWidth <= 768
+                ? 36
+                : window.innerWidth <= 1100
+                ? 40
+                : 50);
+          const targetWidth =
+            targetRect.width > 0
+              ? targetRect.width
+              : Math.round(targetHeight * (splashRect.width / splashRect.height));
 
           const targetCenterX = targetRect.left + targetWidth / 2;
           const targetCenterY = targetRect.top + targetHeight / 2;
@@ -94,35 +103,31 @@ function Preloader({ onComplete }) {
         }
       }
       setPhase('traveling');
-    }, 2300);
-
-    const handoverTimer = setTimeout(() => {
-      document.body.classList.remove('preloader-running');
-      document.body.classList.add('preloader-handover');
-    }, 4100);
+    }, 1350);
 
     const completeTimer = setTimeout(() => {
       document.body.style.overflow = originalOverflow;
-      document.body.classList.remove('preloader-handover');
+      document.body.classList.remove('preloader-running');
       removeInteractionListeners();
       if (onComplete) onComplete();
-    }, 4500);
+    }, 2100);
 
     return () => {
       clearTimeout(revealTimer);
       clearTimeout(travelTimer);
-      clearTimeout(handoverTimer);
       clearTimeout(completeTimer);
       removeInteractionListeners();
       
       document.body.style.overflow = originalOverflow;
       document.body.classList.remove('preloader-running');
-      document.body.classList.remove('preloader-handover');
       
-      if (audio) {
-        audio.pause();
-        audio.currentTime = 0;
-      }
+      try {
+        const audio = audioRef.current;
+        if (audio && typeof audio.pause === 'function') {
+          audio.pause();
+          audio.currentTime = 0;
+        }
+      } catch (e) {}
     };
   }, [onComplete]);
 
@@ -137,14 +142,21 @@ function Preloader({ onComplete }) {
 
       <div className="preloader-scene-container">
         <div className="preloader-logo-wrap">
-          <img
-            ref={splashLogoRef}
+          <OptimizedImage
+            imageRef={splashLogoRef}
             src={logo}
             alt="Meraki Living"
             className={`preloader-logo ${phase}`}
-            style={phase === 'traveling' ? targetStyles : undefined}
+            style={{
+              filter: 'none',
+              ...(phase === 'traveling' ? targetStyles : {})
+            }}
+            width="280"
+            height="93"
             loading="eager"
             fetchPriority="high"
+            decoding="async"
+            noWrapper={true}
           />
         </div>
 
@@ -170,12 +182,16 @@ function Preloader({ onComplete }) {
             </svg>
           </div>
 
-          <img
+          <OptimizedImage
             src={animationArt}
             alt="Meraki Living Mountain Villa"
             className="preloader-art-img"
+            width="600"
+            height="400"
             loading="eager"
             fetchPriority="high"
+            decoding="async"
+            noWrapper={true}
           />
         </div>
 

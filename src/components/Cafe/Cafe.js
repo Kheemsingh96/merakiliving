@@ -1,18 +1,41 @@
 import React from 'react';
 import './Cafe.css';
 
-import cafeMain from '../../assets/images/cafe-main.webp';
-import bgMountain from '../../assets/images/mountain-bg.webp';
+import cafeMain from '../../assets/images/cafe-main.avif';
+import bgMountain from '../../assets/images/mountain-bg.avif';
+import OptimizedImage from '../Common/OptimizedImage';
+import { formatImageUrl } from '../../utils/apiHelper';
 
 const Cafe = ({ setCurrentPage }) => {
+  const mainCafeImg = formatImageUrl(cafeMain);
+
   return (
-    <section className="cafe-section" style={{ backgroundImage: `url(${bgMountain})` }}>
+    <section className="cafe-section">
+      <OptimizedImage
+        src={formatImageUrl(bgMountain)}
+        alt=""
+        className="cafe-bg-img"
+        width="1920"
+        height="1080"
+        loading="lazy"
+        decoding="async"
+        aria-hidden="true"
+        noWrapper={true}
+      />
       <div className="cafe-overlay"></div>
 
       <div className="cafe-container">
         <div className="cafe-visuals">
           <div className="cafe-main-image">
-            <img src={cafeMain} alt="Meraki Mountain Cafe exterior with Himalayan mountain views" width="640" height="480" loading="lazy" decoding="async" />
+            <OptimizedImage
+              src={mainCafeImg}
+              alt="Meraki Mountain Cafe exterior with Himalayan mountain views"
+              width="640"
+              height="480"
+              loading="lazy"
+              decoding="async"
+              noWrapper={true}
+            />
           </div>
         </div>
 
@@ -74,8 +97,12 @@ const Cafe = ({ setCurrentPage }) => {
             </li>
           </ul>
 
-          <button
-            onClick={() => setCurrentPage('cafe')}
+          <a
+            href="/cafe"
+            onClick={(e) => {
+              e.preventDefault();
+              setCurrentPage('cafe');
+            }}
             className="cafe-explore-btn" 
             aria-label="Explore Meraki Mountain Cafe"
           >
@@ -83,7 +110,7 @@ const Cafe = ({ setCurrentPage }) => {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M5 12h14M12 5l7 7-7 7"/>
             </svg>
-          </button>
+          </a>
         </div>
       </div>
     </section>

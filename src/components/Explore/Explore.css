@@ -18,7 +18,7 @@
 
 .explore-title {
   font-size: 30px;
-  color: #373737;
+  color: #242424;
   font-weight: 600;
   margin-bottom: 15px;
   letter-spacing: -0.5px;
@@ -31,7 +31,7 @@
 
 .explore-subtitle {
   font-size: 16px;
-  color: #817F8F;
+  color: #64748B;
   line-height: 32px;
   font-weight: 400;
   margin: 0 auto;
@@ -221,7 +221,7 @@
 }
 
 .gallery-modal-title {
-  color: #222222;
+  color: #242424;
   font-size: 20px;
   font-weight: 600;
   margin: 0;

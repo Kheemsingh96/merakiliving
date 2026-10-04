@@ -1,0 +1,1592 @@
+.oav-page {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #F8F3F8;
+  color: #242424;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow-x: hidden;
+  position: relative;
+}
+
+.oav-container {
+  width: 100%;
+  max-width: 1340px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.oav-section {
+  padding: 70px 48px;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.oav-animate {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.oav-stagger > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.oav-section-title {
+  font-size: 30px;
+  font-weight: 600;
+  color: #242424;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  margin: 0 0 10px 0;
+}
+
+.oav-section-subtitle-brand {
+  font-size: 18px;
+  font-weight: 600;
+  color: #870097;
+  margin: 0 0 14px 0;
+  line-height: 1.4;
+}
+
+.oav-body-text {
+  font-size: 15.5px;
+  line-height: 1.75;
+  color: #64748B;
+  margin: 0 0 16px 0;
+}
+
+.oav-divider-line {
+  width: 48px;
+  height: 3px;
+  background: #870097;
+  border-radius: 2px;
+  margin: 14px 0 20px 0;
+}
+
+.oav-divider-center {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.oav-section-header-center {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto 36px;
+}
+
+.oav-lead-text {
+  font-size: 16px;
+  color: #64748B;
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.oav-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #870097 0%, #580063 100%);
+  color: #ffffff !important;
+  font-size: 14.5px;
+  font-weight: 600;
+  padding: 12px 28px;
+  border-radius: 10px;
+  border: 1px solid rgba(135, 0, 151, 0.6);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(135, 0, 151, 0.2);
+}
+
+.oav-btn-primary:hover {
+  background: linear-gradient(135deg, #9b00ad 0%, #680075 100%);
+  border-color: rgba(135, 0, 151, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(135, 0, 151, 0.3);
+}
+
+.oav-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #ffffff;
+  color: #870097 !important;
+  font-size: 14.5px;
+  font-weight: 600;
+  padding: 12px 28px;
+  border-radius: 10px;
+  border: 1.5px solid #870097;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.oav-btn-outline:hover {
+  background: rgba(135, 0, 151, 0.05);
+  transform: translateY(-2px);
+}
+
+.oav-btn-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #F79D00;
+  color: #1b0c20 !important;
+  font-size: 14.5px;
+  font-weight: 600;
+  padding: 12px 26px;
+  border-radius: 10px;
+  border: 1px solid #F79D00;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.oav-btn-gold:hover {
+  background: #e08b00;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(247, 157, 0, 0.35);
+}
+
+.oav-btn-dark-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  color: #ffffff !important;
+  font-size: 14.5px;
+  font-weight: 600;
+  padding: 12px 26px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.oav-btn-dark-outline:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: #ffffff;
+  transform: translateY(-2px);
+}
+
+.oav-hero-section {
+  position: relative;
+  min-height: 94vh;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-top: 150px;
+  padding-bottom: 80px;
+  box-sizing: border-box;
+  background-color: #0c0510;
+  overflow: hidden;
+}
+
+.oav-hero-bg-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.oav-hero-bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 25%;
+  filter: brightness(0.92) saturate(1.05);
+}
+
+.oav-hero-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 48%;
+  background: linear-gradient(
+    180deg,
+    rgba(12, 5, 16, 0) 0%,
+    rgba(12, 5, 16, 0.38) 35%,
+    rgba(12, 5, 16, 0.72) 75%,
+    rgba(12, 5, 16, 0.85) 100%
+  );
+  z-index: 2;
+  pointer-events: none;
+}
+
+.oav-hero-container {
+  position: relative;
+  z-index: 4;
+  text-align: center;
+  padding: 0 48px;
+}
+
+.oav-hero-content {
+  max-width: 920px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.oav-hero-tag {
+  display: inline-block;
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #F79D00;
+  background: rgba(247, 157, 0, 0.14);
+  border: 1px solid rgba(247, 157, 0, 0.35);
+  padding: 6px 18px;
+  border-radius: 50px;
+  margin-bottom: 20px;
+}
+
+.oav-hero-title {
+  font-size: 38px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #ffffff;
+  margin: 0 0 18px 0;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.4);
+}
+
+.oav-hero-subtitle {
+  font-size: 18px;
+  font-weight: 500;
+  color: #F79D00;
+  letter-spacing: 0.04em;
+  margin: 0 0 30px 0;
+}
+
+.oav-hero-cta {
+  display: flex;
+  justify-content: center;
+}
+
+.oav-intro-section {
+  background-color: #ffffff;
+  border-bottom: 1px solid rgba(135, 0, 151, 0.06);
+}
+
+.oav-intro-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 52px;
+  align-items: center;
+}
+
+.oav-intro-text-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.oav-intro-media-col {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.oav-composition-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+}
+
+.oav-comp-main {
+  width: 100%;
+  aspect-ratio: 1086 / 1448;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  background: #f0f0f0;
+}
+
+.oav-comp-sub {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 38%;
+  aspect-ratio: 4/3;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 3px solid #ffffff;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
+  z-index: 2;
+  background: #f0f0f0;
+}
+
+.oav-comp-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.oav-why-section {
+  background-color: #F8F3F8;
+}
+
+.oav-why-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 48px;
+  align-items: start;
+}
+
+.oav-why-text-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.oav-why-question {
+  font-size: 19px;
+  font-weight: 600;
+  color: #242424;
+  line-height: 1.4;
+  margin: 0 0 12px 0;
+}
+
+.oav-why-para {
+  font-size: 15.5px;
+  line-height: 1.75;
+  color: #64748B;
+  margin: 0 0 16px 0;
+}
+
+.oav-why-emphasis {
+  font-size: 15.5px;
+  font-weight: 600;
+  color: #870097;
+  margin: 0 0 16px 0;
+}
+
+.oav-why-soul {
+  font-weight: 600;
+  color: #242424;
+  font-style: italic;
+}
+
+.oav-why-investment {
+  font-weight: 600;
+  color: #870097;
+}
+
+.oav-why-media-col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.oav-nature-image-card {
+  width: 100%;
+  aspect-ratio: 16/10;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+  background: #f0f0f0;
+}
+
+.oav-nature-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.oav-quote-box {
+  background: #ffffff;
+  border-left: 4px solid #F79D00;
+  border-radius: 0 14px 14px 0;
+  padding: 22px 24px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.03);
+}
+
+.oav-quote-mark {
+  font-size: 44px;
+  line-height: 1;
+  color: #F79D00;
+  font-family: Georgia, serif;
+  margin-bottom: -6px;
+}
+
+.oav-quote-content {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.6;
+  color: #242424;
+  margin: 0;
+  font-style: italic;
+}
+
+.oav-dark-section {
+  background: #2D002E;
+  background-color: #2D002E;
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+.oav-dark-header {
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto 20px auto;
+  position: relative;
+  z-index: 2;
+}
+
+.oav-dark-title {
+  font-size: 30px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 12px 0;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+
+.oav-dark-subtitle {
+  font-size: 16px;
+  color: #D6C8DE;
+  margin: 0 0 14px 0;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.oav-dark-loc-heading {
+  font-size: 19px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.oav-dark-content-block {
+  max-width: 960px;
+  margin: 0 auto 46px auto;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+.oav-dark-distance-para {
+  font-size: 15.5px;
+  line-height: 1.8;
+  color: #D6C8DE;
+  margin: 0 0 18px 0;
+  font-weight: 400;
+}
+
+.oav-dark-rental-para {
+  font-size: 15.5px;
+  line-height: 1.8;
+  color: #E8DEEE;
+  margin: 0;
+  font-weight: 400;
+}
+
+.oav-dark-amenities-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 20px 14px;
+  max-width: 1160px;
+  margin: 0 auto 46px auto;
+  align-items: start;
+  position: relative;
+  z-index: 2;
+}
+
+.oav-dark-amenity-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 8px 6px;
+  transition: transform 0.3s ease;
+}
+
+.oav-dark-amenity-item:hover {
+  transform: translateY(-4px);
+}
+
+.oav-dark-amenity-icon {
+  color: #F79D00;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.oav-dark-amenity-title {
+  font-size: 14.5px;
+  font-weight: 500;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.45;
+  transition: color 0.3s ease;
+}
+
+.oav-dark-amenity-item:hover .oav-dark-amenity-title {
+  color: #F79D00;
+}
+
+.oav-dark-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 2;
+}
+
+.oav-listing-section {
+  background-color: #ffffff;
+  border-bottom: 1px solid rgba(135, 0, 151, 0.06);
+}
+
+.oav-heart-icon {
+  color: #e53e3e;
+}
+
+.oav-listing-btn-wrap {
+  margin-top: 20px;
+}
+
+.oav-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-top: 36px;
+}
+
+.oav-gallery-card {
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  outline: none;
+  border: 1px solid #f0f0f0;
+  transition: all 0.25s ease;
+}
+
+.oav-gallery-card:hover,
+.oav-gallery-card:focus-visible {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+  border-color: #870097;
+}
+
+.oav-gallery-img-wrap {
+  width: 100%;
+  aspect-ratio: 4/3;
+  overflow: hidden;
+  background: #f0f0f0;
+}
+
+.oav-gallery-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.35s ease;
+}
+
+.oav-gallery-card:hover .oav-gallery-img {
+  transform: scale(1.05);
+}
+
+.oav-operate-section {
+  background-color: #F8F3F8;
+  border-bottom: 1px solid rgba(135, 0, 151, 0.06);
+}
+
+.oav-operate-card {
+  max-width: 900px;
+  margin: 0 auto;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 40px 44px;
+  border: 1px solid rgba(135, 0, 151, 0.1);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.03);
+}
+
+.oav-how-section {
+  background-color: #ffffff;
+  border-bottom: 1px solid rgba(135, 0, 151, 0.06);
+}
+
+.oav-how-card {
+  max-width: 980px;
+  margin: 0 auto;
+  background: #F8F3F8;
+  border-radius: 16px;
+  padding: 40px 44px;
+  border: 1px solid rgba(135, 0, 151, 0.1);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.03);
+}
+
+.oav-how-footer-banner {
+  background: #ffffff;
+  border: 1px solid rgba(135, 0, 151, 0.15);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-top: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.oav-how-prompt {
+  font-size: 15px;
+  font-weight: 600;
+  color: #242424;
+  margin: 0;
+  flex: 1;
+  min-width: 260px;
+}
+
+.oav-how-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.oav-provide-section {
+  background-color: #F8F3F8;
+  border-bottom: 1px solid rgba(135, 0, 151, 0.06);
+}
+
+.oav-provide-subheading {
+  font-size: 17px;
+  font-weight: 600;
+  color: #870097;
+  margin: 0 0 6px 0;
+}
+
+.oav-provide-intro-box {
+  max-width: 960px;
+  margin: 0 auto 40px;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 28px 30px;
+  border-left: 4px solid #870097;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.02);
+}
+
+.oav-provide-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 36px;
+}
+
+.oav-provide-card {
+  background: #ffffff;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+}
+
+.oav-provide-img-wrap {
+  width: 100%;
+  aspect-ratio: 16/10;
+  overflow: hidden;
+  background: #f0f0f0;
+}
+
+.oav-provide-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.oav-provide-card-list {
+  list-style: disc inside;
+  padding: 20px 22px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.oav-provide-bullet {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #242424;
+  line-height: 1.4;
+}
+
+.oav-provide-cta-center {
+  text-align: center;
+}
+
+.oav-contact-section {
+  background-color: #ffffff;
+  border-bottom: 1px solid rgba(135, 0, 151, 0.06);
+  padding: 72px 48px;
+}
+
+.oav-contact-wrapper {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.oav-contact-two-boxes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: stretch;
+}
+
+/* ==========================================================
+   LEFT BOX: Information, Brand Tag & Contact Channels
+========================================================== */
+.oav-contact-left-card {
+  background: #F8F3F8;
+  border: 1.5px solid rgba(135, 0, 151, 0.18);
+  border-radius: 18px;
+  padding: 38px 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 8px 24px rgba(135, 0, 151, 0.03);
+}
+
+.oav-contact-left-top {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.oav-contact-brand-tag {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #870097;
+  background: rgba(135, 0, 151, 0.08);
+  border: 1px solid rgba(135, 0, 151, 0.22);
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+}
+
+.oav-contact-main-heading {
+  font-size: 30px;
+  font-weight: 600;
+  color: #242424;
+  line-height: 1.25;
+  margin: 0 0 12px 0;
+  letter-spacing: -0.01em;
+}
+
+.oav-contact-purple-divider {
+  width: 44px;
+  height: 3px;
+  background: #870097;
+  border-radius: 2px;
+  margin-bottom: 16px;
+}
+
+.oav-contact-left-para {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #64748B;
+  margin: 0 0 24px 0;
+}
+
+.oav-contact-channels-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.oav-contact-channel-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-decoration: none;
+  background: #ffffff;
+  border: 1.5px solid rgba(135, 0, 151, 0.12);
+  border-radius: 12px;
+  padding: 12px 16px;
+  transition: all 0.25s ease;
+}
+
+.oav-contact-channel-row:hover {
+  background: #ffffff;
+  border-color: #870097;
+  transform: translateX(4px);
+  box-shadow: 0 4px 16px rgba(135, 0, 151, 0.08);
+}
+
+.oav-channel-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(135, 0, 151, 0.07);
+  color: #870097;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.25s ease;
+}
+
+.oav-contact-channel-row:hover .oav-channel-icon-box {
+  background: #870097;
+  color: #ffffff;
+}
+
+.oav-channel-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.oav-channel-type {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #64748B;
+}
+
+.oav-channel-val {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #242424;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s ease;
+}
+
+.oav-contact-channel-row:hover .oav-channel-val {
+  color: #870097;
+}
+
+.oav-contact-left-footer {
+  border-top: 1px solid rgba(135, 0, 151, 0.1);
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.oav-left-footer-pill {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #870097;
+  background: rgba(135, 0, 151, 0.08);
+  border: 1px solid rgba(135, 0, 151, 0.2);
+  padding: 3px 10px;
+  border-radius: 14px;
+}
+
+.oav-left-footer-sub {
+  font-size: 13px;
+  line-height: 1.55;
+  color: #64748B;
+  margin: 0;
+}
+
+/* ==========================================================
+   RIGHT BOX: Contact Form
+========================================================== */
+.oav-contact-right-card {
+  background: #ffffff;
+  border: 1.5px solid rgba(135, 0, 151, 0.18);
+  border-radius: 18px;
+  padding: 38px 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 8px 24px rgba(135, 0, 151, 0.03);
+}
+
+.oav-contact-right-top {
+  margin-bottom: 20px;
+}
+
+.oav-form-box-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #242424;
+  margin: 0 0 6px 0;
+  line-height: 1.3;
+}
+
+.oav-form-box-subtitle {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #64748B;
+  margin: 0;
+}
+
+.oav-duo-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+  justify-content: space-between;
+}
+
+.oav-duo-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+
+.oav-duo-input,
+.oav-duo-select,
+.oav-duo-textarea {
+  width: 100%;
+  max-width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid rgba(135, 0, 151, 0.22);
+  border-radius: 10px;
+  font-size: 14.5px;
+  color: #242424;
+  background: #ffffff;
+  outline: none;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+  box-sizing: border-box;
+  font-family: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.oav-duo-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23870097' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+.oav-duo-input::placeholder,
+.oav-duo-textarea::placeholder {
+  color: #64748B;
+}
+
+.oav-duo-input:focus,
+.oav-duo-select:focus,
+.oav-duo-textarea:focus {
+  outline: none !important;
+  border-color: #870097 !important;
+  box-shadow: none !important;
+}
+
+.oav-duo-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.oav-duo-error {
+  font-size: 11.5px;
+  color: #e53e3e;
+  font-weight: 500;
+  margin-top: 1px;
+}
+
+.oav-duo-btn-row {
+  margin-top: 6px;
+}
+
+.oav-duo-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  background: linear-gradient(135deg, #870097 0%, #580063 100%);
+  color: #ffffff !important;
+  font-size: 14.5px;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 10px;
+  border: 1px solid rgba(135, 0, 151, 0.6);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(135, 0, 151, 0.2);
+}
+
+.oav-duo-submit-btn:hover {
+  background: linear-gradient(135deg, #9b00ad 0%, #680075 100%);
+  border-color: rgba(135, 0, 151, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(135, 0, 151, 0.3);
+}
+
+.oav-duo-submit-btn:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.oav-submit-spinner-icon {
+  display: inline-flex;
+  animation: oav-spin 1s linear infinite;
+}
+
+@keyframes oav-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.oav-submit-error-banner {
+  background: #fff5f5;
+  border: 1px solid #feb2b2;
+  color: #c53030;
+  font-size: 13px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.oav-form-success-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 36px 16px;
+  height: 100%;
+  gap: 12px;
+}
+
+.oav-success-circle {
+  color: #870097;
+}
+
+.oav-success-box-title {
+  font-size: 19px;
+  font-weight: 600;
+  color: #242424;
+  margin: 0;
+}
+
+.oav-success-box-text {
+  font-size: 14px;
+  line-height: 1.55;
+  color: #64748B;
+  margin: 0 0 10px 0;
+  max-width: 380px;
+}
+
+.oav-dark-offices-section {
+  background: #2D002E;
+  background-color: #2D002E;
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+.oav-dark-offices-section .oav-offices-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  position: relative;
+  z-index: 2;
+}
+
+.oav-dark-offices-section .oav-office-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 32px 26px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+.oav-dark-offices-section .oav-office-card:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(247, 157, 0, 0.5);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+
+.oav-dark-offices-section .oav-office-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(247, 157, 0, 0.12);
+  color: #F79D00;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+}
+
+.oav-dark-offices-section .oav-office-card:hover .oav-office-icon-wrap {
+  background: #F79D00;
+  color: #17071e;
+}
+
+.oav-dark-offices-section .oav-office-city {
+  font-size: 19px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 10px 0;
+}
+
+.oav-dark-offices-section .oav-office-address {
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: #D6C8DE;
+  margin: 0;
+}
+
+.oav-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 3, 14, 0.85);
+  backdrop-filter: blur(6px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.oav-modal-container {
+  background: #000;
+  border-radius: 14px;
+  max-width: 860px;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+}
+
+.oav-modal-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.oav-modal-close-btn:hover {
+  background: #870097;
+}
+
+.oav-modal-img-box {
+  width: 100%;
+  max-height: 75vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.oav-modal-img {
+  width: 100%;
+  max-height: 75vh;
+  object-fit: contain;
+  display: block;
+}
+
+@media (max-width: 1024px) {
+  .oav-section {
+    padding: 55px 32px;
+  }
+
+  .oav-hero-title {
+    font-size: 36px;
+    line-height: 1.25;
+  }
+
+  .oav-hero-subtitle {
+    font-size: 16.5px;
+    line-height: 1.6;
+  }
+
+  .oav-section-title,
+  .oav-dark-title,
+  .oav-contact-main-heading {
+    font-size: 28px;
+    line-height: 1.32;
+  }
+
+  .oav-body-text,
+  .oav-contact-left-para {
+    font-size: 16px;
+    line-height: 1.65;
+  }
+
+  .oav-intro-grid,
+  .oav-why-grid,
+  .oav-contact-two-boxes {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .oav-composition-wrap {
+    max-width: 380px;
+  }
+
+  .oav-contact-left-card,
+  .oav-contact-right-card {
+    height: auto;
+    min-height: auto;
+    padding: 34px 30px;
+  }
+
+  .oav-gallery-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .oav-dark-amenities-row {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px 16px;
+  }
+
+  .oav-provide-cards-grid,
+  .oav-dark-offices-section .oav-offices-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .oav-section {
+    padding: 48px 24px;
+  }
+
+  .oav-hero-section {
+    min-height: 84vh;
+    padding-top: 120px;
+    padding-bottom: 60px;
+    align-items: flex-end;
+  }
+
+  .oav-hero-container {
+    padding: 0 24px;
+  }
+
+  .oav-hero-title {
+    font-size: 32px;
+    line-height: 1.3;
+  }
+
+  .oav-hero-subtitle {
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  .oav-section-title,
+  .oav-dark-title,
+  .oav-contact-main-heading {
+    font-size: 26px;
+    line-height: 1.32;
+  }
+
+  .oav-section-subtitle-brand {
+    font-size: 16px;
+  }
+
+  .oav-body-text,
+  .oav-contact-left-para {
+    font-size: 16px;
+    line-height: 1.65;
+  }
+
+  .oav-intro-text-col {
+    align-items: center;
+    text-align: center;
+  }
+
+  .oav-composition-wrap {
+    max-width: 340px;
+  }
+
+  .oav-intro-text-col .oav-divider-line,
+  .oav-section-header .oav-divider-line,
+  .oav-operate-card .oav-divider-line,
+  .oav-how-card .oav-divider-line {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .oav-section-header {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .oav-why-text-col,
+  .oav-operate-card,
+  .oav-how-card,
+  .oav-how-prompt,
+  .oav-provide-intro-box {
+    text-align: center;
+  }
+
+  .oav-how-actions {
+    justify-content: center;
+  }
+
+  .oav-channel-val {
+    font-size: 14.5px;
+    line-height: 1.35;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .oav-form-box-title {
+    font-size: 22px;
+    line-height: 1.35;
+  }
+
+  .oav-form-box-subtitle {
+    font-size: 14.5px;
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .oav-duo-label {
+    font-size: 13.5px;
+    font-weight: 600;
+  }
+
+  .oav-duo-input,
+  .oav-duo-select,
+  .oav-duo-textarea {
+    padding: 12px 14px;
+    font-size: 14.5px;
+  }
+
+  .oav-dark-amenities-row {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px 12px;
+  }
+
+  .oav-provide-cards-grid,
+  .oav-dark-offices-section .oav-offices-grid,
+  .oav-gallery-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .oav-operate-card,
+  .oav-how-card,
+  .oav-contact-left-card,
+  .oav-contact-right-card {
+    padding: 28px 22px;
+    border-radius: 16px;
+  }
+
+  .oav-duo-submit-btn,
+  .oav-btn-primary,
+  .oav-btn-outline,
+  .oav-btn-gold,
+  .oav-btn-dark-outline {
+    font-size: 14.5px;
+    padding: 13px 20px;
+    font-weight: 600;
+  }
+}
+
+@media (max-width: 480px) {
+  .oav-section {
+    padding: 40px 16px;
+  }
+
+  .oav-hero-container {
+    padding: 0 16px;
+  }
+
+  .oav-hero-title {
+    font-size: 26px;
+    line-height: 1.32;
+  }
+
+  .oav-hero-subtitle {
+    font-size: 15px;
+    line-height: 1.58;
+  }
+
+  .oav-section-title,
+  .oav-dark-title,
+  .oav-contact-main-heading {
+    font-size: 24px;
+    line-height: 1.32;
+  }
+
+  .oav-section-subtitle-brand {
+    font-size: 15px;
+  }
+
+  .oav-body-text,
+  .oav-contact-left-para {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .oav-contact-brand-tag {
+    font-size: 11px;
+    padding: 4px 12px;
+  }
+
+  .oav-contact-channel-row {
+    padding: 11px 12px;
+    gap: 10px;
+  }
+
+  .oav-channel-icon-box {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+  }
+
+  .oav-channel-val {
+    font-size: 14px;
+    line-height: 1.35;
+  }
+
+  .oav-form-box-title {
+    font-size: 19.5px;
+    line-height: 1.35;
+  }
+
+  .oav-form-box-subtitle {
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+
+  .oav-left-footer-sub {
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+
+  .oav-duo-label {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .oav-duo-input,
+  .oav-duo-select,
+  .oav-duo-textarea {
+    padding: 11px 13px;
+    font-size: 14px;
+  }
+
+  .oav-dark-amenities-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px 8px;
+  }
+
+  .oav-dark-amenity-icon svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .oav-dark-amenity-title {
+    font-size: 13.5px;
+  }
+
+  .oav-provide-intro-box {
+    padding: 20px 16px;
+  }
+
+  .oav-composition-wrap {
+    max-width: 290px;
+  }
+
+  .oav-contact-left-card,
+  .oav-contact-right-card,
+  .oav-dark-offices-section .oav-office-card,
+  .oav-operate-card,
+  .oav-how-card {
+    padding: 20px 15px;
+    border-radius: 14px;
+  }
+
+  .oav-duo-btn-row,
+  .oav-how-actions,
+  .oav-how-actions button,
+  .oav-how-actions a {
+    width: 100%;
+  }
+
+  .oav-duo-submit-btn,
+  .oav-btn-primary,
+  .oav-btn-outline,
+  .oav-btn-gold,
+  .oav-btn-dark-outline {
+    width: 100%;
+    font-size: 14px;
+    padding: 12px 18px;
+    font-weight: 600;
+  }
+
+  .oav-how-footer-banner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+

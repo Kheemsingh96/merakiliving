@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useRooms } from '../../hooks/useRooms';
 import { parseRoomTitle } from '../../components/Rooms/Rooms';
+import OptimizedImage from '../../components/Common/OptimizedImage';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   ArrowRight02Icon,
@@ -8,27 +10,27 @@ import {
   BedDoubleIcon,
   TentTreeIcon,
   CigaretteOffIcon,
-  HeartIcon,
+  CatIcon,
   IdIcon
 } from '@hugeicons/core-free-icons';
 import './RoomDetails.css';
 
-import room1 from '../../assets/images/room-1.webp';
-import room1a from '../../assets/images/room-1a.webp';
-import room1b from '../../assets/images/room-1b.webp';
-import room1c from '../../assets/images/room-1c.webp';
-import room2 from '../../assets/images/room-2.webp';
-import room2a from '../../assets/images/room-2a.webp';
-import room2b from '../../assets/images/room-2b.webp';
-import room2c from '../../assets/images/room-2c.webp';
-import room3 from '../../assets/images/room-3.webp';
-import room3a from '../../assets/images/room-3a.webp';
-import room3b from '../../assets/images/room-3b.webp';
-import room3c from '../../assets/images/room-3c.webp';
-import room4 from '../../assets/images/room-4.webp';
-import room4a from '../../assets/images/room-4a.webp';
-import room4b from '../../assets/images/room-4b.webp';
-import room4c from '../../assets/images/room-4c.webp';
+import room1 from '../../assets/images/room-1.avif';
+import room1a from '../../assets/images/room-1a.avif';
+import room1b from '../../assets/images/room-1b.avif';
+import room1c from '../../assets/images/room-1c.avif';
+import room2 from '../../assets/images/room-2.avif';
+import room2a from '../../assets/images/room-2a.avif';
+import room2b from '../../assets/images/room-2b.avif';
+import room2c from '../../assets/images/room-2c.avif';
+import room3 from '../../assets/images/room-3.avif';
+import room3a from '../../assets/images/room-3a.avif';
+import room3b from '../../assets/images/room-3b.avif';
+import room3c from '../../assets/images/room-3c.avif';
+import room4 from '../../assets/images/room-4.avif';
+import room4a from '../../assets/images/room-4a.avif';
+import room4b from '../../assets/images/room-4b.avif';
+import room4c from '../../assets/images/room-4c.avif';
 
 const SHARED_POLICY = [
   'Free cancellation up to 7 days before check-in',
@@ -288,8 +290,8 @@ const CancelCircleIcon = ({ size }) => (
 );
 
 function RoomDetails({ setCurrentPage, selectedRoomId }) {
-  const [rooms, setRooms] = useState(ROOMS_DATA);
-  const room = rooms.find((r) => r.id === selectedRoomId) || rooms[0];
+  const { rooms } = useRooms(ROOMS_DATA);
+  const room = rooms.find((r) => Number(r.id) === Number(selectedRoomId)) || rooms[0];
   const [showAllAmenities, setShowAllAmenities] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
@@ -302,39 +304,6 @@ function RoomDetails({ setCurrentPage, selectedRoomId }) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setCurrentImageIndex(0);
     setIsGalleryOpen(false);
-
-    fetch('http://localhost/merakiliving_backend/api_rooms.php')
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.status === 'success' && data.data) {
-          const merged = ROOMS_DATA.map(localRoom => {
-            const backendRoom = data.data.find(r => r.id === localRoom.id);
-            if (backendRoom) {
-              const originalPrice = parseFloat(String(backendRoom.original_price || localRoom.originalPrice).replace(/,/g, ''));
-              const currentPrice = parseFloat(String(backendRoom.price || localRoom.price).replace(/,/g, ''));
-              let calculatedDiscount = localRoom.discount;
-              if (originalPrice > 0 && originalPrice > currentPrice) {
-                calculatedDiscount = Math.round(((originalPrice - currentPrice) / originalPrice) * 100).toString();
-              }
-
-              return {
-                ...localRoom,
-                title: backendRoom.name || localRoom.title,
-                desc: backendRoom.description || localRoom.desc,
-                price: backendRoom.price?.toLocaleString() || localRoom.price,
-                originalPrice: backendRoom.original_price?.toLocaleString() || localRoom.originalPrice,
-                discount: calculatedDiscount,
-                image: backendRoom.image_url || localRoom.image,
-                gallery: backendRoom.image_url ? [backendRoom.image_url, ...localRoom.gallery.slice(1)] : localRoom.gallery,
-                status: backendRoom.status
-              };
-            }
-            return localRoom;
-          });
-          setRooms(merged);
-        }
-      })
-      .catch(err => console.error(err));
   }, [selectedRoomId]);
 
   const renderStars = (rating) => {
@@ -387,14 +356,14 @@ function RoomDetails({ setCurrentPage, selectedRoomId }) {
 
               <div className="rd-gallery-desktop">
                 <div className="rd-gallery-main" onClick={() => openGallery(0)}>
-                  <img src={room.gallery[0]} alt={room.title} loading="eager" fetchPriority="high" decoding="async" />
+                  <OptimizedImage src={room.gallery[0]} alt={room.title} width="800" height="533" loading="eager" fetchPriority="high" decoding="async" noWrapper={true} />
                 </div>
                 <div className="rd-gallery-side">
                   <div className="rd-gallery-side-top" onClick={() => openGallery(1)}>
-                    <img src={room.gallery[1] || room.image} alt={`${room.title} 2`} loading="eager" fetchPriority="high" decoding="async" />
+                    <OptimizedImage src={room.gallery[1] || room.image} alt={`${room.title} 2`} width="400" height="260" loading="eager" fetchPriority="low" decoding="async" noWrapper={true} />
                   </div>
                   <div className="rd-gallery-side-bottom" onClick={() => openGallery(2)}>
-                    <img src={room.gallery[2] || room.image} alt={`${room.title} 3`} loading="eager" fetchPriority="high" decoding="async" />
+                    <OptimizedImage src={room.gallery[2] || room.image} alt={`${room.title} 3`} width="400" height="260" loading="eager" fetchPriority="low" decoding="async" noWrapper={true} />
                     <div className="rd-gallery-overlay" onClick={(e) => { e.stopPropagation(); openGallery(0); }}>
                       <span>See All Photos</span>
                       <ArrowRightIcon size={14} />
@@ -405,7 +374,7 @@ function RoomDetails({ setCurrentPage, selectedRoomId }) {
 
               <div className="rd-gallery-mobile">
                 <div className="rd-gallery-mobile-main" onClick={() => openGallery(0)}>
-                  <img src={room.gallery[0]} alt={room.title} loading="eager" fetchPriority="high" decoding="async" />
+                  <OptimizedImage src={room.gallery[0]} alt={room.title} width="800" height="533" loading="eager" fetchPriority="high" decoding="async" noWrapper={true} />
                   <div className="rd-gallery-see-all-mobile">
                     <span>See All Photos</span>
                   </div>
@@ -521,7 +490,7 @@ function RoomDetails({ setCurrentPage, selectedRoomId }) {
                 </div>
                 {room.reviewsList.length > 2 && (
                   <button className="rd-show-more" onClick={() => setShowAllReviews(!showAllReviews)}>
-                    {showAllReviews ? 'Show Less' : `Show All ${room.reviews} Reviews`}
+                    {showAllReviews ? 'Show Less' : 'Show All Reviews'}
                   </button>
                 )}
               </div>
@@ -534,7 +503,7 @@ function RoomDetails({ setCurrentPage, selectedRoomId }) {
                     <span>No smoking inside the cottages</span>
                   </div>
                   <div className="rd-important-item">
-                    <HugeiconsIcon icon={HeartIcon} size={20} />
+                    <HugeiconsIcon icon={CatIcon} size={20} />
                     <span>Pets allowed with prior approval</span>
                   </div>
                   <div className="rd-important-item">
@@ -636,7 +605,7 @@ function RoomDetails({ setCurrentPage, selectedRoomId }) {
                       <span className="rd-book-discount">{room.discount}% OFF</span>
                     </div>
                   </div>
-                  <p className="rd-book-tax">+ taxes per night</p>
+                  <p className="rd-book-tax">+ Applicable Taxes</p>
                   <button className="rd-book-btn" onClick={handleBookNow}>
                     <span>{room.status?.toLowerCase() === 'booked' ? 'Booked' : 'Check Availability'}</span>
                     <HugeiconsIcon icon={ArrowRight02Icon} size={16} />
@@ -740,25 +709,33 @@ function RoomDetails({ setCurrentPage, selectedRoomId }) {
             <ArrowLeftIcon size={24} />
           </button>
           <div className="rd-modal-content" onClick={(e) => e.stopPropagation()}>
-           <img
-  className="rd-modal-main-image" 
-  src={room.gallery[currentImageIndex]} 
-  alt={`Gallery ${currentImageIndex + 1}`} 
-  loading="lazy" decoding="async"
-/>
+            <OptimizedImage
+              className="rd-modal-main-image" 
+              src={room.gallery[currentImageIndex]} 
+              alt={`Gallery ${currentImageIndex + 1}`} 
+              width="800"
+              height="533"
+              loading="lazy"
+              decoding="async"
+              noWrapper={true}
+            />
           </div>
           <button className="rd-modal-nav rd-modal-next" onClick={nextImage}>
             <ArrowRightIcon size={24} />
           </button>
           <div className="rd-modal-thumbs" onClick={(e) => e.stopPropagation()}>
             {room.gallery.map((img, idx) => (
-              <img
+              <OptimizedImage
                 key={idx}
                 src={img}
                 alt={`Thumbnail ${idx + 1}`}
                 className={`rd-modal-thumb ${currentImageIndex === idx ? 'active' : ''}`}
                 onClick={() => setCurrentImageIndex(idx)}
-                loading="lazy" decoding="async"
+                width="80"
+                height="60"
+                loading="lazy"
+                decoding="async"
+                noWrapper={true}
               />
             ))}
           </div>

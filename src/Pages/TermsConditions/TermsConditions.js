@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { API_CONFIG_URL } from '../../config/api';
+import { safeParseResponse } from '../../utils/apiHelper';
 import './TermsConditions.css';
-
-const API_CONFIG_URL = 'http://localhost/merakiliving_backend';
 
 const DEFAULT_TERMS_CONDITIONS = `
 <div className="terms-conditions-header">
@@ -42,27 +43,69 @@ const DEFAULT_TERMS_CONDITIONS = `
 </div>
 `;
 
+const termsSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: 'Terms & Conditions | Meraki Living',
+  url: 'https://www.merakiliving.in/terms-conditions',
+  description: 'Review the terms and conditions for booking and staying at Meraki Living Farmstay in Peora, Mukteshwar.',
+  publisher: {
+    '@type': 'Organization',
+    name: 'Meraki Living',
+    url: 'https://www.merakiliving.in'
+  }
+};
+
 const TermsConditions = () => {
-  const [content, setContent] = useState('');
+  const [content, setContent] = useState(DEFAULT_TERMS_CONDITIONS);
 
   useEffect(() => {
+    let isMounted = true;
     fetch(`${API_CONFIG_URL}/api_settings.php`)
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.status === 'success' && Array.isArray(data.data) && data.data.length > 0 && data.data[0].terms_conditions) {
+      .then(res => safeParseResponse(res))
+      .then(parsed => {
+        if (!isMounted) return;
+        const data = parsed.data;
+        if (parsed.ok && data && data.status === 'success' && Array.isArray(data.data) && data.data.length > 0 && data.data[0].terms_conditions) {
           setContent(data.data[0].terms_conditions);
         } else {
           setContent(DEFAULT_TERMS_CONDITIONS);
         }
       })
       .catch(e => {
-        console.error("Error fetching policy:", e);
-        setContent(DEFAULT_TERMS_CONDITIONS);
+        if (isMounted) setContent(DEFAULT_TERMS_CONDITIONS);
       });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return (
     <div className="terms-conditions-wrapper">
+      <Helmet>
+        <title>Terms & Conditions | Meraki Living</title>
+        <meta
+          name="description"
+          content="Review the terms and conditions for booking and staying at Meraki Living Farmstay in Peora, Mukteshwar."
+        />
+        <link rel="canonical" href="https://www.merakiliving.in/terms-conditions" />
+        <meta name="robots" content="index, follow" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Terms & Conditions | Meraki Living" />
+        <meta
+          property="og:description"
+          content="Review the terms and conditions for booking and staying at Meraki Living Farmstay in Peora, Mukteshwar."
+        />
+        <meta property="og:url" content="https://www.merakiliving.in/terms-conditions" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="Terms & Conditions | Meraki Living" />
+        <meta
+          name="twitter:description"
+          content="Review the terms and conditions for booking and staying at Meraki Living Farmstay in Peora, Mukteshwar."
+        />
+        <script type="application/ld+json">{JSON.stringify(termsSchema)}</script>
+      </Helmet>
       <div className="terms-conditions-outer">
         <div 
           className="terms-conditions-content" 

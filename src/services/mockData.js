@@ -16,7 +16,7 @@ const initialData = {
       price: 18000,
       originalPrice: 20000,
       amenities: ['Free WiFi', 'Room Heater', 'Kitchenette', 'Private Garden', 'Common Lounge', 'Full Kitchen Access', 'Bonfire Area', 'Parking'],
-      images: ['/assets/homestay-1.jpg', '/assets/homestay-2.jpg'],
+      images: ['/assets/homestay-1.avif', '/assets/homestay-2.avif'],
       status: 'active'
     },
     {
@@ -30,7 +30,7 @@ const initialData = {
       price: 7200,
       originalPrice: 8000,
       amenities: ['Free WiFi', 'Room Heater', 'Kitchenette', 'Living Area', 'Hot Shower', 'Tea/Coffee Maker', 'TV', 'Refrigerator'],
-      images: ['/assets/room-family-1.jpg', '/assets/room-family-2.jpg'],
+      images: ['/assets/room-family-1.avif', '/assets/room-family-2.avif'],
       status: 'active'
     },
     {
@@ -44,7 +44,7 @@ const initialData = {
       price: 3800,
       originalPrice: 4200,
       amenities: ['Free WiFi', 'Room Heater', 'Valley View', 'Hot Shower', 'Tea/Coffee Maker', 'Wardrobe'],
-      images: ['/assets/room-valley-1.jpg', '/assets/room-valley-2.jpg'],
+      images: ['/assets/room-valley-1.avif', '/assets/room-valley-2.avif'],
       status: 'active'
     },
     {
@@ -58,7 +58,7 @@ const initialData = {
       price: 4500,
       originalPrice: 5000,
       amenities: ['Free WiFi', 'Room Heater', 'Private Balcony', 'Hot Shower', 'Tea/Coffee Maker', 'Work Desk'],
-      images: ['/assets/room-himalayan-1.jpg', '/assets/room-himalayan-2.jpg'],
+      images: ['/assets/room-himalayan-1.avif', '/assets/room-himalayan-2.avif'],
       status: 'active'
     }
   ],
@@ -199,9 +199,9 @@ const initialData = {
   ],
   menu: {
     featured: [
-      { id: 'mf-1', name: 'Pahadi Aloo Ke Gutke', description: 'Traditional Kumaoni potato dish tempered with mustard seeds and coriander', category: 'Pahadi Khana', price: 220, originalPrice: 250, tag: 'Best Seller', isVeg: true, available: true, image: '/assets/menu-gutke.jpg' },
-      { id: 'mf-2', name: 'Rhododendron Tea', description: 'Refreshing herbal tea made from Buransh flowers, unique to the Himalayas', category: 'Teas', price: 120, originalPrice: 150, tag: 'Must Try', isVeg: true, available: true, image: '/assets/menu-rhodo-tea.jpg' },
-      { id: 'mf-3', name: 'Bhatt Ki Churkani', description: 'Black soybean curry, a Kumaoni delicacy served with steamed rice', category: 'Pahadi Khana', price: 280, originalPrice: 320, tag: 'Best Seller', isVeg: true, available: true, image: '/assets/menu-churkani.jpg' }
+      { id: 'mf-1', name: 'Pahadi Aloo Ke Gutke', description: 'Traditional Kumaoni potato dish tempered with mustard seeds and coriander', category: 'Pahadi Khana', price: 220, originalPrice: 250, tag: 'Best Seller', isVeg: true, available: true, image: '/assets/menu-gutke.avif' },
+      { id: 'mf-2', name: 'Rhododendron Tea', description: 'Refreshing herbal tea made from Buransh flowers, unique to the Himalayas', category: 'Teas', price: 120, originalPrice: 150, tag: 'Must Try', isVeg: true, available: true, image: '/assets/menu-rhodo-tea.avif' },
+      { id: 'mf-3', name: 'Bhatt Ki Churkani', description: 'Black soybean curry, a Kumaoni delicacy served with steamed rice', category: 'Pahadi Khana', price: 280, originalPrice: 320, tag: 'Best Seller', isVeg: true, available: true, image: '/assets/menu-churkani.avif' }
     ],
     categories: [
       {
@@ -266,20 +266,20 @@ const initialData = {
     { id: 'c-3', code: 'WELCOME500', type: 'fixed', value: 500, enabled: false, maxUses: 20, usesCount: 0, validFrom: '2026-08-01', validUntil: '2026-10-31' }
   ],
   reviews: [
-    { id: 'r-1', guestName: 'Rajesh Khanna', date: '2026-07-15', text: 'An absolutely magical stay. The Himalayan View Room exceeded all expectations. Waking up to those mountains was a spiritual experience. The hosts made us feel like family.', rating: 5, avatar: '/assets/avatar-rajesh.jpg', featured: true, visible: true },
-    { id: 'r-2', guestName: 'Sunita Reddy', date: '2026-06-22', text: 'We stayed in the Family Suite with our kids and it was perfect. The kids loved the garden and the home-cooked Pahadi food was the highlight. Already planning our next visit!', rating: 5, avatar: '/assets/avatar-sunita.jpg', featured: true, visible: true },
-    { id: 'r-3', guestName: 'Amit Sharma', date: '2026-05-10', text: 'Great location and very peaceful. The valley room had stunning views. Would recommend for anyone looking to disconnect from city life.', rating: 4, avatar: '/assets/avatar-amit.jpg', featured: false, visible: true },
-    { id: 'r-4', guestName: 'Priya Patel', date: '2026-04-18', text: 'Booked the entire homestay for our team offsite. The space was perfect for our workshops and the bonfire evenings were unforgettable.', rating: 5, avatar: '/assets/avatar-priya.jpg', featured: true, visible: true }
+    { id: 'r-1', guestName: 'Rajesh Khanna', date: '2026-07-15', text: 'An absolutely magical stay. The Himalayan View Room exceeded all expectations. Waking up to those mountains was a spiritual experience. The hosts made us feel like family.', rating: 5, avatar: '/assets/avatar-rajesh.avif', featured: true, visible: true },
+    { id: 'r-2', guestName: 'Sunita Reddy', date: '2026-06-22', text: 'We stayed in the Family Suite with our kids and it was perfect. The kids loved the garden and the home-cooked Pahadi food was the highlight. Already planning our next visit!', rating: 5, avatar: '/assets/avatar-sunita.avif', featured: true, visible: true },
+    { id: 'r-3', guestName: 'Amit Sharma', date: '2026-05-10', text: 'Great location and very peaceful. The valley room had stunning views. Would recommend for anyone looking to disconnect from city life.', rating: 4, avatar: '/assets/avatar-amit.avif', featured: false, visible: true },
+    { id: 'r-4', guestName: 'Priya Patel', date: '2026-04-18', text: 'Booked the entire homestay for our team offsite. The space was perfect for our workshops and the bonfire evenings were unforgettable.', rating: 5, avatar: '/assets/avatar-priya.avif', featured: true, visible: true }
   ],
   gallery: {
     rooms: {
-      'room-1': ['/assets/room-himalayan-1.jpg', '/assets/room-himalayan-2.jpg', '/assets/room-himalayan-3.jpg'],
-      'room-2': ['/assets/room-valley-1.jpg', '/assets/room-valley-2.jpg'],
-      'room-3': ['/assets/room-family-1.jpg', '/assets/room-family-2.jpg', '/assets/room-family-3.jpg'],
-      'room-4': ['/assets/homestay-1.jpg', '/assets/homestay-2.jpg', '/assets/homestay-3.jpg']
+      'room-1': ['/assets/room-himalayan-1.avif', '/assets/room-himalayan-2.avif', '/assets/room-himalayan-3.avif'],
+      'room-2': ['/assets/room-valley-1.avif', '/assets/room-valley-2.avif'],
+      'room-3': ['/assets/room-family-1.avif', '/assets/room-family-2.avif', '/assets/room-family-3.avif'],
+      'room-4': ['/assets/homestay-1.avif', '/assets/homestay-2.avif', '/assets/homestay-3.avif']
     },
-    explore: ['/assets/explore-1.jpg', '/assets/explore-2.jpg', '/assets/explore-3.jpg', '/assets/explore-4.jpg'],
-    cafe: ['/assets/cafe-1.jpg', '/assets/cafe-2.jpg', '/assets/cafe-3.jpg']
+    explore: ['/assets/explore-1.avif', '/assets/explore-2.avif', '/assets/explore-3.avif', '/assets/explore-4.avif'],
+    cafe: ['/assets/cafe-1.avif', '/assets/cafe-2.avif', '/assets/cafe-3.avif']
   },
   legal: {
     privacyPolicy: `At Meraki Homestay, we respect your privacy. This Privacy Policy explains how we collect, use, and protect your personal information when you book a stay or visit our website.\n\nInformation We Collect\nWe collect your name, email, phone number, and booking details to process reservations and communicate with you.\n\nHow We Use Your Information\nYour information is used solely for booking management, guest communication, and service improvement. We do not sell or share your data with third parties.\n\nData Security\nWe implement appropriate security measures to protect your personal information.\n\nContact Us\nFor privacy-related queries, contact us at stay@merakihomestay.com.`,

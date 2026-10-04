@@ -1,4 +1,5 @@
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 import './NotFound.css';
 
 export default function NotFound({ setCurrentPage }) {
@@ -12,8 +13,11 @@ export default function NotFound({ setCurrentPage }) {
 
   return (
     <div className="not-found-container">
+      <Helmet>
+        <title>404 - Page Not Found | Meraki Living</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       <div className="not-found-content">
-        <span className="not-found-badge">404 Error</span>
         <h1 className="not-found-code">404</h1>
         <h2 className="not-found-title">Page Not Found</h2>
         <p className="not-found-text">

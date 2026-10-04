@@ -24,7 +24,7 @@
 
 .review-title {
   font-size: 30px;
-  color: #373737;
+  color: #242424;
   font-weight: 600;
   margin: 0 0 15px 0;
   letter-spacing: -0.5px;
@@ -37,7 +37,7 @@
 
 .review-subtitle {
   font-size: 16px;
-  color: #817F8F;
+  color: #64748B;
   margin: 0 auto;
   max-width: 700px;
   line-height: 32px;
@@ -84,7 +84,7 @@
 .review-quote-text {
   font-size: 14.5px;
   line-height: 1.7;
-  color: #817F8F;
+  color: #64748B;
   font-weight: 400;
   margin: 0 0 30px;
   max-width: 680px;
@@ -101,7 +101,7 @@
   margin: 0;
   font-size: 17px;
   font-weight: 600;
-  color: #373737;
+  color: #242424;
 }
 
 .author-date {
@@ -144,7 +144,7 @@
   width: 46px;
   height: 46px;
   border-radius: 50%;
-  background: #870097;
+  background: linear-gradient(135deg, #870097 0%, #580063 100%);
   color: #ffffff;
   display: flex;
   align-items: center;

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { API_CONFIG_URL } from '../../config/api';
+import { safeParseResponse } from '../../utils/apiHelper';
 import './PrivacyPolicy.css';
-
-const API_CONFIG_URL = 'http://localhost/merakiliving_backend';
 
 const DEFAULT_PRIVACY_POLICY = `
 <div className="privacy-policy-header">
@@ -47,27 +48,69 @@ const DEFAULT_PRIVACY_POLICY = `
 </div>
 `;
 
+const privacySchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: 'Privacy Policy | Meraki Living',
+  url: 'https://www.merakiliving.in/privacy-policy',
+  description: 'Read the Privacy Policy of Meraki Living to understand how guest information and personal data are collected, protected, and handled.',
+  publisher: {
+    '@type': 'Organization',
+    name: 'Meraki Living',
+    url: 'https://www.merakiliving.in'
+  }
+};
+
 const PrivacyPolicy = () => {
-  const [content, setContent] = useState('');
+  const [content, setContent] = useState(DEFAULT_PRIVACY_POLICY);
 
   useEffect(() => {
+    let isMounted = true;
     fetch(`${API_CONFIG_URL}/api_settings.php`)
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.status === 'success' && Array.isArray(data.data) && data.data.length > 0 && data.data[0].privacy_policy) {
+      .then(res => safeParseResponse(res))
+      .then(parsed => {
+        if (!isMounted) return;
+        const data = parsed.data;
+        if (parsed.ok && data && data.status === 'success' && Array.isArray(data.data) && data.data.length > 0 && data.data[0].privacy_policy) {
           setContent(data.data[0].privacy_policy);
         } else {
           setContent(DEFAULT_PRIVACY_POLICY);
         }
       })
       .catch(e => {
-        console.error("Error fetching policy:", e);
-        setContent(DEFAULT_PRIVACY_POLICY);
+        if (isMounted) setContent(DEFAULT_PRIVACY_POLICY);
       });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return (
     <div className="privacy-policy-wrapper">
+      <Helmet>
+        <title>Privacy Policy | Meraki Living</title>
+        <meta
+          name="description"
+          content="Read the Privacy Policy of Meraki Living to understand how guest information and personal data are collected, protected, and handled."
+        />
+        <link rel="canonical" href="https://www.merakiliving.in/privacy-policy" />
+        <meta name="robots" content="index, follow" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Privacy Policy | Meraki Living" />
+        <meta
+          property="og:description"
+          content="Read the Privacy Policy of Meraki Living to understand how guest information and personal data are collected, protected, and handled."
+        />
+        <meta property="og:url" content="https://www.merakiliving.in/privacy-policy" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="Privacy Policy | Meraki Living" />
+        <meta
+          name="twitter:description"
+          content="Read the Privacy Policy of Meraki Living to understand how guest information and personal data are collected, protected, and handled."
+        />
+        <script type="application/ld+json">{JSON.stringify(privacySchema)}</script>
+      </Helmet>
       <div className="privacy-policy-outer">
         <div 
           className="privacy-policy-content" 

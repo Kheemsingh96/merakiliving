@@ -16,24 +16,21 @@
   margin: 0 auto;
 }
 
-/* --- Top Grid (Search + Help) --- */
-.mb-top-grid {
-  display: grid;
-  grid-template-columns: 1fr 360px;
-  gap: 32px;
-  margin-bottom: 48px;
-  align-items: stretch;
+/* --- Search Section --- */
+.mb-search-section {
+  width: 100%;
+  margin-bottom: 36px;
 }
 
-/* Left: Search Area */
 .mb-search-area {
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
 .mb-section-title {
   font-size: 28px;
-  color: #373737;
+  color: #242424;
   font-weight: 600;
   margin: 0 0 8px 0;
   letter-spacing: -0.5px;
@@ -41,19 +38,20 @@
 
 .mb-section-desc {
   font-size: 15px;
-  color: #817F8F;
+  color: #64748B;
   line-height: 1.5;
   margin: 0 0 24px 0;
-  max-width: 480px;
+  max-width: 540px;
 }
 
 .mb-search-card {
   background: #ffffff;
   border-radius: 16px;
-  padding: 32px;
+  padding: 28px 32px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
   border: 1px solid rgba(0,0,0,0.06);
-  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -62,25 +60,26 @@
 .mb-search-methods {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 24px;
+  gap: 10px;
+  margin-bottom: 20px;
   border-bottom: 1px solid #f0f0f0;
-  padding-bottom: 20px;
+  padding-bottom: 16px;
 }
 
 .mb-method-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
   background: #ffffff;
   border: 1px solid #e0e0e0;
-  padding: 10px 16px;
+  padding: 10px 18px;
   border-radius: 10px;
   font-size: 14px;
   font-weight: 500;
-  color: #817F8F;
+  color: #64748B;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
 .mb-method-btn:hover {
@@ -94,7 +93,8 @@
 }
 
 .mb-search-form {
-  max-width: 480px;
+  width: 100%;
+  max-width: 600px;
 }
 
 .mb-input-row {
@@ -126,34 +126,42 @@
   background: transparent;
   border: none;
   font-size: 14px;
-  color: #373737;
+  color: #242424;
   outline: none;
   width: 100%;
   padding: 14px 0;
 }
 
 .mb-input-lg::placeholder {
-  color: #817F8F;
+  color: #64748B;
 }
 
 .mb-submit-btn-lg {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #870097;
+  background: linear-gradient(135deg, #870097 0%, #580063 100%);
   color: #ffffff;
-  border: none;
+  border: 1px solid rgba(135, 0, 151, 0.6);
   border-radius: 10px;
   padding: 14px 28px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
+  box-shadow: 0 4px 14px rgba(135, 0, 151, 0.2);
+  transition: all 0.25s ease;
   white-space: nowrap;
 }
 
 .mb-submit-btn-lg:hover {
-  background: #6B007A;
+  background: linear-gradient(135deg, #9b00ad 0%, #680075 100%);
+  border-color: rgba(135, 0, 151, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(135, 0, 151, 0.3);
+}
+
+.mb-submit-btn-lg:active {
+  transform: translateY(0);
 }
 
 .mb-error-msg {
@@ -163,20 +171,30 @@
   font-weight: 500;
 }
 
-/* Right: Help Area */
-.mb-help-area {
-  display: flex;
-  flex-direction: column;
+/* --- Need Help Section --- */
+.mb-help-section {
+  margin-bottom: 36px;
+  width: 100%;
 }
 
-.mb-help-card-top {
+.mb-help-card-full {
   background: #fdf5ff;
   border-radius: 16px;
-  padding: 32px 24px;
+  padding: 24px 32px;
   border: 1px solid #f3e0f5;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.mb-help-content-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-width: 0;
   flex: 1;
 }
 
@@ -188,15 +206,22 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 20px;
+  flex-shrink: 0;
   box-shadow: 0 4px 12px rgba(135,0,151,0.05);
 }
 
+.mb-help-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: #242424;
+  margin: 0 0 4px 0;
+}
+
 .mb-help-card-text {
-  font-size: 15px;
-  color: #817F8F;
-  line-height: 1.6;
-  margin: 0 0 24px 0;
+  font-size: 14px;
+  color: #64748B;
+  line-height: 1.5;
+  margin: 0;
 }
 
 .mb-contact-support-btn {
@@ -204,15 +229,16 @@
   border: 1px solid #870097;
   color: #870097;
   border-radius: 8px;
-  padding: 10px 16px;
+  padding: 10px 18px;
   font-size: 14px;
   font-weight: 600;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
-  margin-top: auto;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .mb-contact-support-btn:hover {
@@ -241,14 +267,14 @@
 .mb-result-title {
   font-size: 24px;
   font-weight: 700;
-  color: #373737;
+  color: #242424;
   margin: 0 0 6px 0;
   letter-spacing: -0.4px;
 }
 
 .mb-result-desc {
   font-size: 14px;
-  color: #817F8F;
+  color: #64748B;
   margin: 0;
   line-height: 1.4;
 }
@@ -360,7 +386,7 @@
 .mb-info-room-name {
   font-size: 21px;
   font-weight: 700;
-  color: #373737;
+  color: #242424;
   margin: 0;
   letter-spacing: -0.3px;
   line-height: 1.25;
@@ -413,7 +439,7 @@
 
 .mb-d-label {
   font-size: 11px;
-  color: #817F8F;
+  color: #64748B;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.6px;
@@ -422,7 +448,7 @@
 .mb-d-value {
   font-size: 14px;
   font-weight: 600;
-  color: #373737;
+  color: #242424;
   word-break: break-word;
   line-height: 1.35;
 }
@@ -452,7 +478,7 @@
 .mb-nights-badge {
   font-size: 12px;
   font-weight: 500;
-  color: #817F8F;
+  color: #64748B;
   margin-left: 6px;
 }
 
@@ -570,7 +596,7 @@
   justify-content: center;
   background: #ffffff;
   border: 1px solid #cbd5e1;
-  color: #373737;
+  color: #242424;
   padding: 8px 18px;
   border-radius: 8px;
   font-size: 13px;
@@ -643,7 +669,7 @@
 
 .mb-cancel-success-title {
   font-size: 24px;
-  color: #373737;
+  color: #242424;
   font-weight: 600;
   margin: 0 0 8px 0;
   letter-spacing: -0.3px;
@@ -651,7 +677,7 @@
 
 .mb-cancel-success-desc {
   font-size: 15px;
-  color: #817F8F;
+  color: #64748B;
   line-height: 1.5;
   margin: 0 auto;
 }
@@ -668,7 +694,7 @@
 .mb-cs-title {
   font-size: 13px;
   font-weight: 600;
-  color: #817F8F;
+  color: #64748B;
   margin: 0 0 16px 0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -687,13 +713,13 @@
 
 .mb-cs-label {
   font-size: 14px;
-  color: #817F8F;
+  color: #64748B;
 }
 
 .mb-cs-value {
   font-size: 15px;
   font-weight: 500;
-  color: #373737;
+  color: #242424;
   text-align: right;
 }
 
@@ -735,13 +761,13 @@
 .mb-policy-left h4 {
   font-size: 16px;
   font-weight: 600;
-  color: #373737;
+  color: #242424;
   margin: 0 0 6px 0;
 }
 
 .mb-policy-left p {
   font-size: 14px;
-  color: #817F8F;
+  color: #64748B;
   margin: 0;
   line-height: 1.5;
   max-width: 600px;
@@ -770,7 +796,7 @@
 .mb-faq-title {
   font-size: 18px;
   font-weight: 600;
-  color: #373737;
+  color: #242424;
   margin: 0 0 24px 0;
   display: flex;
   justify-content: space-between;
@@ -826,7 +852,7 @@
 .mb-faq-question-text {
   font-size: 15px;
   font-weight: 600;
-  color: #373737;
+  color: #242424;
   line-height: 1.4;
   padding-right: 12px;
   transition: color 0.3s ease;
@@ -882,39 +908,37 @@
   margin: 0;
   padding: 0 20px 18px 20px;
   font-size: 14px;
-  color: #817F8F;
+  color: #64748B;
   line-height: 1.65;
   font-weight: 400;
 }
 
 /* --- Responsive Styles --- */
 @media (max-width: 1024px) {
-  .mb-top-grid {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-  .mb-help-card-top {
-    flex-direction: row;
-    align-items: center;
-    padding: 24px;
-  }
-  .mb-help-icon-box {
-    margin: 0 20px 0 0;
-  }
-  .mb-help-card-top p {
-    margin-bottom: 0;
-  }
-  .mb-contact-support-btn {
-    margin-top: 0;
-    margin-left: auto;
-  }
   .mb-details-card {
     flex-direction: column;
   }
   .mb-room-image-col {
     width: 100%;
-    height: 260px;
+    height: auto;
+    max-height: 280px;
+    aspect-ratio: 16 / 10;
     padding: 16px;
+    box-sizing: border-box;
+    overflow: hidden;
+    display: block;
+  }
+  .mb-room-image {
+    width: 100%;
+    height: 100%;
+    min-height: unset;
+    max-height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+    display: block;
+  }
+  .mb-help-card-full {
+    padding: 22px 24px;
   }
   .mb-policy-card {
     flex-direction: column;
@@ -927,7 +951,7 @@
     padding: 48px 16px 60px;
   }
   .mb-details-info-col {
-    padding: 20px;
+    padding: 20px 22px;
   }
   .mb-details-grid {
     grid-template-columns: 1fr;
@@ -957,40 +981,68 @@
   }
   .mb-section-desc {
     font-size: 14px;
+    margin-bottom: 20px;
   }
   .mb-search-card {
-    padding: 20px 16px;
+    padding: 18px 14px;
+    border-radius: 14px;
   }
   .mb-search-methods {
-    flex-direction: column;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    padding-bottom: 14px;
+    margin-bottom: 16px;
   }
   .mb-method-btn {
-    width: 100%;
+    padding: 8px 4px;
+    font-size: 12px;
+    gap: 4px;
     justify-content: center;
+    width: 100%;
+    border-radius: 8px;
+  }
+  .mb-method-btn svg {
+    width: 15px;
+    height: 15px;
   }
   .mb-input-row {
     flex-direction: column;
+    gap: 10px;
+    width: 100%;
   }
   .mb-input-wrapper-lg {
     width: 100%;
     box-sizing: border-box;
+    padding: 0 14px;
+  }
+  .mb-input-lg {
+    padding: 12px 0;
+    font-size: 13.5px;
   }
   .mb-submit-btn-lg {
     width: 100%;
-    font-size: 15px;
+    font-size: 14px;
+    padding: 12px 20px;
+    border-radius: 10px;
   }
-  .mb-help-card-top {
+  .mb-help-card-full {
     flex-direction: column;
     align-items: flex-start;
-    padding: 20px 16px;
+    padding: 18px 16px;
+    gap: 16px;
+  }
+  .mb-help-content-left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
   }
   .mb-help-icon-box {
-    margin: 0 0 14px 0;
+    margin: 0;
   }
   .mb-contact-support-btn {
-    margin-top: 16px;
-    margin-left: 0;
+    margin-top: 0;
     width: 100%;
     justify-content: center;
   }
@@ -998,16 +1050,36 @@
     font-size: 20px;
   }
   .mb-room-image-col {
-    height: 220px;
+    height: auto;
+    max-height: 220px;
+    aspect-ratio: 16 / 10;
     padding: 12px;
+    box-sizing: border-box;
+    overflow: hidden;
+    display: block;
+  }
+  .mb-room-image {
+    width: 100%;
+    height: 100%;
+    min-height: unset;
+    max-height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+    display: block;
+  }
+  .mb-details-info-col {
+    padding: 16px 14px;
   }
   .mb-info-header-row {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
+    margin-bottom: 12px;
   }
   .mb-info-room-name {
     font-size: 18px;
+    line-height: 1.35;
+    word-break: break-word;
   }
   .mb-cancel-success-card {
     padding: 28px 16px;

@@ -1,11 +1,15 @@
+import { FaWhatsapp } from 'react-icons/fa';
 import React, { useState, useEffect, useRef } from 'react';
 import './GuestDetails.css';
 import { parseRoomTitle } from '../../components/Rooms/Rooms';
+import { useRooms } from '../../hooks/useRooms';
+import { API_CONFIG_URL } from '../../config/api';
+import OptimizedImage from '../../components/Common/OptimizedImage';
 
-import room1 from '../../assets/images/room-1.webp';
-import room2 from '../../assets/images/room-2.webp';
-import room3 from '../../assets/images/room-3.webp';
-import room4 from '../../assets/images/room-4.webp';
+import room1 from '../../assets/images/room-1.avif';
+import room2 from '../../assets/images/room-2.avif';
+import room3 from '../../assets/images/room-3.avif';
+import room4 from '../../assets/images/room-4.avif';
 
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
@@ -25,10 +29,8 @@ import {
   Home07Icon,
   SecurityValidationIcon,
   BulbChargingIcon,
-  ViewIcon,
-  DiscountIcon,
-  WhatsappIcon,
-} from '@hugeicons/core-free-icons';
+
+  DiscountIcon,} from '@hugeicons/core-free-icons';
 
 const ArrowDownIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -69,42 +71,7 @@ const TickIcon = () => (
   </svg>
 );
 
-const WifiIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
-    <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
-    <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
-    <line x1="12" y1="20" x2="12.01" y2="20"/>
-  </svg>
-);
 
-const CarIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M14 16H9m10 0h3v-3.15a1 1 0 0 0-.84-.99L16 11l-2.7-3.6a1 1 0 0 0-.8-.4H5.24a2 2 0 0 0-1.8 1.1l-.8 1.63A6 6 0 0 0 2 12.42V16h2"/>
-    <circle cx="6.5" cy="16.5" r="2.5"/>
-    <circle cx="16.5" cy="16.5" r="2.5"/>
-  </svg>
-);
-
-
-const FireIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
-  </svg>
-);
-
-const HomeIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-    <polyline points="9 22 9 12 15 12 15 22"/>
-  </svg>
-);
-
-const PowerIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-  </svg>
-);
 
 const roomsData = [
   {
@@ -120,7 +87,7 @@ const roomsData = [
     bed: 'Multiple Rooms',
     view: 'Panoramic View',
     size: '1200 sq ft',
-    amenities: ['Free WiFi', 'Free Parking', 'Power Backup', 'Kitchen', 'Garden Access', 'Bonfire Area'],
+    amenities: ['Free WiFi', 'Free Parking', 'Power Backup', 'Kitchen'],
     gallery: [room4, room4, room4, room4]
   },
   {
@@ -173,17 +140,7 @@ const roomsData = [
   }
 ];
 
-const amenityIcons = {
-  'Free WiFi': WifiIcon,
-  'Free Parking': CarIcon,
-  'Power Backup': PowerIcon,
-  'Room Heater': FireIcon,
-  'Balcony': ViewIcon,
-  'Kitchenette': HomeIcon,
-  'Kitchen': HomeIcon,
-  'Garden Access': ViewIcon,
-  'Bonfire Area': FireIcon
-};
+
 
 const EMPTY_GUEST_FORM = {
   firstName: '',
@@ -258,7 +215,7 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
   const [availableCoupons, setAvailableCoupons] = useState([]);
 
   useEffect(() => {
-    fetch('http://localhost/merakiliving_backend/api_coupons.php')
+    fetch(`${API_CONFIG_URL}/api_coupons.php`)
       .then(res => res.json())
       .then(data => {
         if (data && data.status === 'success') {
@@ -268,35 +225,8 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
       .catch(err => console.error("Error fetching coupons:", err));
   }, []);
 
-  const [rooms, setRooms] = useState(roomsData);
+  const { rooms } = useRooms(roomsData);
   const room = rooms.find(r => r.id === selectedRoomId) || rooms[0];
-
-  useEffect(() => {
-    fetch('http://localhost/merakiliving_backend/api_rooms.php')
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.status === 'success' && data.data) {
-          const merged = roomsData.map(localRoom => {
-            const backendRoom = data.data.find(r => r.id === localRoom.id);
-            if (backendRoom) {
-              return {
-                ...localRoom,
-                title: backendRoom.name || localRoom.title,
-                desc: backendRoom.description || localRoom.desc,
-                price: backendRoom.price?.toLocaleString() || localRoom.price,
-                originalPrice: backendRoom.original_price?.toLocaleString() || localRoom.originalPrice,
-                image: backendRoom.image_url || localRoom.image,
-                gallery: backendRoom.image_url ? [backendRoom.image_url, ...localRoom.gallery.slice(1)] : localRoom.gallery,
-                status: backendRoom.status
-              };
-            }
-            return localRoom;
-          });
-          setRooms(merged);
-        }
-      })
-      .catch(err => console.error(err));
-  }, []);
 
   const storedCheckIn = sessionStorage.getItem('meraki_checkIn');
   const storedCheckOut = sessionStorage.getItem('meraki_checkOut');
@@ -518,7 +448,7 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
     }
 
     try {
-      const orderResponse = await fetch("http://localhost/merakiliving_backend/api/bookings/create_order.php", {
+      const orderResponse = await fetch(`${API_CONFIG_URL}/api/bookings/create_order.php`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount: totalAmount })
@@ -561,7 +491,7 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
               razorpay_signature: response.razorpay_signature
             };
 
-            const saveResponse = await fetch("http://localhost/merakiliving_backend/api/bookings/create_booking.php", {
+            const saveResponse = await fetch(`${API_CONFIG_URL}/api/bookings/create_booking.php`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(finalData)
@@ -641,10 +571,11 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
                   amount: totalAmount
                 };
 
-                fetch("http://localhost/merakiliving_backend/api_send_email.php", {
+                fetch(`${API_CONFIG_URL}/api_send_email.php`, {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(emailPayload)
+                  body: JSON.stringify(emailPayload),
+                  keepalive: true
                 }).catch(() => {});
               }
             } else {
@@ -731,19 +662,19 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
 
   const handleWhatsApp = () => {
     const message = encodeURIComponent(
-      `Hi Meraki Living! \n\nI have a booking inquiry for the *${room.title}*\n` +
-      `Check-in: ${formatDate(checkInDate)}\n` +
+      `Hi Meraki Living! ✨\n\nI have a booking inquiry for the *${room.title}*\n\n` +
+      `Check-in: ${formatDate(checkInDate)} 📅\n` +
       `Check-out: ${formatDate(checkOutDate)}\n` +
       `Nights: ${nights}\n` +
-      `${guests.adults + guests.children} Guests\n` +
+      `Guests: ${guests.adults + guests.children} Guests\n` +
       `Rooms: ${guests.rooms}\n` +
-      `Total: Rs.${totalAmount.toLocaleString('en-IN')}\n\n` +
+      `Total: Rs.${totalAmount.toLocaleString('en-IN')} 💳\n\n` +
       `Guest: ${formData.firstName} ${formData.lastName}\n` +
       `${formData.email}\n` +
-      `${formData.countryCode} ${formData.phone}\n\n` +
+      `${formData.countryCode} ${formData.phone} 📞\n\n` +
       `Please confirm availability. Thank you!`
     );
-    window.open(`https://wa.me/917037189517?text=${message}`, '_blank');
+    window.open(`https://wa.me/919456103445?text=${message}`, '_blank');
   };
 
   const countryCodes = [
@@ -763,7 +694,7 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
       <div className="gd-card gd-summary-card">
         <div className="gd-summary-header">
           <div className="gd-summary-room-image">
-            <img src={room.image} alt={titleData.mainName || room.title} loading="eager" decoding="async" />
+            <OptimizedImage src={room.image} alt={titleData.mainName || room.title} width="72" height="72" loading="eager" fetchPriority="high" decoding="async" noWrapper={true} />
           </div>
           <div className="gd-summary-room-info">
             <div className="gd-summary-room-title-block">
@@ -840,7 +771,7 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
         <h4 className="gd-price-title">Price Breakdown</h4>
 
         <div className="gd-price-room">
-          <img src={room.image} alt={titleData.mainName || room.title} loading="eager" decoding="async" />
+          <OptimizedImage src={room.image} alt={titleData.mainName || room.title} width="52" height="52" loading="eager" fetchPriority="high" decoding="async" noWrapper={true} />
           <div className="gd-price-room-info">
             <div className="gd-price-room-title-block">
               <div className="gd-price-room-title-primary-row">
@@ -1088,7 +1019,7 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
             <span>Back</span>
           </button>
           <button type="submit" className="gd-btn-primary" disabled={isProcessing}>
-            <span>{isProcessing ? 'Processing Payment...' : 'Proceed to Payment'}</span>
+            <span>{isProcessing ? 'Processing Payment...' : 'Pay Now'}</span>
             {!isProcessing && <HugeiconsIcon icon={ArrowRight01Icon} size={18} />}
           </button>
         </div>
@@ -1110,15 +1041,12 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
       </button>
       {showAmenities && (
         <div className="gd-amenities-grid">
-          {room.amenities.map((amenity, idx) => {
-            const IconComp = amenityIcons[amenity];
-            return (
-              <div className="gd-amenity-item" key={idx}>
-                <IconComp />
-                <span>{amenity}</span>
-              </div>
-            );
-          })}
+          {room.amenities.map((amenity, idx) => (
+            <div className="gd-amenity-item" key={idx}>
+              <HugeiconsIcon icon={CheckmarkCircle01Icon} size={16} />
+              <span>{amenity}</span>
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -1160,10 +1088,10 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
       </div>
       <div className="gd-help-actions">
         <button className="gd-help-btn gd-whatsapp-btn" onClick={handleWhatsApp}>
-          <HugeiconsIcon icon={WhatsappIcon} size={18} />
+          <FaWhatsapp size={18} />
           <span>WhatsApp Us</span>
         </button>
-        <a href="tel:+917037189517" className="gd-help-btn gd-call-btn">
+        <a href="tel:+919456103445" className="gd-help-btn gd-call-btn">
           <HugeiconsIcon icon={Call02Icon} size={18} />
           <span>Call Now</span>
         </a>
@@ -1182,7 +1110,7 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
     return (
       <section className="conf-section conf-processing-section">
         <div className="conf-card conf-processing-card">
-          <div className="conf-content">
+          <div className="conf-processing-content">
             <div className="conf-processing-spinner-wrap">
               <div className="conf-processing-spinner"></div>
               <div className="conf-processing-icon-center">
@@ -1190,15 +1118,19 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
               </div>
             </div>
 
-            <h2 className="conf-title" style={{ marginTop: '16px', marginBottom: '6px' }}>
-              Confirming Your Booking
-            </h2>
-            <p className="conf-desc" style={{ marginBottom: '16px' }}>
-              Your payment was received. We’re securely confirming your reservation.
+            <h2 className="conf-processing-title">Confirming Booking</h2>
+            
+            <div className="conf-processing-status-badge">
+              <HugeiconsIcon icon={CheckmarkCircle01Icon} size={20} color="#16A34A" />
+              <span>Payment Confirmed</span>
+            </div>
+
+            <p className="conf-processing-desc">
+              We are securing your reservation.
             </p>
-            <div className="conf-processing-reassurance">
-              <span className="conf-processing-pulse-dot"></span>
-              <span>Finalizing with homestay concierge. Please do not refresh.</span>
+
+            <div className="conf-processing-bottom-box">
+              Please stay on this page.
             </div>
           </div>
         </div>

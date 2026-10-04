@@ -1,13 +1,14 @@
 import React from 'react';
 import './Viewpoints.css';
 
-import imgKainchiDham from '../../assets/images/kainchidham.webp';
-import imgMukteshwar from '../../assets/images/mukteshwar.webp';
-import imgKapileshwar from '../../assets/images/kapileshwar.webp';
-import imgKasarDevi from '../../assets/images/kasardevi.webp';
-import imgKausani from '../../assets/images/kausani.webp';
-import imgDolAshram from '../../assets/images/dolashram.webp';
-import imgNainital from '../../assets/images/nainital.webp';
+import imgKainchiDham from '../../assets/images/kainchidham.avif';
+import imgMukteshwar from '../../assets/images/mukteshwar.avif';
+import imgKapileshwar from '../../assets/images/kapileshwar.avif';
+import imgKasarDevi from '../../assets/images/kasardevi.avif';
+import imgKausani from '../../assets/images/kausani.avif';
+import imgDolAshram from '../../assets/images/dolashram.avif';
+import imgNainital from '../../assets/images/nainital.avif';
+import OptimizedImage from '../Common/OptimizedImage';
 
 const VIEWPOINTS_DATA = [
   {
@@ -64,7 +65,7 @@ const VIEWPOINTS_DATA = [
 function Viewpoints() {
   return (
     <section className="viewpoints-section" aria-label="Discover the Beauty Around Meraki Living">
-      <div className="viewpoints-header">
+      <div className="viewpoints-header reveal-fade-up">
         <h2 className="viewpoints-title">
           Discover the Beauty Around
           <span className="viewpoints-highlight"> Meraki Living</span>
@@ -75,10 +76,10 @@ function Viewpoints() {
         </p>
       </div>
 
-      <div className="viewpoints-grid">
+      <div className="viewpoints-grid reveal-stagger">
         {VIEWPOINTS_DATA.map((item) => (
           <article className="viewpoint-card" key={item.id}>
-            <img
+            <OptimizedImage
               src={item.image}
               alt={item.title}
               className="viewpoint-image"
@@ -86,6 +87,7 @@ function Viewpoints() {
               height="380"
               loading="lazy"
               decoding="async"
+              noWrapper={true}
             />
             <div className="viewpoint-overlay" />
 

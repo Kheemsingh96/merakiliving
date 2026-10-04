@@ -69,7 +69,7 @@
 
 .booking-search-label {
   font-size: 11px;
-  color: #817F8F;
+  color: #64748B;
   font-weight: 600;
   letter-spacing: 0.5px;
   text-transform: uppercase;
@@ -77,7 +77,7 @@
 
 .booking-search-value {
   font-size: 15px;
-  color: #373737;
+  color: #242424;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -95,25 +95,30 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #870097;
+  background: linear-gradient(135deg, #870097 0%, #580063 100%);
   color: #ffffff;
-  border: none;
+  border: 1px solid rgba(135, 0, 151, 0.6);
   padding: 14px 28px;
-  border-radius: 14px;
+  border-radius: 10px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 16px rgba(135, 0, 151, 0.3);
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(135, 0, 151, 0.2);
   white-space: nowrap;
   margin-left: 12px;
   flex-shrink: 0;
 }
 
 .booking-edit-btn:hover {
-  background: #6B007A;
+  background: linear-gradient(135deg, #9b00ad 0%, #680075 100%);
+  border-color: rgba(135, 0, 151, 0.8);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(135, 0, 151, 0.4);
+  box-shadow: 0 6px 18px rgba(135, 0, 151, 0.3);
+}
+
+.booking-edit-btn:active {
+  transform: translateY(0);
 }
 
 .booking-edit-btn svg {
@@ -127,7 +132,7 @@
 
 .booking-results-title {
   font-size: 30px;
-  color: #373737;
+  color: #242424;
   font-weight: 600;
   margin: 0 0 12px 0;
   line-height: 1.2;
@@ -136,7 +141,7 @@
 
 .booking-results-subtitle {
   font-size: 15px;
-  color: #817F8F;
+  color: #64748B;
   margin: 0;
   font-weight: 400;
 }
@@ -247,7 +252,7 @@
 
 .booking-room-title {
   font-size: 20px;
-  color: #373737;
+  color: #242424;
   font-weight: 600;
   margin: 0;
   line-height: 1.35;
@@ -258,7 +263,7 @@
 
 .booking-room-title-main {
   font-size: 20px;
-  color: #373737;
+  color: #242424;
   font-weight: 600;
 }
 
@@ -273,7 +278,7 @@
 
 .booking-room-title-type {
   font-size: 20px;
-  color: #373737;
+  color: #242424;
   font-weight: 600;
 }
 
@@ -282,7 +287,7 @@
   align-items: center;
   gap: 5px;
   font-size: 12px;
-  color: #666666;
+  color: #64748B;
   font-weight: 500;
   background: #FAFAFA;
   border: 1px solid #f0f0f0;
@@ -306,7 +311,7 @@
 
 .booking-room-desc {
   font-size: 15px;
-  color: #817F8F;
+  color: #64748B;
   line-height: 26px;
   margin: 0;
   display: -webkit-box;
@@ -339,7 +344,7 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  color: #555555;
+  color: #64748B;
   font-size: 13px;
   font-weight: 500;
 }
@@ -367,7 +372,7 @@
   padding: 8px 14px;
   border-radius: 10px;
   font-size: 12px;
-  color: #555555;
+  color: #64748B;
   font-weight: 500;
 }
 
@@ -398,7 +403,7 @@
 
 .booking-price-amount {
   font-size: 20px;
-  color: #373737;
+  color: #242424;
   font-weight: 700;
   letter-spacing: -0.5px;
   line-height: 1;
@@ -438,23 +443,28 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: #870097;
+  background: linear-gradient(135deg, #870097 0%, #580063 100%);
   color: #ffffff;
-  border: none;
+  border: 1px solid rgba(135, 0, 151, 0.6);
   padding: 12px 20px;
-  border-radius: 12px;
+  border-radius: 10px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.25s ease;
-  box-shadow: 0 4px 16px rgba(135, 0, 151, 0.25);
+  box-shadow: 0 4px 14px rgba(135, 0, 151, 0.2);
   white-space: nowrap;
 }
 
 .booking-btn-primary:hover {
-  background: #6B007A;
+  background: linear-gradient(135deg, #9b00ad 0%, #680075 100%);
+  border-color: rgba(135, 0, 151, 0.8);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(135, 0, 151, 0.35);
+  box-shadow: 0 6px 18px rgba(135, 0, 151, 0.3);
+}
+
+.booking-btn-primary:active {
+  transform: translateY(0);
 }
 
 .booking-btn-primary svg {
@@ -499,14 +509,14 @@
 
 .booking-help-title {
   font-size: 18px;
-  color: #373737;
+  color: #242424;
   font-weight: 600;
   margin: 0;
 }
 
 .booking-help-text {
   font-size: 14px;
-  color: #777777;
+  color: #64748B;
   line-height: 22px;
   margin: 0;
 }
@@ -523,21 +533,22 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: #C78D3A;
+  background: linear-gradient(135deg, #25D366 0%, #1DA851 100%);
   color: #ffffff;
+  border: none;
   padding: 14px 20px;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(199, 141, 58, 0.25);
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.25);
 }
 
 .booking-help-btn-primary:hover {
-  background: #B07D32;
+  background: linear-gradient(135deg, #28e06c 0%, #20b859 100%);
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(199, 141, 58, 0.35);
+  box-shadow: 0 8px 20px rgba(37, 211, 102, 0.35);
 }
 
 .booking-help-btn-primary svg {
@@ -602,7 +613,7 @@
 .calendar-title {
   font-size: 16px;
   font-weight: 600;
-  color: #373737;
+  color: #242424;
   margin: 0;
 }
 
@@ -653,7 +664,7 @@
   border-radius: 10px;
   font-size: 14px;
   font-weight: 500;
-  color: #373737;
+  color: #242424;
   cursor: pointer;
   transition: all 0.15s;
   margin: 0 auto;
@@ -736,13 +747,13 @@
 .guest-type {
   font-size: 15px;
   font-weight: 600;
-  color: #373737;
+  color: #242424;
   margin: 0;
 }
 
 .guest-desc {
   font-size: 13px;
-  color: #888888;
+  color: #64748B;
   margin: 0;
 }
 
@@ -784,24 +795,32 @@
   font-weight: 600;
   width: 24px;
   text-align: center;
-  color: #373737;
+  color: #242424;
 }
 
 .guest-done-btn {
   width: 100%;
   padding: 12px;
-  background: #870097;
+  background: linear-gradient(135deg, #870097 0%, #580063 100%);
   color: #ffffff;
-  border: none;
-  border-radius: 12px;
+  border: 1px solid rgba(135, 0, 151, 0.6);
+  border-radius: 10px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(135, 0, 151, 0.2);
+  transition: all 0.25s ease;
 }
 
 .guest-done-btn:hover {
-  background: #6B007A;
+  background: linear-gradient(135deg, #9b00ad 0%, #680075 100%);
+  border-color: rgba(135, 0, 151, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(135, 0, 151, 0.3);
+}
+
+.guest-done-btn:active {
+  transform: translateY(0);
 }
 
 @media (max-width: 1024px) {
@@ -900,8 +919,8 @@
     margin-bottom: 28px;
   }
   .booking-results-title {
-    font-size: 26px;
-    line-height: 36px;
+    font-size: 34px;
+    line-height: 42px;
     margin-bottom: 8px;
   }
   .booking-results-subtitle {
@@ -911,7 +930,7 @@
     grid-template-columns: 1fr;
   }
   .booking-room-gallery {
-    padding: 14px;
+    padding: 0;
   }
   .booking-room-details {
     padding: 22px 20px 20px;
@@ -1057,8 +1076,7 @@
     font-size: 12px;
   }
   .booking-room-gallery {
-    padding: 12px;
-    gap: 10px;
+    padding: 0;
   }
   .booking-room-details {
     padding: 18px 16px 16px;

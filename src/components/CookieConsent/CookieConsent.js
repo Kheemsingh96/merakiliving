@@ -1,36 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import './CookieConsent.css';
 
-export default function CookieConsent({ setCurrentPage }) {
+export default function CookieConsent({ setCurrentPage, preloaderActive = false }) {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    if (preloaderActive) {
+      return;
+    }
+
     // Check if consent has already been given or declined
     const savedConsent = localStorage.getItem('meraki_cookie_consent');
     if (savedConsent) {
       return;
     }
 
-    // Show after scrolling a bit or after a short delay
-    const handleScroll = () => {
-      if (window.scrollY > 120) {
-        setIsVisible(true);
-        window.removeEventListener('scroll', handleScroll);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-
-    // Fallback timer so it shows after 3 seconds even if user stays at top
+    // Show popup once after initial page load if no prior consent is recorded
     const timer = setTimeout(() => {
-      setIsVisible(true);
-    }, 3000);
+      if (!localStorage.getItem('meraki_cookie_consent')) {
+        setIsVisible(true);
+      }
+    }, 1500);
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
       clearTimeout(timer);
     };
-  }, []);
+  }, [preloaderActive]);
 
   const handleAccept = () => {
     localStorage.setItem('meraki_cookie_consent', 'accepted');

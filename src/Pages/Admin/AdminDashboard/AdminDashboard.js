@@ -1,17 +1,32 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './AdminDashboard.css';
-import logo from '../../../assets/images/logo.webp';
+import logo from '../../../assets/images/logo.avif';
 import {
-  DashboardSquare01Icon, Calendar01Icon, BedDoubleIcon, Coffee02Icon, UserGroupIcon,
+  DashboardSquare01Icon, Calendar01Icon, BedDoubleIcon, UserGroupIcon,
   Wallet01Icon, Ticket01Icon, Image01Icon, Settings01Icon, Logout01Icon, PlusSignIcon,
   Edit01Icon, Delete01Icon, File02Icon, StarIcon, Doc01Icon, Menu01Icon, Cancel01Icon, Download02Icon,
-  Message01Icon
+  Message01Icon, Home01Icon, EyeIcon, ArrowLeft01Icon, ArrowRight01Icon, Mail01Icon
 } from 'hugeicons-react';
-import room1 from '../../../assets/images/room-1.webp';
-import room2 from '../../../assets/images/room-2.webp';
-import room3 from '../../../assets/images/room-3.webp';
-import room4 from '../../../assets/images/room-4.webp';
-import founder from '../../../assets/images/founder.webp';
+import { API_CONFIG_URL } from '../../../config/api';
+import { safeParseResponse } from '../../../utils/apiHelper';
+import {
+  areDateRangesOverlapping,
+  isBookingActive,
+  extractBookingRoomId,
+  normalizeRoomId,
+  normalizeDateToMidnight,
+  checkRoomConflict,
+  getAllMergedBookings,
+  isRemovedOfflineGuest,
+  markBookingAsCancelled
+} from '../../../utils/dateAvailability';
+import room1 from '../../../assets/images/room-1.avif';
+import room2 from '../../../assets/images/room-2.avif';
+import room3 from '../../../assets/images/room-3.avif';
+import room4 from '../../../assets/images/room-4.avif';
+import founder from '../../../assets/images/founder.avif';
+import OptimizedImage from '../../../components/Common/OptimizedImage';
+import { ROOMS_DATA } from '../../../components/Rooms/Rooms';
 
 const getRoomImage = (id) => {
   const numId = Number(id);
@@ -22,7 +37,14 @@ const getRoomImage = (id) => {
   return room1;
 };
 
-const API_CONFIG_URL = 'http://localhost/merakiliving_backend';
+const getRoomTitle = (id) => {
+  const numId = Number(id);
+  if (numId === 1) return 'Himalayan View Room';
+  if (numId === 2) return 'Premium Valley Room';
+  if (numId === 3) return 'Luxury Family Suite';
+  if (numId === 4) return 'Entire Homestay';
+  return id || 'Room';
+};
 
 const formatDateNumeric = (dateStr) => {
   if (!dateStr) return '—';
@@ -113,7 +135,10 @@ const formatBookingTime = (dateStr) => {
     const cleanStr = dateStr.trim();
     if (!cleanStr || cleanStr === 'N/A' || cleanStr === '—' || cleanStr === 'null' || cleanStr === 'undefined') return '';
 
-    // Matches time portion within timestamp strings e.g. "2026-09-13 14:30:00" or "14:30:00" or "02:30 PM"
+    if (/^\d{4}[-/]\d{1,2}[-/]\d{1,2}$/.test(cleanStr) || /^\d{1,2}[-/]\d{1,2}[-/]\d{4}$/.test(cleanStr)) {
+      return '';
+    }
+
     const timeMatch = cleanStr.match(/(?:[ T]|^)(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(am|pm|AM|PM)?/);
     if (timeMatch) {
       let h = parseInt(timeMatch[1], 10);
@@ -130,15 +155,20 @@ const formatBookingTime = (dateStr) => {
         return `${String(displayH).padStart(2, '0')}:${m} ${ampm}`;
       }
     }
+
+    if (cleanStr.includes('T') || cleanStr.includes('Z')) {
+      const d = new Date(cleanStr);
+      if (!isNaN(d.getTime())) {
+        let h = d.getHours();
+        const m = String(d.getMinutes()).padStart(2, '0');
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12;
+        return `${String(h).padStart(2, '0')}:${m} ${ampm}`;
+      }
+    }
   }
 
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return '';
-  return d.toLocaleTimeString('en-IN', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
-  });
+  return '';
 };
 
 const getStatusBadge = (status) => {
@@ -158,11 +188,91 @@ const getStatusBadge = (status) => {
   return <span className="admin-badge badge-info">{status || 'Pending'}</span>;
 };
 
+
+
+const computeLiveRoomStatuses = (roomStatusesList, allBookings) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const activeBookings = (Array.isArray(allBookings) ? allBookings : []).filter(b => isBookingActive(b) && !isRemovedOfflineGuest(b));
+  const conflictingToday = activeBookings.filter(b => {
+    const bIn = b.check_in || b.checkIn || b.check_in_date || b.start_date;
+    const bOut = b.check_out || b.checkOut || b.check_out_date || b.end_date;
+    if (!bIn || !bOut) return false;
+    return areDateRangesOverlapping(today, tomorrow, bIn, bOut);
+  });
+
+  const isRoom1 = conflictingToday.some(b => extractBookingRoomId(b) === 1);
+  const isRoom2 = conflictingToday.some(b => extractBookingRoomId(b) === 2);
+  const isRoom3 = conflictingToday.some(b => extractBookingRoomId(b) === 3);
+  const isRoom4 = conflictingToday.some(b => extractBookingRoomId(b) === 4);
+
+  return (roomStatusesList || []).map(r => {
+    const rId = Number(r.id);
+    let status = 'Available';
+
+    if (rId === 4) {
+      if (isRoom4) status = 'Booked';
+      else if (isRoom1 || isRoom2 || isRoom3) status = 'Not Available';
+      else status = 'Available';
+    } else if (rId === 1) {
+      if (isRoom1) status = 'Booked';
+      else if (isRoom4) status = 'Not Available';
+      else status = 'Available';
+    } else if (rId === 2) {
+      if (isRoom2) status = 'Booked';
+      else if (isRoom4) status = 'Not Available';
+      else status = 'Available';
+    } else if (rId === 3) {
+      if (isRoom3) status = 'Booked';
+      else if (isRoom4) status = 'Not Available';
+      else status = 'Available';
+    } else {
+      const isBooked = conflictingToday.some(b => extractBookingRoomId(b) === rId);
+      status = isBooked ? 'Booked' : 'Available';
+    }
+
+    const bg = status === 'Available' ? '#f0fdf4' : '#fef2f2';
+    const color = status === 'Available' ? '#16a34a' : '#dc2626';
+
+    return {
+      ...r,
+      status,
+      bg,
+      color
+    };
+  });
+};
+
 export default function AdminDashboard({ setCurrentPage }) {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [subTab, setSubTab] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+
+  useEffect(() => {
+    try {
+      sessionStorage.removeItem('meraki_offline_bookings');
+      localStorage.removeItem('meraki_offline_bookings');
+
+      // Purge any stored keys if they contain removed offline or Pankaj Gupta data
+      ['meraki_latest_booking', 'meraki_booking', 'meraki_confirmed_booking', 'meraki_admin_bookings'].forEach(key => {
+        [sessionStorage, localStorage].forEach(store => {
+          try {
+            const raw = store.getItem(key);
+            if (raw) {
+              const parsed = JSON.parse(raw);
+              if (isRemovedOfflineGuest(parsed)) {
+                store.removeItem(key);
+              }
+            }
+          } catch (e) {}
+        });
+      });
+    } catch (e) {}
+  }, []);
 
   const handleLogout = () => {
     sessionStorage.removeItem('meraki_admin_auth'); 
@@ -180,10 +290,7 @@ export default function AdminDashboard({ setCurrentPage }) {
       id: 'rooms', label: 'Rooms', icon: BedDoubleIcon,
       subItems: [{ id: 'manage-rooms', label: 'Manage Rooms' }]
     },
-    {
-      id: 'cafe', label: 'Cafe Menu', icon: Coffee02Icon,
-      subItems: [{ id: 'featured-items', label: 'Featured Items' }, { id: 'full-menu', label: 'Full Menu Categories' }]
-    },
+
     { id: 'guests', label: 'Guests', icon: UserGroupIcon },
     { id: 'payments', label: 'Payments', icon: Wallet01Icon },
     { id: 'coupons', label: 'Coupons & Discounts', icon: Ticket01Icon },
@@ -199,6 +306,10 @@ export default function AdminDashboard({ setCurrentPage }) {
       id: 'website', label: 'Website Content', icon: File02Icon,
       subItems: [{ id: 'gallery', label: 'Gallery Manager', icon: Image01Icon }, { id: 'reviews', label: 'Reviews', icon: StarIcon }, { id: 'policies', label: 'Legal Policies', icon: Doc01Icon }]
     },
+    {
+      id: 'own-a-villa', label: 'Enquiries', icon: Home01Icon,
+      subItems: [{ id: 'own-a-villa', label: 'Own A Villa' }, { id: 'contact-us', label: 'Contact Us' }]
+    },
     { id: 'settings', label: 'Settings', icon: Settings01Icon }
   ];
 
@@ -209,12 +320,11 @@ export default function AdminDashboard({ setCurrentPage }) {
   };
 
   const renderContent = () => {
-    if (activeTab === 'dashboard') return <DashboardTab />;
+    if (activeTab === 'dashboard') return <DashboardTab setActiveTab={setActiveTab} setSubTab={setSubTab} />;
     if (activeTab === 'bookings' && subTab === 'all-bookings') return <BookingsTab />;
     if (activeTab === 'bookings' && subTab === 'calendar') return <CalendarTab />;
     if (activeTab === 'rooms' && subTab === 'manage-rooms') return <ManageRoomsTab />;
-    if (activeTab === 'cafe' && subTab === 'featured-items') return <CafeFeaturedTab />;
-    if (activeTab === 'cafe' && subTab === 'full-menu') return <CafeMenuTab />;
+
     if (activeTab === 'guests') return <GuestsTab />;
     if (activeTab === 'payments') return <PaymentsTab />;
     if (activeTab === 'coupons') return <CouponsTab />;
@@ -224,6 +334,7 @@ export default function AdminDashboard({ setCurrentPage }) {
     if (activeTab === 'website' && subTab === 'gallery') return <GalleryTab />;
     if (activeTab === 'website' && subTab === 'reviews') return <ReviewsTab />;
     if (activeTab === 'website' && subTab === 'policies') return <PoliciesTab />;
+    if (activeTab === 'own-a-villa') return <OwnAVillaTab subTab={subTab} />;
     if (activeTab === 'settings') return <SettingsTab />;
     return (
       <div className="admin-empty-state">
@@ -239,7 +350,7 @@ export default function AdminDashboard({ setCurrentPage }) {
       <div className={`admin-sidebar-overlay ${sidebarOpen ? 'open' : ''}`} onClick={() => setSidebarOpen(false)} />
       <aside className={`admin-sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="admin-sidebar-header">
-          <img src={logo} alt="Meraki Living" className="admin-sidebar-logo" />
+          <OptimizedImage src={logo} alt="Meraki Living" className="admin-sidebar-logo" loading="eager" fetchPriority="high" decoding="async" noWrapper={true} />
           <button className="admin-sidebar-close" onClick={() => setSidebarOpen(false)}><Cancel01Icon size={20} /></button>
         </div>
         <nav className="admin-sidebar-nav">
@@ -260,7 +371,7 @@ export default function AdminDashboard({ setCurrentPage }) {
         </nav>
         <div className="admin-sidebar-footer">
           <div className="admin-sidebar-footer-profile">
-            <img src={founder} alt="Admin" className="admin-sidebar-footer-profile-img" style={{objectFit:"cover", width: '36px', height: '36px'}} />
+            <OptimizedImage src={founder} alt="Admin" className="admin-sidebar-footer-profile-img" style={{objectFit:"cover", width: '40px', height: '40px', borderRadius: '50%'}} loading="eager" width={40} height={40} decoding="async" noWrapper={true} />
             <div className="admin-sidebar-footer-profile-info" style={{flex: 1}}>
               <span className="admin-sidebar-footer-profile-name">Pranay Matiyani</span>
               <span className="admin-sidebar-footer-profile-role">Super Administrator</span>
@@ -301,7 +412,558 @@ function PageHeader({ title, subtitle, action }) {
   );
 }
 
-function DashboardTab() {
+function RoomAvailabilityCalendarModal({ room, onClose, onDataChanged }) {
+  const [currentDate, setCurrentDate] = useState(() => new Date());
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [actionError, setActionError] = useState('');
+  const [actionSuccess, setActionSuccess] = useState('');
+
+  // Selection state
+  const [rangeStart, setRangeStart] = useState(null); // Date obj at midnight
+  const [rangeEnd, setRangeEnd] = useState(null);     // Date obj at midnight
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayMs = today.getTime();
+
+  const fetchBookings = useCallback(async () => {
+    setLoading(true);
+    setActionError('');
+    try {
+      const res = await fetch(`${API_CONFIG_URL}/api_bookings.php`);
+      const parsed = await safeParseResponse(res);
+      const raw = (parsed.ok && parsed.data && parsed.data.status === 'success' && Array.isArray(parsed.data.data))
+        ? parsed.data.data
+        : [];
+      const merged = getAllMergedBookings(raw).filter(b => isBookingActive(b) && !isRemovedOfflineGuest(b));
+      setBookings(merged);
+    } catch (err) {
+      setActionError('Unable to load bookings from server.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBookings();
+  }, [fetchBookings]);
+
+  // Calendar info
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDayIndex = new Date(year, month, 1).getDay();
+
+  // Previous month trailing days
+  const daysInPrevMonth = new Date(year, month, 0).getDate();
+  const prevMonthDays = Array.from({ length: firstDayIndex }).map((_, i) => {
+    return daysInPrevMonth - firstDayIndex + 1 + i;
+  });
+
+  // Next month leading days to complete the row
+  const totalDaysRendered = firstDayIndex + daysInMonth;
+  const remainingCells = (7 - (totalDaysRendered % 7)) % 7;
+  const nextMonthDays = Array.from({ length: remainingCells }).map((_, i) => i + 1);
+
+  const prevMonth = () => {
+    setCurrentDate(new Date(year, month - 1, 1));
+    setActionError('');
+    setActionSuccess('');
+  };
+  const nextMonth = () => {
+    setCurrentDate(new Date(year, month + 1, 1));
+    setActionError('');
+    setActionSuccess('');
+  };
+  const jumpToday = () => {
+    setCurrentDate(new Date());
+    setActionError('');
+    setActionSuccess('');
+  };
+
+  const monthName = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+  // Format Helpers
+  const formatYMD = (date) => {
+    if (!date) return '';
+    const d = new Date(date);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
+  const formatDisplay = (date) => {
+    if (!date) return '—';
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return '—';
+    return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+
+  // Day status calculator
+  const getDayDetails = (day) => {
+    const dayStart = new Date(year, month, day);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayMs = dayStart.getTime();
+    const isPast = dayMs < todayMs;
+
+    const dayEnd = new Date(year, month, day + 1);
+    dayEnd.setHours(0, 0, 0, 0);
+
+    if (isPast) {
+      return {
+        dayStart,
+        dayEnd,
+        isPast: true,
+        status: 'Past',
+        hasConflict: false,
+        isDirectBooking: false,
+        bookings: []
+      };
+    }
+
+    const conflictResult = checkRoomConflict(room.id, dayStart, dayEnd, bookings);
+    const hasConflict = conflictResult.hasConflict;
+    const conflictingBookings = conflictResult.conflictingBookings || [];
+
+    const isDirectBooking = conflictingBookings.some(b => extractBookingRoomId(b) === normalizeRoomId(room.id));
+
+    let status = 'Available';
+    if (hasConflict) {
+      status = isDirectBooking ? 'Booked' : 'Blocked';
+    }
+
+    return {
+      dayStart,
+      dayEnd,
+      isPast: false,
+      status,
+      hasConflict,
+      isDirectBooking,
+      bookings: conflictingBookings
+    };
+  };
+
+  // Date click handler (Check-in -> Check-out)
+  const handleDateClick = (day) => {
+    const { dayStart, dayEnd, isPast, status, bookings: dayBookings } = getDayDetails(day);
+    if (isPast) return;
+
+    setActionError('');
+    setActionSuccess('');
+
+    // If day is booked / blocked and user clicks it directly:
+    if (status !== 'Available' && dayBookings.length > 0) {
+      const b = dayBookings[0];
+      const bIn = normalizeDateToMidnight(b.check_in || b.checkIn || b.start_date || b.check_in_date);
+      const bOut = normalizeDateToMidnight(b.check_out || b.checkOut || b.end_date || b.check_out_date);
+      setRangeStart(bIn ? new Date(bIn) : dayStart);
+      setRangeEnd(bOut ? new Date(bOut) : dayEnd);
+      return;
+    }
+
+    // Available day clicked:
+    if (!rangeStart || (rangeStart && rangeEnd)) {
+      setRangeStart(dayStart);
+      setRangeEnd(null);
+    } else {
+      // rangeStart is set, rangeEnd is null
+      if (dayStart.getTime() > rangeStart.getTime()) {
+        setRangeEnd(dayStart);
+      } else if (dayStart.getTime() === rangeStart.getTime()) {
+        // Same day click -> 1-night stay
+        setRangeEnd(dayEnd);
+      } else {
+        // Clicked before rangeStart -> make this the new check-in
+        setRangeStart(dayStart);
+        setRangeEnd(null);
+      }
+    }
+  };
+
+  // Day selection classes
+  const getDaySelectionType = (day) => {
+    const d = new Date(year, month, day).getTime();
+    if (!rangeStart) return null;
+    const startMs = rangeStart.getTime();
+
+    if (!rangeEnd) {
+      return d === startMs ? 'selected check-in' : null;
+    }
+
+    const endMs = rangeEnd.getTime();
+    if (d === startMs) return 'selected check-in';
+    if (d === endMs) return 'selected check-out';
+    if (d > startMs && d < endMs) return 'selected in-range';
+    return null;
+  };
+
+  const isToday = (day) => {
+    return today.getFullYear() === year && today.getMonth() === month && today.getDate() === day;
+  };
+
+  const selectedNights = (rangeStart && rangeEnd)
+    ? Math.max(1, Math.round((rangeEnd.getTime() - rangeStart.getTime()) / (1000 * 60 * 60 * 24)))
+    : (rangeStart ? 1 : 0);
+
+  // Action: Mark as Booked
+  const handleMarkAsBooked = async () => {
+    if (!rangeStart) {
+      setActionError('Please select Check-in and Check-out dates on the calendar.');
+      return;
+    }
+    const finalStart = rangeStart;
+    const finalEnd = rangeEnd || new Date(rangeStart.getFullYear(), rangeStart.getMonth(), rangeStart.getDate() + 1);
+
+    if (finalStart.getTime() < todayMs) {
+      setActionError('Cannot book past dates. Please select current or future dates.');
+      return;
+    }
+
+    const conflictCheck = checkRoomConflict(room.id, finalStart, finalEnd, bookings);
+    if (conflictCheck.hasConflict) {
+      setActionError('Selected date range overlaps an existing active booking. Please select available dates.');
+      return;
+    }
+
+    setSubmitting(true);
+    setActionError('');
+    setActionSuccess('');
+
+    try {
+      const checkInStr = formatYMD(finalStart);
+      const checkOutStr = formatYMD(finalEnd);
+      const numericPrice = typeof room.price === 'number'
+        ? room.price
+        : parseInt(String(room.price || '3500').replace(/\D/g, ''), 10) || 3500;
+      const totalAmount = numericPrice * selectedNights;
+
+      const payload = {
+        room_id: Number(room.id),
+        guest_name: 'Admin Block',
+        guest_email: 'admin@merakiliving.com',
+        guest_phone: '9456103445',
+        check_in: checkInStr,
+        check_out: checkOutStr,
+        guest_count: Number(room.id) === 4 ? 10 : 2,
+        status: 'Confirmed',
+        room_price: totalAmount,
+        paid_amount: totalAmount,
+        payment_status: 'Paid',
+        source: 'Direct / Admin'
+      };
+
+      const res = await fetch(`${API_CONFIG_URL}/api_bookings.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const parsed = await safeParseResponse(res);
+      if (parsed.ok && parsed.data && (parsed.data.status === 'success' || parsed.data.id || parsed.status === 200)) {
+        setActionSuccess(`Room marked as Booked for ${formatDisplay(finalStart)} → ${formatDisplay(finalEnd)}.`);
+        setRangeStart(null);
+        setRangeEnd(null);
+        window.dispatchEvent(new Event('meraki_booking_updated'));
+        window.dispatchEvent(new Event('meraki_rooms_updated'));
+        await fetchBookings();
+        if (onDataChanged) onDataChanged();
+      } else {
+        setActionError(parsed.error || parsed.data?.message || 'Error saving room booking to server.');
+      }
+    } catch (err) {
+      setActionError('Network error while updating room availability.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Action: Mark as Available
+  const handleMarkAsAvailable = async () => {
+    if (!rangeStart) {
+      setActionError('Please select Check-in and Check-out dates on the calendar.');
+      return;
+    }
+    const finalStart = rangeStart;
+    const finalEnd = rangeEnd || new Date(rangeStart.getFullYear(), rangeStart.getMonth(), rangeStart.getDate() + 1);
+
+    // Find all active bookings overlapping with [finalStart, finalEnd) for this room
+    const conflictResult = checkRoomConflict(room.id, finalStart, finalEnd, bookings);
+    const conflicting = conflictResult.conflictingBookings || [];
+
+    // Filter direct bookings for this room
+    const directBookings = conflicting.filter(b => extractBookingRoomId(b) === normalizeRoomId(room.id));
+
+    if (directBookings.length === 0) {
+      if (conflicting.length > 0) {
+        setActionError('These dates are blocked due to conflict with Entire Homestay. Please manage Entire Homestay to modify.');
+      } else {
+        setActionSuccess('Selected dates are already Available.');
+      }
+      return;
+    }
+
+    setSubmitting(true);
+    setActionError('');
+    setActionSuccess('');
+
+    try {
+      // Cancel each direct booking covering this date range
+      for (const b of directBookings) {
+        markBookingAsCancelled(b);
+        await fetch(`${API_CONFIG_URL}/api_bookings.php`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: b.id })
+        }).then(safeParseResponse).catch(() => {});
+      }
+
+      setActionSuccess(`Selected dates (${formatDisplay(finalStart)} → ${formatDisplay(finalEnd)}) marked as Available!`);
+      setRangeStart(null);
+      setRangeEnd(null);
+      window.dispatchEvent(new Event('meraki_booking_updated'));
+      window.dispatchEvent(new Event('meraki_rooms_updated'));
+      await fetchBookings();
+      if (onDataChanged) onDataChanged();
+    } catch (err) {
+      setActionError('Error releasing room booking.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="admin-modal-overlay admin-fade-in" style={{ zIndex: 9999 }} onClick={onClose}>
+      <div 
+        className="admin-room-calendar-modal-content" 
+        onClick={e => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="calendar-modal-title"
+      >
+        {/* Header */}
+        <div className="admin-room-calendar-header">
+          <div className="admin-room-calendar-header-info">
+            <OptimizedImage 
+              src={room.image_url || getRoomImage(room.id)} 
+              alt={room.name} 
+              className="admin-room-calendar-thumb" 
+              loading="eager" 
+              width={44}
+              height={44}
+              decoding="async" 
+              noWrapper={true} 
+            />
+            <div style={{minWidth: 0}}>
+              <h2 id="calendar-modal-title" className="admin-room-calendar-title">{room.name}</h2>
+              <div className="admin-room-calendar-meta">
+                <span>{room.price} / night</span>
+                <span className="admin-room-calendar-dot">•</span>
+                <span>Today: <strong className="admin-cal-header-status-text" style={{ color: room.status === 'Booked' ? '#dc2626' : '#16a34a', fontWeight: 600 }}>
+                  {room.status === 'Booked' ? 'Booked' : 'Available'}
+                </strong></span>
+              </div>
+            </div>
+          </div>
+          <button 
+            type="button" 
+            className="admin-modal-close-btn" 
+            onClick={onClose} 
+            aria-label="Close modal"
+          >
+            <Cancel01Icon size={20} strokeWidth={1.5} />
+          </button>
+        </div>
+
+        {/* Body Container */}
+        <div className="admin-room-calendar-body">
+          {/* Navigation Bar */}
+          <div className="admin-room-calendar-nav">
+            <button type="button" className="admin-cal-nav-btn" onClick={prevMonth} title="Previous Month" aria-label="Previous Month">
+              <ArrowLeft01Icon size={20} strokeWidth={2} />
+            </button>
+            <div className="admin-cal-month-title">
+              <Calendar01Icon size={18} strokeWidth={1.5} style={{ color: '#8A158F' }} />
+              <span>{monthName}</span>
+            </div>
+            <div className="admin-cal-nav-actions">
+              <button type="button" className="admin-cal-today-btn" onClick={jumpToday}>
+                Today
+              </button>
+              <button type="button" className="admin-cal-nav-btn" onClick={nextMonth} title="Next Month" aria-label="Next Month">
+                <ArrowRight01Icon size={20} strokeWidth={2} />
+              </button>
+            </div>
+          </div>
+
+          {/* Grid */}
+          <div className="admin-room-calendar-grid-wrap">
+            <div className="admin-room-calendar-grid">
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+                <div key={d} className="admin-room-calendar-day-header">{d}</div>
+              ))}
+              {prevMonthDays.map((d, i) => (
+                <div key={`prev-${i}`} className="admin-room-calendar-day-cell other-month disabled">
+                  <span className="admin-cal-date-number">{d}</span>
+                  <span className="admin-cal-status-pill past">—</span>
+                </div>
+              ))}
+              {Array.from({ length: daysInMonth }).map((_, i) => {
+                const dayNum = i + 1;
+                const { isPast, status, bookings: dayBookings } = getDayDetails(dayNum);
+                const selectionType = getDaySelectionType(dayNum);
+                const isTodayDay = isToday(dayNum);
+
+                let cellClass = 'admin-room-calendar-day-cell';
+                if (isPast) {
+                  cellClass += ' past disabled';
+                } else {
+                  cellClass += ` ${status.toLowerCase()}`;
+                }
+                if (selectionType) cellClass += ` ${selectionType}`;
+                if (isTodayDay) cellClass += ' today';
+
+                let tooltip = isPast ? `${dayNum} ${monthName}: Past Date` : `${dayNum} ${monthName}: ${status}`;
+                if (!isPast && dayBookings.length > 0) {
+                  const b = dayBookings[0];
+                  const bRef = b.booking_reference || `MERI${String(b.id).padStart(4, '0')}`;
+                  tooltip += ` (#${bRef})`;
+                }
+
+                return (
+                  <button
+                    key={dayNum}
+                    type="button"
+                    className={cellClass}
+                    onClick={() => handleDateClick(dayNum)}
+                    disabled={isPast}
+                    title={tooltip}
+                  >
+                    <span className="admin-cal-date-number">{dayNum}</span>
+                    {!isPast ? (
+                      <span className={`admin-cal-status-pill ${status.toLowerCase()}`}>
+                        {status === 'Booked' ? 'Booked' : status === 'Blocked' ? 'Blocked' : 'Available'}
+                      </span>
+                    ) : (
+                      <span className="admin-cal-status-pill past">—</span>
+                    )}
+                  </button>
+                );
+              })}
+              {nextMonthDays.map((d, i) => (
+                <div key={`next-${i}`} className="admin-room-calendar-day-cell other-month disabled">
+                  <span className="admin-cal-date-number">{d}</span>
+                  <span className="admin-cal-status-pill past">—</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Legend */}
+          <div className="admin-room-calendar-legend">
+            <div className="admin-cal-legend-item">
+              <span className="admin-cal-legend-dot available" />
+              <span>Available</span>
+            </div>
+            <div className="admin-cal-legend-item">
+              <span className="admin-cal-legend-dot booked" />
+              <span>Booked</span>
+            </div>
+            <div className="admin-cal-legend-item">
+              <span className="admin-cal-legend-dot blocked" />
+              <span>Blocked (Conflict)</span>
+            </div>
+            <div className="admin-cal-legend-item">
+              <span className="admin-cal-legend-dot selected" />
+              <span>Selected Range</span>
+            </div>
+          </div>
+
+          {/* Action Control Panel: Pure Available / Booked Controls */}
+          <div className="admin-room-calendar-action-panel">
+            <div className="admin-cal-selection-bar">
+              <div className="admin-cal-selection-info">
+                {rangeStart ? (
+                  <>
+                    <span className="admin-cal-selection-label">Selected Range</span>
+                    <h4 className="admin-cal-selection-dates">
+                      <span>{formatDisplay(rangeStart)}</span>
+                      {rangeEnd && (
+                        <>
+                          <ArrowRight01Icon size={16} strokeWidth={2.2} className="admin-cal-range-arrow" />
+                          <span>{formatDisplay(rangeEnd)}</span>
+                        </>
+                      )}
+                      <span className="admin-cal-nights-text">({selectedNights} {selectedNights === 1 ? 'night' : 'nights'})</span>
+                    </h4>
+                  </>
+                ) : (
+                  <p className="admin-cal-selection-placeholder">
+                    Select <strong>Check-in</strong> and <strong>Check-out</strong> dates above to manage room availability.
+                  </p>
+                )}
+              </div>
+
+              <div className="admin-cal-action-buttons">
+                {rangeStart && (
+                  <button
+                    type="button"
+                    className="admin-cal-btn-clear"
+                    onClick={() => { setRangeStart(null); setRangeEnd(null); setActionError(''); setActionSuccess(''); }}
+                    disabled={submitting || loading}
+                  >
+                    Clear
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="admin-cal-btn-available"
+                  onClick={handleMarkAsAvailable}
+                  disabled={!rangeStart || submitting || loading}
+                  title="Mark selected dates as Available"
+                >
+                  {submitting ? 'Updating...' : 'Available'}
+                </button>
+                <button
+                  type="button"
+                  className="admin-cal-btn-booked"
+                  onClick={handleMarkAsBooked}
+                  disabled={!rangeStart || submitting || loading}
+                  title="Mark selected dates as Booked"
+                >
+                  {submitting ? 'Updating...' : 'Booked'}
+                </button>
+              </div>
+            </div>
+
+            {/* Alerts */}
+            {actionError && (
+              <div className="admin-cal-alert error admin-fade-in" style={{ marginTop: '12px' }}>
+                {actionError}
+              </div>
+            )}
+            {actionSuccess && (
+              <div className="admin-cal-alert success admin-fade-in" style={{ marginTop: '12px' }}>
+                {actionSuccess}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="admin-room-calendar-footer">
+          <button type="button" className="admin-room-calendar-done-btn" onClick={onClose}>
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DashboardTab({ setActiveTab, setSubTab }) {
   const [showDateDropdownTop, setShowDateDropdownTop] = useState(false);
   const [showDateDropdownChart, setShowDateDropdownChart] = useState(false);
   const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
@@ -310,93 +972,166 @@ function DashboardTab() {
   const [roomStatuses, setRoomStatuses] = useState([]);
   const [recentBookings, setRecentBookings] = useState([]);
   const [chartData, setChartData] = useState([0, 0, 0, 0, 0, 0, 0]);
+  const [calendarModalRoom, setCalendarModalRoom] = useState(null);
+  const dashboardReqRef = useRef(0);
 
-  useEffect(() => {
+  const loadDashboardData = useCallback(() => {
+    const currentReq = ++dashboardReqRef.current;
     Promise.all([
-      fetch(`${API_CONFIG_URL}/api_dashboard_stats.php`).then(res => res.json()),
-      fetch(`${API_CONFIG_URL}/api_bookings.php`).then(res => res.json()),
-      fetch(`${API_CONFIG_URL}/api_payments.php`).then(res => res.json())
-    ]).then(([dashboardData, bookingsData, paymentsData]) => {
+      fetch(`${API_CONFIG_URL}/api_dashboard_stats.php`).then(res => res.json()).catch(() => null),
+      fetch(`${API_CONFIG_URL}/api_bookings.php`).then(res => res.json()).catch(() => ({ status: 'error', data: [] })),
+      fetch(`${API_CONFIG_URL}/api_payments.php`).then(res => res.json()).catch(() => ({ status: 'error', data: [] })),
+      fetch(`${API_CONFIG_URL}/api_guests.php`).then(res => res.json()).catch(() => ({ data: [] }))
+    ]).then(([dashboardData, bookingsData, paymentsData, guestsData]) => {
+      if (currentReq !== dashboardReqRef.current) return;
       let finalStats = { totalBookings: 0, totalGuests: 0, totalRevenue: '₹0', occupancyRate: '0%' };
       
       let fetchedPayments = [];
       if (paymentsData && paymentsData.status === 'success' && Array.isArray(paymentsData.data)) {
-        fetchedPayments = paymentsData.data;
+        fetchedPayments = paymentsData.data.filter(p => !isRemovedOfflineGuest(p.guest_name));
+      }
+      let fetchedGuests = [];
+      if (guestsData && guestsData.status === 'success' && Array.isArray(guestsData.data)) {
+        fetchedGuests = guestsData.data.filter(g => !isRemovedOfflineGuest(g.name));
       }
       
-      if(dashboardData && Array.isArray(dashboardData.roomStatuses)) {
-        setRoomStatuses(dashboardData.roomStatuses);
-        const totalRooms = dashboardData.roomStatuses.length;
-        const bookedRooms = dashboardData.roomStatuses.filter(r => r.status === 'Booked' || r.status === 'Not Available').length;
-        if (totalRooms > 0) {
-          finalStats.occupancyRate = Math.round((bookedRooms / totalRooms) * 100) + '%';
-        }
+      let rawBookings = [];
+      if (bookingsData && bookingsData.status === 'success' && Array.isArray(bookingsData.data)) {
+        rawBookings = bookingsData.data.filter(b => !isRemovedOfflineGuest(b));
       }
-      if(dashboardData && Array.isArray(dashboardData.recentBookings)) setRecentBookings(dashboardData.recentBookings);
-      
-      if(bookingsData && bookingsData.status === 'success' && Array.isArray(bookingsData.data)) {
-        finalStats.totalBookings = bookingsData.data.length;
-        const totalG = bookingsData.data.reduce((sum, b) => sum + parseInt(b.guest_count || 0), 0);
-        finalStats.totalGuests = totalG;
-        
-        const totalRev = bookingsData.data.reduce((sum, b) => {
-          const payment = fetchedPayments.find(p => p.booking_id === b.id && (p.status === 'Success' || p.status === 'Completed'));
-          let amount = payment ? parseFloat(payment.amount) : parseFloat(String(b.room_price || 0).replace(/,/g, ''));
-          return sum + (isNaN(amount) ? 0 : amount);
-        }, 0);
-        
-        finalStats.totalRevenue = '₹' + totalRev.toLocaleString('en-IN');
 
-        // Calculate chart data for the last 7 days
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const counts = [0, 0, 0, 0, 0, 0, 0];
-        
-        bookingsData.data.forEach(b => {
-          const bDateStr = b.created_at || b.booking_date;
-          if (bDateStr) {
-            const bDate = new Date(bDateStr);
-            bDate.setHours(0, 0, 0, 0);
-            const diffTime = Math.abs(today - bDate);
-            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-            if (diffDays >= 0 && diffDays < 7) {
-              counts[6 - diffDays] += 1;
-            }
-          }
-        });
-        setChartData(counts);
+      // Merge online bookings across API, sessionStorage, and localStorage
+      const mergedAll = getAllMergedBookings(rawBookings).filter(b => !isRemovedOfflineGuest(b));
+
+      const mappedBookings = mergedAll.map(b => {
+        const payment = fetchedPayments.find(p => p.booking_id === b.id && (p.status === 'Success' || p.status === 'Completed')) ||
+                        fetchedPayments.find(p => p.booking_id === b.id);
+        const guest = fetchedGuests.find(g => g.id === b.guest_id);
+        const bIn = b.check_in || b.checkIn || b.check_in_date || b.start_date || '';
+        const bOut = b.check_out || b.checkOut || b.check_out_date || b.end_date || '';
+        const timeCandidates = [
+          b.time,
+          b.booking_time,
+          b.created_time,
+          b.created_at,
+          payment ? (payment.time || payment.created_at || payment.payment_date) : '',
+          b.booking_date
+        ].filter(Boolean);
+        const rawBookingTimestamp = timeCandidates.find(t => typeof t === 'string' && (t.includes(':') || t.includes('T'))) || b.created_at || b.booking_date || '';
+        const rawBookingDate = b.booking_date || b.created_at || (payment ? (payment.payment_date || payment.created_at || payment.date) : '') || '';
+
+        return {
+          ...b,
+          guest_name: b.guest_name || b.name || (guest ? guest.name : (b.guest_id ? `Guest ${b.guest_id}` : 'Guest')),
+          guest_email: b.guest_email || b.email || (guest ? guest.email : 'N/A'),
+          guest_phone: b.guest_phone || b.phone || (guest ? guest.phone : 'N/A'),
+          room_name: b.room_name || b.room || getRoomTitle(b.room_id || b.roomId),
+          booking_date: rawBookingDate,
+          created_at: rawBookingTimestamp || b.created_at,
+          booking_time: b.booking_time || b.time || (payment ? payment.time : '') || rawBookingTimestamp,
+          paid_amount: payment ? payment.amount : (b.room_price || b.paid_amount || 0),
+          payment_status: payment ? payment.status : (b.payment_status || (b.status === 'Confirmed' || b.status === 'Completed' ? 'Paid' : b.status === 'Pending' ? 'Pending' : 'Unpaid')),
+          payment_method: payment ? payment.payment_method : (b.payment_method || (b.paid_amount ? 'Online / UPI' : 'Pending')),
+          transaction_id: payment ? (payment.razorpay_payment_id || payment.transaction_id || 'N/A') : (b.transaction_id || 'N/A'),
+          check_in: bIn,
+          check_out: bOut,
+          room_id: extractBookingRoomId(b) || b.room_id || b.roomId || 1
+        };
+      });
+
+      let initialRoomStatuses = [];
+      if (dashboardData && Array.isArray(dashboardData.roomStatuses)) {
+        initialRoomStatuses = dashboardData.roomStatuses;
+      } else {
+        initialRoomStatuses = [
+          { id: 1, name: 'Himalayan View Room', price: '₹3,500', status: 'Available' },
+          { id: 2, name: 'Premium Valley Room', price: '₹4,500', status: 'Available' },
+          { id: 3, name: 'Luxury Family Suite', price: '₹6,000', status: 'Available' },
+          { id: 4, name: 'Entire Homestay', price: '₹22,000', status: 'Available' }
+        ];
       }
+
+      // Compute date-based live room statuses for today
+      const liveStatuses = computeLiveRoomStatuses(initialRoomStatuses, mappedBookings);
+      setRoomStatuses(liveStatuses);
+
+      const totalRooms = liveStatuses.length;
+      const bookedRooms = liveStatuses.filter(r => r.status === 'Booked' || r.status === 'Not Available').length;
+      if (totalRooms > 0) {
+        finalStats.occupancyRate = Math.round((bookedRooms / totalRooms) * 100) + '%';
+      }
+
+      // Populate recent bookings dynamically from real sorted bookings
+      const sortedRecent = [...mappedBookings]
+        .filter(b => !isRemovedOfflineGuest(b))
+        .sort((a, b) => {
+          const timeA = new Date(a.created_at || a.booking_date || 0).getTime() || (Number(a.id) || 0);
+          const timeB = new Date(b.created_at || b.booking_date || 0).getTime() || (Number(b.id) || 0);
+          return timeB - timeA;
+        });
+
+      if (sortedRecent.length > 0) {
+        setRecentBookings(sortedRecent.slice(0, 5));
+      } else if (dashboardData && Array.isArray(dashboardData.recentBookings)) {
+        setRecentBookings(dashboardData.recentBookings.filter(b => !isRemovedOfflineGuest(b)));
+      } else {
+        setRecentBookings([]);
+      }
+
+      finalStats.totalBookings = mappedBookings.length;
+      const totalG = mappedBookings.reduce((sum, b) => sum + parseInt(b.guest_count || 1, 10), 0);
+      finalStats.totalGuests = totalG;
       
+      const totalRev = mappedBookings.reduce((sum, b) => {
+        const payment = fetchedPayments.find(p => p.booking_id === b.id && (p.status === 'Success' || p.status === 'Completed'));
+        let amount = payment ? parseFloat(payment.amount) : parseFloat(String(b.room_price || b.paid_amount || 0).replace(/,/g, ''));
+        return sum + (isNaN(amount) ? 0 : amount);
+      }, 0);
+      
+      finalStats.totalRevenue = '₹' + totalRev.toLocaleString('en-IN');
+
+      // Calculate chart data for the last 7 days
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const counts = [0, 0, 0, 0, 0, 0, 0];
+      
+      mappedBookings.forEach(b => {
+        const bDateStr = b.created_at || b.booking_date;
+        if (bDateStr) {
+          const bDate = new Date(bDateStr);
+          bDate.setHours(0, 0, 0, 0);
+          const diffTime = Math.abs(today - bDate);
+          const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+          if (diffDays >= 0 && diffDays < 7) {
+            counts[6 - diffDays] += 1;
+          }
+        }
+      });
+      setChartData(counts);
       setStats(finalStats);
     }).catch(e => console.error("Dashboard/Bookings JSON Error:", e));
   }, []);
 
-  const toggleStatus = (id) => {
-    const roomToToggle = roomStatuses.find(r => r.id === id);
-    if (!roomToToggle) return;
+  useEffect(() => {
+    loadDashboardData();
 
-    const isAvailable = roomToToggle.status?.toLowerCase().trim() === 'available';
-    const newStatus = isAvailable ? 'Booked' : 'Available';
+    const handleUpdate = () => {
+      loadDashboardData();
+    };
 
-    setRoomStatuses(prev => prev.map(r => r.id === id ? { ...r, status: newStatus, bg: newStatus === 'Available' ? '#f0fdf4' : '#fef2f2', color: newStatus === 'Available' ? '#16a34a' : '#dc2626' } : r));
+    window.addEventListener('meraki_booking_updated', handleUpdate);
+    window.addEventListener('meraki_rooms_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
 
-    fetch(`${API_CONFIG_URL}/api_rooms.php`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: id, status: newStatus })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data && data.status === 'success') {
-        fetch(`${API_CONFIG_URL}/api_dashboard_stats.php`)
-          .then(res => res.json())
-          .then(dashboardData => {
-            if(dashboardData && Array.isArray(dashboardData.roomStatuses)) {
-              setRoomStatuses(dashboardData.roomStatuses);
-            }
-          }).catch(e => console.error(e));
-      }
-    }).catch(err => console.error(err));
+    return () => {
+      window.removeEventListener('meraki_booking_updated', handleUpdate);
+      window.removeEventListener('meraki_rooms_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
+  }, [loadDashboardData]);
+
+  const handleRoomStatusClick = (room) => {
+    setCalendarModalRoom(room);
   };
 
   return (
@@ -532,41 +1267,112 @@ function DashboardTab() {
         </div>
       </div>
       <div className="admin-grid-2-layout">
-        <div className="admin-card" style={{flex: '1.5'}}>
+        <div className="admin-card" style={{flex: '1.5', minWidth: 0}}>
           <div className="admin-card-header">
             <h2 className="admin-card-title">Room Status Overview</h2>
-            <span style={{fontSize:'13px', color:'#8A158F', fontWeight:'600', cursor:'pointer'}}>Manage Rooms</span>
+            <span 
+              style={{fontSize:'13px', color:'#8A158F', fontWeight:'600', cursor:'pointer'}}
+              onClick={() => { if (setActiveTab) { setActiveTab('rooms'); if (setSubTab) setSubTab('manage-rooms'); } }}
+            >
+              Manage Rooms
+            </span>
           </div>
           <div style={{padding: '24px'}}>
             {roomStatuses.map((r) => (
               <div key={r.id} className="admin-room-list-item hover-lift-subtle">
-                <img src={r.image_url || getRoomImage(r.id)} alt={r.name} />
+                <OptimizedImage src={r.image_url || getRoomImage(r.id)} alt={r.name} loading="eager" width={48} height={48} decoding="async" noWrapper={true} />
                 <div className="admin-room-list-info">
                   <h4>{r.name}</h4><p>{r.price} / night</p>
                 </div>
-                <span className="admin-badge admin-status-toggle" style={{background: r.bg || (r.status === 'Available' ? '#f0fdf4' : '#fef2f2'), color: r.color || (r.status === 'Available' ? '#16a34a' : '#dc2626')}} onClick={() => toggleStatus(r.id)} title="Click to toggle status">{r.status}</span>
+                <span 
+                  className="admin-badge admin-status-toggle" 
+                  style={{
+                    background: r.bg || (r.status === 'Available' ? '#f0fdf4' : '#fef2f2'), 
+                    color: r.color || (r.status === 'Available' ? '#16a34a' : '#dc2626'),
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0
+                  }} 
+                  onClick={() => handleRoomStatusClick(r)} 
+                  title="Click to view calendar & manage availability by date"
+                >
+                  {r.status}
+                </span>
               </div>
             ))}
           </div>
         </div>
-        <div className="admin-card" style={{flex: '1'}}>
+        <div className="admin-card" style={{flex: '1', minWidth: 0}}>
           <div className="admin-card-header">
             <h2 className="admin-card-title">Recent Bookings</h2>
-            <span style={{fontSize:'13px', color:'#8A158F', fontWeight:'600', cursor:'pointer'}}>View All</span>
+            <span 
+              style={{fontSize:'13px', color:'#8A158F', fontWeight:'600', cursor:'pointer'}}
+              onClick={() => { if (setActiveTab) { setActiveTab('bookings'); if (setSubTab) setSubTab('all-bookings'); } }}
+            >
+              View All
+            </span>
           </div>
           <div style={{padding: '24px'}}>
-            {recentBookings.map((b) => (
-              <div key={b.id} className="recent-booking-item hover-lift-subtle">
-                <img src={b.room_image_url || getRoomImage(b.room_id || b.room)} alt="Booking" />
-                <div className="recent-booking-info">
-                  <h4>{b.name || b.guest_name}</h4><p>{b.room || b.room_name}</p><span>{b.dates ? formatDateNumeric(b.dates) : `${formatDateNumeric(b.check_in)} → ${formatDateNumeric(b.check_out)}`}</span>
-                </div>
-                <span className={`admin-badge ${b.status === 'Confirmed' || b.status === 'Success' ? 'badge-success' : b.status === 'Pending' ? 'badge-warning' : 'badge-danger'}`} style={b.status === 'Pending' ? {background:'#fff7ed', color:'#ea580c'} : {}}>{b.status}</span>
-              </div>
-            ))}
+            {recentBookings.length === 0 ? (
+              <div style={{textAlign: 'center', color: '#888', padding: '24px 0', fontSize: '13px'}}>No recent bookings found</div>
+            ) : (
+              recentBookings.map((b) => {
+                const bTime = formatBookingTime(b.created_at || b.booking_time || b.time || b.booking_date);
+                const roomName = b.room_name || b.room || getRoomTitle(b.room_id);
+                const guestName = b.guest_name || b.name || 'Guest';
+                const checkInFormatted = formatDateNumeric(b.check_in);
+                const checkOutFormatted = formatDateNumeric(b.check_out);
+                const statusBadgeClass = (b.status === 'Confirmed' || b.status === 'Success' || b.status === 'Completed') 
+                  ? 'badge-success' 
+                  : (b.status === 'Pending' ? 'badge-warning' : 'badge-danger');
+
+                return (
+                  <div key={b.id || `${guestName}-${b.check_in}`} className="recent-booking-item hover-lift-subtle">
+                    <OptimizedImage 
+                      src={b.room_image_url || getRoomImage(b.room_id || b.room || roomName)} 
+                      alt={roomName} 
+                      loading="eager" 
+                      width={48} 
+                      height={48} 
+                      decoding="async" 
+                      noWrapper={true} 
+                    />
+                    <div className="recent-booking-info">
+                      <h4>{guestName}</h4>
+                      <p>{roomName}</p>
+                      <span className="recent-booking-details-line">
+                        <span>{checkInFormatted} → {checkOutFormatted}</span>
+                        {bTime && (
+                          <span style={{color: '#8A158F', fontWeight: '600'}}>
+                            • {bTime}
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                    <span 
+                      className={`admin-badge ${statusBadgeClass}`} 
+                      style={{
+                        ...(b.status === 'Pending' ? {background:'#fff7ed', color:'#ea580c'} : {}),
+                        whiteSpace: 'nowrap',
+                        flexShrink: 0
+                      }}
+                    >
+                      {b.status || 'Confirmed'}
+                    </span>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
       </div>
+      {calendarModalRoom && (
+        <RoomAvailabilityCalendarModal
+          room={calendarModalRoom}
+          onClose={() => setCalendarModalRoom(null)}
+          onDataChanged={loadDashboardData}
+        />
+      )}
     </div>
   );
 }
@@ -577,52 +1383,81 @@ function BookingsTab() {
   const [currentPage, setCurrentPageNum] = useState(1);
   const [editingBooking, setEditingBooking] = useState(null);
   const [viewingBooking, setViewingBooking] = useState(null);
+  const bookingsReqRef = useRef(0);
 
   const ITEMS_PER_PAGE = 10;
 
-  const fetchBookings = () => {
+  const fetchBookings = useCallback(() => {
+    const currentReq = ++bookingsReqRef.current;
     Promise.all([
-      fetch(`${API_CONFIG_URL}/api_bookings.php`).then(res => res.json()),
-      fetch(`${API_CONFIG_URL}/api_payments.php`).then(res => res.json()),
+      fetch(`${API_CONFIG_URL}/api_bookings.php`).then(res => res.json()).catch(() => ({ status: 'error', data: [] })),
+      fetch(`${API_CONFIG_URL}/api_payments.php`).then(res => res.json()).catch(() => ({ status: 'error', data: [] })),
       fetch(`${API_CONFIG_URL}/api_guests.php`).then(res => res.json()).catch(() => ({ data: [] }))
     ]).then(([bookingsData, paymentsData, guestsData]) => {
+      if (currentReq !== bookingsReqRef.current) return;
       let fetchedPayments = [];
       if (paymentsData && paymentsData.status === 'success' && Array.isArray(paymentsData.data)) {
-        fetchedPayments = paymentsData.data;
+        fetchedPayments = paymentsData.data.filter(p => !isRemovedOfflineGuest(p.guest_name));
       }
       let fetchedGuests = [];
       if (guestsData && guestsData.status === 'success' && Array.isArray(guestsData.data)) {
-        fetchedGuests = guestsData.data;
+        fetchedGuests = guestsData.data.filter(g => !isRemovedOfflineGuest(g.name));
       }
-      if (bookingsData && bookingsData.status === 'success' && Array.isArray(bookingsData.data)) {
-        const mergedBookings = bookingsData.data.map(b => {
-          const payment = fetchedPayments.find(p => p.booking_id === b.id && (p.status === 'Success' || p.status === 'Completed')) ||
-                          fetchedPayments.find(p => p.booking_id === b.id);
-          const guest = fetchedGuests.find(g => g.id === b.guest_id);
-          const rawBookingTimestamp = b.time || b.created_at || b.booking_date || (payment ? (payment.time || payment.created_at || payment.payment_date || payment.date) : '') || b.check_in;
-          return {
-            ...b,
-            booking_date: rawBookingTimestamp,
-            created_at: rawBookingTimestamp,
-            paid_amount: payment ? payment.amount : (b.room_price || b.paid_amount || 0),
-            payment_info: payment,
-            payment_status: payment ? payment.status : (b.payment_status || (b.status === 'Confirmed' || b.status === 'Completed' ? 'Paid' : b.status === 'Pending' ? 'Pending' : 'Unpaid')),
-            payment_method: payment ? payment.payment_method : (b.payment_method || (b.paid_amount ? 'Online / UPI' : 'Pending')),
-            transaction_id: payment ? (payment.razorpay_payment_id || payment.transaction_id || 'N/A') : (b.transaction_id || 'N/A'),
-            payment_date: payment ? (payment.created_at || payment.payment_date || payment.date || rawBookingTimestamp) : rawBookingTimestamp,
-            guest_name: b.guest_name || (guest ? guest.name : (b.guest_id ? `Guest ${b.guest_id}` : 'Guest')),
-            guest_email: b.guest_email || (guest ? guest.email : 'N/A'),
-            guest_phone: b.guest_phone || (guest ? guest.phone : '')
-          };
-        });
-        setBookings(mergedBookings);
-      }
+      const rawBookings = (bookingsData && bookingsData.status === 'success' && Array.isArray(bookingsData.data)) ? bookingsData.data.filter(b => !isRemovedOfflineGuest(b)) : [];
+      const mergedBookingsList = getAllMergedBookings(rawBookings).filter(b => !isRemovedOfflineGuest(b));
+
+      const mergedBookings = mergedBookingsList.map(b => {
+        const payment = fetchedPayments.find(p => p.booking_id === b.id && (p.status === 'Success' || p.status === 'Completed')) ||
+                        fetchedPayments.find(p => p.booking_id === b.id);
+        const guest = fetchedGuests.find(g => g.id === b.guest_id);
+        const timeCandidates = [
+          b.time,
+          b.booking_time,
+          b.created_time,
+          b.created_at,
+          payment ? (payment.time || payment.created_at || payment.payment_date) : '',
+          b.booking_date
+        ].filter(Boolean);
+        const rawBookingTimestamp = timeCandidates.find(t => typeof t === 'string' && (t.includes(':') || t.includes('T'))) || b.created_at || b.booking_date || '';
+        const rawBookingDate = b.booking_date || b.created_at || (payment ? (payment.payment_date || payment.created_at || payment.date) : '') || '';
+
+        return {
+          ...b,
+          booking_date: rawBookingDate,
+          created_at: rawBookingTimestamp,
+          booking_time: b.booking_time || b.time || (payment ? payment.time : '') || rawBookingTimestamp,
+          paid_amount: payment ? payment.amount : (b.room_price || b.paid_amount || 0),
+          payment_info: payment,
+          payment_status: payment ? payment.status : (b.payment_status || (b.status === 'Confirmed' || b.status === 'Completed' ? 'Paid' : b.status === 'Pending' ? 'Pending' : 'Unpaid')),
+          payment_method: payment ? payment.payment_method : (b.payment_method || (b.paid_amount ? 'Online / UPI' : 'Pending')),
+          transaction_id: payment ? (payment.razorpay_payment_id || payment.transaction_id || 'N/A') : (b.transaction_id || 'N/A'),
+          payment_date: payment ? (payment.created_at || payment.payment_date || payment.date || rawBookingTimestamp) : rawBookingTimestamp,
+          guest_name: b.guest_name || (guest ? guest.name : (b.guest_id ? `Guest ${b.guest_id}` : 'Guest')),
+          guest_email: b.guest_email || (guest ? guest.email : 'N/A'),
+          guest_phone: b.guest_phone || (guest ? guest.phone : '')
+        };
+      }).filter(b => !isRemovedOfflineGuest(b));
+      setBookings(mergedBookings);
     }).catch(e => console.error("JSON Error in Bookings:", e));
-  };
+  }, []);
 
   useEffect(() => {
     fetchBookings();
-  }, []);
+
+    const handleUpdate = () => {
+      fetchBookings();
+    };
+
+    window.addEventListener('meraki_booking_updated', handleUpdate);
+    window.addEventListener('meraki_rooms_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+
+    return () => {
+      window.removeEventListener('meraki_booking_updated', handleUpdate);
+      window.removeEventListener('meraki_rooms_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
+  }, [fetchBookings]);
 
   const handleFilterChange = (newFilter) => {
     setFilter(newFilter);
@@ -649,8 +1484,13 @@ function BookingsTab() {
     .then(res => res.json())
     .then(data => {
       if(data && data.status === 'success') {
+        if (editingBooking.status && editingBooking.status.toLowerCase().includes('cancel')) {
+          markBookingAsCancelled(editingBooking);
+        }
         fetchBookings();
         setEditingBooking(null);
+        window.dispatchEvent(new Event('meraki_booking_updated'));
+        window.dispatchEvent(new Event('meraki_rooms_updated'));
       } else {
         alert(data.message || 'Error saving booking');
       }
@@ -659,6 +1499,7 @@ function BookingsTab() {
 
   const deleteBooking = (id) => {
     if(!window.confirm("Are you sure you want to delete this booking?")) return;
+    markBookingAsCancelled(id);
     fetch(`${API_CONFIG_URL}/api_bookings.php`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
@@ -669,6 +1510,8 @@ function BookingsTab() {
       if(data && data.status === 'success') {
         setBookings(prev => prev.filter(b => b.id !== id));
         setViewingBooking(null);
+        window.dispatchEvent(new Event('meraki_booking_updated'));
+        window.dispatchEvent(new Event('meraki_rooms_updated'));
       } else {
         alert(data.message || 'Error deleting booking');
       }
@@ -958,13 +1801,13 @@ function BookingsTab() {
                   <div className="admin-modal-field">
                     <span className="admin-modal-label">Booking Date</span>
                     <span className="admin-modal-value">
-                      {formatDateNumeric(viewingBooking.booking_date || viewingBooking.created_at)}
+                      {formatDateNumeric(viewingBooking.booking_date || viewingBooking.created_at || viewingBooking.payment_date)}
                     </span>
                   </div>
                   <div className="admin-modal-field">
                     <span className="admin-modal-label">Exact Booking Time</span>
                     <span className="admin-modal-value">
-                      {formatBookingTime(viewingBooking.booking_date || viewingBooking.created_at) || 'N/A'}
+                      {formatBookingTime(viewingBooking.booking_time || viewingBooking.created_at || viewingBooking.payment_date || viewingBooking.booking_date) || '—'}
                     </span>
                   </div>
                 </div>
@@ -1146,16 +1989,37 @@ function BookingsTab() {
 function CalendarTab() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [bookings, setBookings] = useState([]);
+  const calendarReqRef = useRef(0);
 
-  useEffect(() => {
+  const fetchCalendarBookings = useCallback(() => {
+    const currentReq = ++calendarReqRef.current;
     fetch(`${API_CONFIG_URL}/api_bookings.php`)
       .then(res => res.json())
       .then(data => {
-        if (data && data.status === 'success' && data.data) {
-          setBookings(data.data.filter(b => b.status === 'Confirmed' || b.status === 'Pending' || b.status === 'Success'));
-        }
+        if (currentReq !== calendarReqRef.current) return;
+        const raw = (data && data.status === 'success' && Array.isArray(data.data)) ? data.data.filter(b => !isRemovedOfflineGuest(b)) : [];
+        const merged = getAllMergedBookings(raw).filter(b => !isRemovedOfflineGuest(b));
+        setBookings(merged.filter(b => isBookingActive(b) && !isRemovedOfflineGuest(b)));
       }).catch(err => console.error(err));
   }, []);
+
+  useEffect(() => {
+    fetchCalendarBookings();
+
+    const handleUpdate = () => {
+      fetchCalendarBookings();
+    };
+
+    window.addEventListener('meraki_booking_updated', handleUpdate);
+    window.addEventListener('meraki_rooms_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+
+    return () => {
+      window.removeEventListener('meraki_booking_updated', handleUpdate);
+      window.removeEventListener('meraki_rooms_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
+  }, [fetchCalendarBookings]);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -1172,6 +2036,15 @@ function CalendarTab() {
     const d = new Date(year, month, day);
     d.setHours(0,0,0,0);
     return bookings.filter(b => {
+      if (b.check_in && b.check_out) {
+        const dIn = new Date(b.check_in);
+        dIn.setHours(0,0,0,0);
+        const dOut = new Date(b.check_out);
+        dOut.setHours(0,0,0,0);
+        if (!isNaN(dIn.getTime()) && !isNaN(dOut.getTime())) {
+          return d.getTime() >= dIn.getTime() && d.getTime() < dOut.getTime();
+        }
+      }
       const createdStr = b.booking_date || b.created_at;
       if (!createdStr) return false;
       const createdDate = new Date(createdStr);
@@ -1220,6 +2093,20 @@ function CalendarTab() {
   );
 }
 
+const validateAvifFile = (file) => {
+  if (!file) return { valid: false, message: 'No file selected.' };
+  const fileName = (file.name || '').toLowerCase();
+  const fileType = (file.type || '').toLowerCase();
+  const isAvif = fileName.endsWith('.avif') || fileType === 'image/avif';
+  if (!isAvif) {
+    return {
+      valid: false,
+      message: 'Only .avif image files are allowed. Non-AVIF images (JPG, JPEG, PNG, etc.) cannot be uploaded.'
+    };
+  }
+  return { valid: true };
+};
+
 function ManageRoomsTab() {
   const [rooms, setRooms] = useState([]);
   const [editingRoom, setEditingRoom] = useState(null);
@@ -1227,26 +2114,45 @@ function ManageRoomsTab() {
   const sortRooms = (roomList) => {
     const getOrderRank = (room) => {
       const id = Number(room.id);
-      const name = (room.name || room.title || '').toLowerCase();
-      if (id === 4 || name.includes('entire')) return 1;
-      if (id === 3 || name.includes('family') || name.includes('luxury')) return 2;
-      if (id === 2 || name.includes('valley') || name.includes('premium')) return 3;
-      if (id === 1 || name.includes('himalayan') || name.includes('view')) return 4;
+      if (id === 1) return 1;
+      if (id === 2) return 2;
+      if (id === 3) return 3;
+      if (id === 4) return 4;
       return 5;
     };
     return [...roomList].sort((a, b) => getOrderRank(a) - getOrderRank(b));
   };
   
-  useEffect(() => {
+  const fetchRooms = useCallback(() => {
     fetch(`${API_CONFIG_URL}/api_rooms.php`)
       .then(res => res.json())
       .then(data => { if(data && data.status === 'success' && Array.isArray(data.data)) setRooms(sortRooms(data.data)); })
       .catch(e => console.error("JSON Error in ManageRooms:", e));
   }, []);
 
+  useEffect(() => {
+    fetchRooms();
+
+    const handleRoomsUpdate = () => {
+      fetchRooms();
+    };
+
+    window.addEventListener('meraki_rooms_updated', handleRoomsUpdate);
+    return () => {
+      window.removeEventListener('meraki_rooms_updated', handleRoomsUpdate);
+    };
+  }, [fetchRooms]);
+
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    const validation = validateAvifFile(file);
+    if (!validation.valid) {
+      alert(validation.message);
+      e.target.value = '';
+      return;
+    }
     
     const formData = new FormData();
     formData.append('action', 'upload');
@@ -1286,14 +2192,11 @@ function ManageRoomsTab() {
     .then(res => res.json())
     .then(data => {
       if(data && data.status === 'success') {
-        fetch(`${API_CONFIG_URL}/api_rooms.php`)
-          .then(res => res.json())
-          .then(refetchData => {
-            if(refetchData && refetchData.status === 'success' && Array.isArray(refetchData.data)) {
-              setRooms(sortRooms(refetchData.data));
-            }
-            setEditingRoom(null);
-          });
+        fetchRooms();
+        setEditingRoom(null);
+        window.dispatchEvent(new Event('meraki_rooms_updated'));
+        window.dispatchEvent(new Event('meraki_booking_updated'));
+        try { localStorage.setItem('meraki_rooms_updated_ts', Date.now().toString()); } catch(e){}
       }
     }).catch(e => console.error("Error saving room:", e));
   };
@@ -1308,9 +2211,12 @@ function ManageRoomsTab() {
     .then(res => res.json())
     .then(data => {
       if(data && data.status === 'success') {
-        setRooms(sortRooms(rooms.filter(r => r.id !== id)));
+        setRooms(prev => prev.filter(r => r.id !== id));
+        window.dispatchEvent(new Event('meraki_rooms_updated'));
+        window.dispatchEvent(new Event('meraki_booking_updated'));
+        try { localStorage.setItem('meraki_rooms_updated_ts', Date.now().toString()); } catch(e){}
       }
-    }).catch(e => console.error("Delete room error:", e));
+    }).catch(e => console.error("Error deleting room:", e));
   };
 
   return (
@@ -1319,7 +2225,7 @@ function ManageRoomsTab() {
       <div className="admin-item-grid">
         {rooms.map(r => (
           <div key={r.id} className="admin-item-card hover-lift">
-            <img src={r.image_url || getRoomImage(r.id)} alt={r.name} className="admin-item-img" />
+            <OptimizedImage src={r.image_url || getRoomImage(r.id)} alt={r.name} className="admin-item-img" loading="eager" decoding="async" noWrapper={true} />
             <div className="admin-item-content">
               <div className="admin-item-header"><h3 className="admin-item-title">{r.name}</h3><span className="admin-badge badge-success">{r.status}</span></div>
               <p className="admin-item-desc" style={{color: '#555', fontWeight: '500', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden'}}>{r.description || 'Description not available.'}</p>
@@ -1392,10 +2298,15 @@ function ManageRoomsTab() {
               {/* Row 4: Room Image */}
               <div className="admin-form-group" style={{margin: 0}}>
                 <label className="admin-form-label" style={{marginBottom: '6px', color: '#334155', fontWeight: '600'}}>Room Image</label>
-                <div style={{display: 'flex', gap: '14px', alignItems: 'center', padding: '12px 16px', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#f8fafc'}}>
-                  {editingRoom.image_url && <img src={editingRoom.image_url} alt="Preview" style={{width: '54px', height: '54px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #e2e8f0'}} />}
-                  <div style={{flex: 1}}>
-                    <input type="file" accept="image/*" className="admin-form-input" onChange={handleImageUpload} style={{padding: '6px 10px', background: '#fff', cursor: 'pointer', border: '1px solid #cbd5e1', fontSize: '13px'}} />
+                <div style={{display: 'flex', gap: '14px', alignItems: 'center', padding: '12px 16px', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#f8fafc', boxSizing: 'border-box', overflow: 'hidden'}}>
+                  {editingRoom.image_url && (
+                    <div style={{width: '54px', height: '54px', minWidth: '54px', maxWidth: '54px', flexShrink: 0, borderRadius: '6px', overflow: 'hidden', border: '1px solid #e2e8f0'}}>
+                      <OptimizedImage src={editingRoom.image_url} alt="Preview" style={{width: '54px', height: '54px', objectFit: 'cover', display: 'block'}} loading="eager" width={54} height={54} decoding="async" noWrapper={true} />
+                    </div>
+                  )}
+                  <div style={{flex: 1, minWidth: 0}}>
+                    <input type="file" accept=".avif,image/avif" className="admin-form-input" onChange={handleImageUpload} style={{padding: '6px 10px', background: '#fff', cursor: 'pointer', border: '1px solid #cbd5e1', fontSize: '13px', width: '100%', boxSizing: 'border-box'}} />
+                    <p style={{margin: '6px 0 0 0', fontSize: '12px', color: '#dc2626', fontWeight: '600'}}>⚠️ Only .avif image files are allowed.</p>
                   </div>
                 </div>
               </div>
@@ -1413,391 +2324,13 @@ function ManageRoomsTab() {
   );
 }
 
-const initialFeaturedItems = [];
-
-function CafeFeaturedTab() {
-  const [items, setItems] = useState(initialFeaturedItems);
-  const [editingItem, setEditingItem] = useState(null);
-
-  const handleSave = () => {
-    fetch(`${API_CONFIG_URL}/api_cafe.php`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editingItem)
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.status === 'success') {
-        setItems(items.map(item => item.id === editingItem.id ? editingItem : item));
-        setEditingItem(null);
-      } else {
-        alert(data.message);
-      }
-    })
-    .catch(e => console.error(e));
-  };
-
-  useEffect(() => {
-    fetch(`${API_CONFIG_URL}/api_cafe.php`)
-      .then(r => r.json())
-      .then(d => {
-        if(d.status === 'success' && d.data.length > 0) {
-          const featured = d.data.filter(i => Number(i.is_featured) === 1 || i.is_featured === true);
-          setItems(featured.map(i => ({
-               id: i.item_id || i.id,
-               image: i.image_url,
-               name: i.title,
-               desc: i.description,
-               category: i.category,
-               tag: i.tag,
-               rating: i.rating || 4.8,
-               price: i.price,
-               originalPrice: i.original_price,
-               isVeg: Number(i.is_veg) === 1 || i.is_veg === true,
-               status: i.status
-             })));
-        }
-      });
-  }, []);
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setEditingItem({ ...editingItem, image: reader.result });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  return (
-    <>
-      <PageHeader title="Featured Menu Items" subtitle="Manage the featured items shown on the Cafe page." />
-      
-      {editingItem && (
-        <div className="admin-modal-overlay admin-fade-in" style={{zIndex: 9999}}>
-          <div className="admin-modal-content" style={{maxWidth: '550px'}}>
-            <div className="admin-modal-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', borderBottom: '1px solid #f1f5f9', paddingBottom: '16px'}}>
-              <h2 style={{margin: 0, fontSize: '20px', color: '#373737', fontWeight: '700'}}>Edit Featured Item</h2>
-              <button onClick={() => setEditingItem(null)} style={{background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: '4px'}}><Cancel01Icon size={24} strokeWidth={1.5} /></button>
-            </div>
-            
-            <div style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
-              <div className="admin-form-group" style={{margin: 0}}>
-                <label className="admin-form-label" style={{marginBottom: '8px', color: '#334155', fontWeight: '600'}}>Item Image</label>
-                <div style={{display: 'flex', gap: '16px', alignItems: 'center', padding: '16px', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#f8fafc'}}>
-                  <img src={editingItem.image} alt="Preview" style={{width: '72px', height: '72px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #e2e8f0'}} />
-                  <div style={{flex: 1}}>
-                    <input type="file" accept="image/*" onChange={handleImageChange} className="admin-form-input" style={{padding: '8px', background: '#fff', cursor: 'pointer', border: '1px solid #cbd5e1'}} />
-                    <p style={{margin: '8px 0 0 0', fontSize: '12px', color: '#64748b'}}>Recommended: Square image (1:1 ratio)</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="admin-form-group" style={{margin: 0}}>
-                <label className="admin-form-label" style={{marginBottom: '8px', color: '#334155', fontWeight: '600'}}>Item Name</label>
-                <input type="text" className="admin-form-input" value={editingItem.name} onChange={e => setEditingItem({...editingItem, name: e.target.value})} placeholder="Enter item name" />
-              </div>
-
-              <div className="admin-form-group" style={{margin: 0}}>
-                <label className="admin-form-label" style={{marginBottom: '8px', color: '#334155', fontWeight: '600'}}>Price (₹)</label>
-                <input type="number" className="admin-form-input" value={editingItem.price} onChange={e => setEditingItem({...editingItem, price: e.target.value})} placeholder="0.00" />
-              </div>
-
-              <div className="admin-form-group" style={{margin: 0}}>
-                <label className="admin-form-label" style={{marginBottom: '8px', color: '#334155', fontWeight: '600'}}>Description</label>
-                <textarea className="admin-form-textarea" rows="3" value={editingItem.desc} onChange={e => setEditingItem({...editingItem, desc: e.target.value})} placeholder="Describe the item..."></textarea>
-              </div>
-            </div>
-
-            <div style={{display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '32px', paddingTop: '16px', borderTop: '1px solid #f1f5f9'}}>
-              <button className="admin-btn-outline" onClick={() => setEditingItem(null)} style={{padding: '10px 20px', fontWeight: '600'}}>Cancel</button>
-              <button className="admin-btn-primary" onClick={handleSave} style={{padding: '10px 24px', fontWeight: '600'}}>Save Changes</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="admin-item-grid">
-        {items.map(item => (
-          <div key={item.id} className="admin-item-card">
-            <img src={item.image} alt={item.name} className="admin-item-img" />
-            <div className="admin-item-content">
-              <div className="admin-item-header"><h3 className="admin-item-title">{item.name}</h3><span className="admin-badge badge-success">₹{item.price}</span></div>
-              <div className="admin-item-meta" style={{display: 'block'}}>
-                <p style={{fontSize: '13px', color: '#64748b', marginBottom: '12px', lineHeight: '1.4'}}>{item.desc}</p>
-                <div style={{display: 'flex', gap: '8px', flexWrap: 'wrap'}}>
-                  <span className={item.isVeg ? 'admin-text-veg' : 'admin-text-nonveg'}>{item.isVeg ? 'Veg' : 'Non-Veg'}</span>
-                  <span className="admin-cell-muted">Category: {item.category}</span>
-                </div>
-              </div>
-              <div className="admin-item-actions">
-                <button className="admin-btn-outline admin-btn-full" onClick={() => setEditingItem({...item})} style={{justifyContent: 'center'}}><Edit01Icon size={16} /> Edit Item</button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </>
-  );
-}
-
-const menuCategories = ["Breakfast", "Pahadi Khana (Seasonal)", "All Day Snacks", "Rice & Roti", "Add Ons", "Teas", "Beverages & Soups"];
-
-const initialMenuItems = [
-  { id: 1, category: "Breakfast", name: "Cheese Vegetable Omelette", desc: "Two eggs with tossed vegetable and sprinkled cheese served with butter toast", price: 150, isVeg: false },
-  { id: 2, category: "Breakfast", name: "Aloo/ Onion/ Paneer Paratha", desc: "Served with Butter and Fresh Mint Chutney", price: 150, isVeg: true },
-  { id: 3, category: "Breakfast", name: "Poha", desc: "Flattened rice, onions, potatoes, green peas peanuts and flavoured with basic spices and herbs", price: 100, isVeg: true },
-  { id: 4, category: "Breakfast", name: "Egg Bhurji", desc: "Spiced Indian two scrambled eggs served with butter toast", price: 100, isVeg: false },
-  { id: 5, category: "Breakfast", name: "Paneer / Corn / Vegetable Cheese Sandwich", desc: "Classic Indian street food snack, made from layers of chutney, masala mix, cheese and sliced veg/paneer or corn", price: 200, isVeg: true },
-  
-  { id: 6, category: "Pahadi Khana (Seasonal)", name: "Bhat Ki Dal / Chudkani", desc: "Organic black soybeans cooked in iron pan in authentic style", price: 400, isVeg: true },
-  { id: 7, category: "Pahadi Khana (Seasonal)", name: "Pahadi Rajma", desc: "Rajma/Kidney Beans, cooked in Pahadi style along with desi ghee", price: 400, isVeg: true },
-  { id: 8, category: "Pahadi Khana (Seasonal)", name: "Gahat Ki Dal", desc: "Gahat Dal or horse gram is one of the oldest Pahadi traditional medicines used to control diabetes", price: 400, isVeg: true },
-  { id: 9, category: "Pahadi Khana (Seasonal)", name: "Farm Fresh Organic Vegetable", desc: "Fresh Organic Seasonal Vegetable from Farm to Table", price: 400, isVeg: true },
-  { id: 10, category: "Pahadi Khana (Seasonal)", name: "Pahadi Kadi", desc: "Jholi is Curd and Besan thick and spicy curry preparation from hills of Uttarakhand", price: 300, isVeg: true },
-  { id: 11, category: "Pahadi Khana (Seasonal)", name: "Pahadi Raita", desc: "Flavoured rice, onions, potatoes, green peas peanuts and flavoured with basic spices and herbs", price: 75, isVeg: true },
-  { id: 12, category: "Pahadi Khana (Seasonal)", name: "Bhang Ki Chutney", desc: "Made from Bhang (Hemp) seeds which have no psychoactive properties", price: 50, isVeg: true },
-  { id: 13, category: "Pahadi Khana (Seasonal)", name: "Pahadi Mutton/ Chicken Curry", desc: "The unbeatable Pahadi family recipe, this curry is spicy and full of flavours", price: 500, isVeg: false },
-  { id: 14, category: "Pahadi Khana (Seasonal)", name: "Veg / Non Veg Authentic Pahadi Lunch/Dinner", desc: "Price per person", price: "500 / 750", isVeg: true },
-
-  { id: 15, category: "All Day Snacks", name: "Masala Maggie", desc: "", price: 120, isVeg: true },
-  { id: 16, category: "All Day Snacks", name: "Mix Pakode With Mint Chutney", desc: "", price: 150, isVeg: true },
-  { id: 17, category: "All Day Snacks", name: "French Fries With Cheese Dip", desc: "", price: 150, isVeg: true },
-  { id: 18, category: "All Day Snacks", name: "Butter Toast", desc: "", price: 100, isVeg: true },
-  { id: 19, category: "All Day Snacks", name: "Bun Tikki", desc: "", price: 150, isVeg: true },
-  { id: 20, category: "All Day Snacks", name: "Bambaiya Sandwich", desc: "This grilled snack is stuffed with aloo masala and veggies", price: 150, isVeg: true },
-  { id: 21, category: "All Day Snacks", name: "Wada Pav", desc: "", price: 150, isVeg: true },
-
-  { id: 22, category: "Rice & Roti", name: "Steamed Basmati Rice", desc: "", price: 150, isVeg: true },
-  { id: 23, category: "Rice & Roti", name: "Jeera Rice", desc: "", price: 175, isVeg: true },
-  { id: 24, category: "Rice & Roti", name: "Peas Pulav", desc: "", price: 200, isVeg: true },
-  { id: 25, category: "Rice & Roti", name: "Special Dal Khichdi", desc: "", price: 200, isVeg: true },
-  { id: 26, category: "Rice & Roti", name: "Plain Roti", desc: "", price: 25, isVeg: true },
-  { id: 27, category: "Rice & Roti", name: "Raagi Roti", desc: "", price: 50, isVeg: true },
-  { id: 28, category: "Rice & Roti", name: "Puri / Paratha", desc: "", price: 50, isVeg: true },
-
-  { id: 29, category: "Add Ons", name: "Roasted Papad", desc: "", price: 50, isVeg: true },
-  { id: 30, category: "Add Ons", name: "Masala Papad", desc: "", price: 100, isVeg: true },
-  { id: 31, category: "Add Ons", name: "Curd", desc: "", price: 50, isVeg: true },
-  { id: 32, category: "Add Ons", name: "Raita", desc: "", price: 75, isVeg: true },
-  { id: 33, category: "Add Ons", name: "Green Salad", desc: "", price: 100, isVeg: true },
-
-  { id: 34, category: "Teas", name: "Detox Tea With Honey", desc: "", price: 150, isVeg: true },
-  { id: 35, category: "Teas", name: "Mint Ginger Tea", desc: "", price: 120, isVeg: true },
-  { id: 36, category: "Teas", name: "Rosemary With Honey", desc: "", price: 120, isVeg: true },
-  { id: 37, category: "Teas", name: "Thyme Ginger With Honey", desc: "", price: 120, isVeg: true },
-  { id: 38, category: "Teas", name: "Lemon Grass Ginger With Honey", desc: "", price: 120, isVeg: true },
-  { id: 39, category: "Teas", name: "Pahadi Chay With Jaggery", desc: "", price: 120, isVeg: true },
-  { id: 40, category: "Teas", name: "Exotic Masala Tea", desc: "", price: 120, isVeg: true },
-  { id: 41, category: "Teas", name: "Organic Himalayan Turmeric Milk", desc: "", price: 120, isVeg: true },
-
-  { id: 42, category: "Beverages & Soups", name: "Black Coffee", desc: "", price: 100, isVeg: true },
-  { id: 43, category: "Beverages & Soups", name: "Expresso Hot Coffee", desc: "", price: 120, isVeg: true },
-  { id: 44, category: "Beverages & Soups", name: "Chochlate Shake", desc: "", price: 100, isVeg: true },
-  { id: 45, category: "Beverages & Soups", name: "Banana Shake", desc: "", price: 100, isVeg: true },
-  { id: 46, category: "Beverages & Soups", name: "Fresh Lime Soda", desc: "", price: 100, isVeg: true },
-  { id: 47, category: "Beverages & Soups", name: "Lassi Or Chaans", desc: "", price: 100, isVeg: true },
-  { id: 48, category: "Beverages & Soups", name: "Thyme Tomato Soup", desc: "", price: 150, isVeg: true },
-];
-
-function CafeMenuTab() {
-  const [activeCategory, setActiveCategory] = useState(menuCategories[0]);
-  const [allItems, setAllItems] = useState(initialMenuItems);
-  const [editingItem, setEditingItem] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const recordsPerPage = 10;
-
-  const filteredItems = allItems.filter(i => i.category === activeCategory);
-  const totalPages = Math.ceil(filteredItems.length / recordsPerPage) || 1;
-  const paginatedItems = filteredItems.slice((currentPage - 1) * recordsPerPage, currentPage * recordsPerPage);
-
-  const saveItem = () => {
-    fetch(`${API_CONFIG_URL}/api_cafe.php`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editingItem)
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.status === 'success') {
-        setAllItems(allItems.map(item => item.id === editingItem.id ? editingItem : item));
-        setEditingItem(null);
-      } else {
-        alert(data.message);
-      }
-    })
-    .catch(e => console.error(e));
-  };
-
-  useEffect(() => {
-    fetch(`${API_CONFIG_URL}/api_cafe.php`)
-      .then(r => r.json())
-      .then(d => {
-        if(d.status === 'success' && d.data.length > 0) {
-          setAllItems(d.data.map(i => ({
-             id: i.item_id || i.id,
-             image: i.image_url,
-             name: i.title,
-             desc: i.description,
-             category: i.category,
-             tag: i.tag,
-             rating: i.rating || 4.8,
-             price: i.price,
-             originalPrice: i.original_price,
-             isVeg: Number(i.is_veg) === 1 || i.is_veg === true,
-             status: i.status
-          })));
-        }
-      });
-  }, []);
-
-  return (
-    <>
-      <PageHeader title="Full Menu Categories" subtitle="Manage all menu items." />
-      <div className="admin-card">
-        <div className="admin-filter-bar" style={{flexWrap: 'wrap', gap: '8px', padding: '16px'}}>
-          {menuCategories.map(cat => (<button key={cat} className={`admin-filter-btn ${activeCategory === cat ? 'active' : ''}`} onClick={() => { setActiveCategory(cat); setCurrentPage(1); }}>{cat}</button>))}
-        </div>
-        <div className="admin-table-wrapper">
-          <table className="admin-booking-table">
-            <thead><tr><th>Item Name</th><th>Pricing</th><th>Diet</th><th>Actions</th></tr></thead>
-            <tbody>
-              {paginatedItems.map(item => (
-                <tr key={item.id}>
-                  <td>
-                    <div className="admin-text-medium">{item.name}</div>
-                    <div className="admin-cell-muted" style={{fontSize: '12px', maxWidth: '250px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>{item.desc}</div>
-                  </td>
-                  <td>
-                    <div style={{fontWeight: '600'}}>₹{item.price}</div>
-                  </td>
-                  <td>
-                    <span className={item.isVeg ? 'admin-text-veg' : 'admin-text-nonveg'} style={{fontSize: '12px'}}>{item.isVeg ? 'Veg' : 'Non-Veg'}</span>
-                  </td>
-                  <td>
-                    <button className="admin-btn-view" onClick={() => setEditingItem({...item})} title="Edit Item"><Edit01Icon size={14} /> Edit</button>
-                  </td>
-                </tr>
-              ))}
-              {filteredItems.length === 0 && (
-                <tr><td colSpan="4" style={{textAlign: 'center', padding: '24px', color: '#817F7F'}}>No items in this category.</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {filteredItems.length > recordsPerPage && (
-          <div className="admin-booking-pagination">
-            <div className="admin-booking-page-info">
-              Showing <span>{Math.min((currentPage - 1) * recordsPerPage + 1, filteredItems.length)}</span> to <span>{Math.min(currentPage * recordsPerPage, filteredItems.length)}</span> of <span>{filteredItems.length}</span> items
-            </div>
-            <div className="admin-booking-page-controls">
-              <button 
-                className="admin-booking-page-btn" 
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </button>
-              <span className="admin-booking-page-current">Page {currentPage} of {totalPages}</span>
-              <button 
-                className="admin-booking-page-btn" 
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-      
-      {editingItem && (
-        <div className="admin-modal-overlay admin-fade-in" style={{zIndex: 9999}}>
-          <div className="admin-modal-content" style={{maxWidth: '550px'}}>
-            <div className="admin-modal-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', borderBottom: '1px solid #f1f5f9', paddingBottom: '16px'}}>
-              <h2 style={{margin: 0, fontSize: '20px', color: '#373737', fontWeight: '700'}}>Edit Menu Item</h2>
-              <button onClick={() => setEditingItem(null)} style={{background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: '4px'}}><Cancel01Icon size={24} strokeWidth={1.5} /></button>
-            </div>
-            
-            <div style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
-              <div className="admin-form-group" style={{margin: 0}}>
-                <label className="admin-form-label" style={{marginBottom: '8px', color: '#334155', fontWeight: '600'}}>Item Name</label>
-                <input type="text" className="admin-form-input" value={editingItem.name} onChange={e => setEditingItem({...editingItem, name: e.target.value})} placeholder="Enter item name" />
-              </div>
-              
-              <div className="admin-form-group" style={{margin: 0}}>
-                <label className="admin-form-label" style={{marginBottom: '8px', color: '#334155', fontWeight: '600'}}>Category</label>
-                <select className="admin-form-input" value={editingItem.category} onChange={e => setEditingItem({...editingItem, category: e.target.value})}>
-                  {menuCategories.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-              
-              <div className="admin-form-row" style={{margin: 0}}>
-                  <div className="admin-form-group" style={{margin: 0}}>
-                    <label className="admin-form-label" style={{marginBottom: '8px', color: '#334155', fontWeight: '600'}}>Price (₹)</label>
-                    <input type="number" className="admin-form-input" value={editingItem.price} onChange={e => setEditingItem({...editingItem, price: e.target.value})} placeholder="0.00" />
-                  </div>
-                  <div className="admin-form-group" style={{margin: 0}}>
-                    <label className="admin-form-label" style={{marginBottom: '8px', color: '#334155', fontWeight: '600'}}>Diet</label>
-                    <select className="admin-form-input" value={editingItem.isVeg ? 'yes' : 'no'} onChange={e => setEditingItem({...editingItem, isVeg: e.target.value === 'yes'})}>
-                      <option value="yes">Veg</option>
-                      <option value="no">Non-Veg</option>
-                    </select>
-                  </div>
-              </div>
-
-              <div className="admin-form-group" style={{margin: 0}}>
-                <label className="admin-form-label" style={{marginBottom: '8px', color: '#334155', fontWeight: '600'}}>Description</label>
-                <textarea className="admin-form-textarea" rows="3" value={editingItem.desc} onChange={e => setEditingItem({...editingItem, desc: e.target.value})} placeholder="Describe the item..."></textarea>
-              </div>
-
-              <div className="admin-form-row" style={{margin: 0, alignItems: 'center'}}>
-                <div className="admin-form-group" style={{margin: 0}}>
-                  <label className="admin-form-label" style={{marginBottom: '8px', color: '#334155', fontWeight: '600'}}>Featured Item</label>
-                  <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                    <input type="checkbox" checked={Number(editingItem.is_featured) === 1 || editingItem.is_featured === true || editingItem.isFeatured === true} onChange={e => setEditingItem({...editingItem, isFeatured: e.target.checked, is_featured: e.target.checked ? 1 : 0})} style={{width: '20px', height: '20px', cursor: 'pointer'}} />
-                    <span style={{color: '#64748b', fontSize: '14px'}}>Show in featured section</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="admin-form-group" style={{margin: 0}}>
-                <label className="admin-form-label" style={{marginBottom: '8px', color: '#334155', fontWeight: '600'}}>Item Image</label>
-                <div style={{display: 'flex', gap: '16px', alignItems: 'center', padding: '16px', border: '1px solid #cbd5e1', borderRadius: '8px', background: '#f8fafc'}}>
-                  {editingItem.image && <img src={editingItem.image} alt="Preview" style={{width: '72px', height: '72px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #e2e8f0'}} />}
-                  <div style={{flex: 1}}>
-                    <input type="file" accept="image/*" onChange={(e) => {
-                      const file = e.target.files[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onloadend = () => setEditingItem({ ...editingItem, image: reader.result });
-                        reader.readAsDataURL(file);
-                      }
-                    }} className="admin-form-input" style={{padding: '8px', background: '#fff', cursor: 'pointer', border: '1px solid #cbd5e1'}} />
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div style={{display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '32px', paddingTop: '16px', borderTop: '1px solid #f1f5f9'}}>
-              <button className="admin-btn-outline" onClick={() => setEditingItem(null)} style={{padding: '10px 20px', fontWeight: '600'}}>Cancel</button>
-              <button className="admin-btn-primary" onClick={saveItem} style={{padding: '10px 24px', fontWeight: '600'}}>Save Changes</button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
 
 function GuestsTab() {
   const [guests, setGuests] = useState([]);
   const [totalGuestsCount, setTotalGuestsCount] = useState(0);
   const [viewingHistory, setViewingHistory] = useState(null);
   const [currentPage, setCurrentPageNum] = useState(1);
+  const guestsReqRef = useRef(0);
 
   const ITEMS_PER_PAGE = 10;
 
@@ -1826,15 +2359,17 @@ function GuestsTab() {
     return diffDays > 0 ? diffDays : 1;
   };
 
-  const fetchGuestDirectory = () => {
+  const fetchGuestDirectory = useCallback(() => {
+    const currentReq = ++guestsReqRef.current;
     Promise.all([
       fetch(`${API_CONFIG_URL}/api_guests.php`).then(res => res.json()).catch(() => ({ data: [] })),
       fetch(`${API_CONFIG_URL}/api_bookings.php`).then(res => res.json()).catch(() => ({ data: [] })),
       fetch(`${API_CONFIG_URL}/api_payments.php`).then(res => res.json()).catch(() => ({ data: [] }))
     ]).then(([guestsData, bookingsData, paymentsData]) => {
-      let rawGuests = (guestsData && guestsData.status === 'success' && Array.isArray(guestsData.data)) ? guestsData.data : [];
-      let rawBookings = (bookingsData && bookingsData.status === 'success' && Array.isArray(bookingsData.data)) ? bookingsData.data : [];
-      let rawPayments = (paymentsData && paymentsData.status === 'success' && Array.isArray(paymentsData.data)) ? paymentsData.data : [];
+      if (currentReq !== guestsReqRef.current) return;
+      let rawGuests = (guestsData && guestsData.status === 'success' && Array.isArray(guestsData.data)) ? guestsData.data.filter(g => !isRemovedOfflineGuest(g.name)) : [];
+      let rawBookings = (bookingsData && bookingsData.status === 'success' && Array.isArray(bookingsData.data)) ? bookingsData.data.filter(b => !isRemovedOfflineGuest(b)) : [];
+      let rawPayments = (paymentsData && paymentsData.status === 'success' && Array.isArray(paymentsData.data)) ? paymentsData.data.filter(p => !isRemovedOfflineGuest(p.guest_name)) : [];
 
       // Calculate total guest head count across all bookings
       const totalG = rawBookings.reduce((sum, b) => sum + parseInt(b.guest_count || 1, 10), 0);
@@ -1844,11 +2379,22 @@ function GuestsTab() {
       const enrichedBookings = rawBookings.map(b => {
         const payment = rawPayments.find(p => p.booking_id === b.id && (p.status === 'Success' || p.status === 'Completed')) ||
                         rawPayments.find(p => p.booking_id === b.id);
-        const rawBookingTimestamp = b.time || b.created_at || b.booking_date || (payment ? (payment.time || payment.created_at || payment.payment_date) : '') || b.check_in;
+        const timeCandidates = [
+          b.time,
+          b.booking_time,
+          b.created_time,
+          b.created_at,
+          payment ? (payment.time || payment.created_at || payment.payment_date) : '',
+          b.booking_date
+        ].filter(Boolean);
+        const rawBookingTimestamp = timeCandidates.find(t => typeof t === 'string' && (t.includes(':') || t.includes('T'))) || b.created_at || b.booking_date || '';
+        const rawBookingDate = b.booking_date || b.created_at || (payment ? (payment.payment_date || payment.created_at || payment.date) : '') || '';
+
         return {
           ...b,
-          booking_date: rawBookingTimestamp,
+          booking_date: rawBookingDate,
           created_at: rawBookingTimestamp,
+          booking_time: b.booking_time || b.time || (payment ? payment.time : '') || rawBookingTimestamp,
           paid_amount: payment ? payment.amount : (b.room_price || b.paid_amount || 0),
           payment_info: payment,
           payment_status: payment ? payment.status : (b.payment_status || (b.status === 'Confirmed' || b.status === 'Completed' ? 'Paid' : b.status === 'Pending' ? 'Pending' : 'Unpaid')),
@@ -1942,12 +2488,25 @@ function GuestsTab() {
         return guestList.find(g => g.id === prev.id || (prev.guest_ids && g.guest_ids && g.guest_ids.some(id => prev.guest_ids.includes(id)))) || prev;
       });
     }).catch(e => console.error("Guest Directory Loading Error:", e));
-  };
+  }, []);
 
   useEffect(() => {
     fetchGuestDirectory();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+
+    const handleUpdate = () => {
+      fetchGuestDirectory();
+    };
+
+    window.addEventListener('meraki_booking_updated', handleUpdate);
+    window.addEventListener('meraki_rooms_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+
+    return () => {
+      window.removeEventListener('meraki_booking_updated', handleUpdate);
+      window.removeEventListener('meraki_rooms_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
+  }, [fetchGuestDirectory]);
 
   const totalGuests = guests.length;
   const totalPages = Math.ceil(totalGuests / ITEMS_PER_PAGE) || 1;
@@ -2221,25 +2780,31 @@ function PaymentsTab() {
   const [editingPayment, setEditingPayment] = useState(null);
   const [viewingPayment, setViewingPayment] = useState(null);
   const [currentPage, setCurrentPageNum] = useState(1);
+  const paymentsReqRef = useRef(0);
 
   const ITEMS_PER_PAGE = 10;
   
-  const fetchPayments = () => {
+  const fetchPayments = useCallback(() => {
+    const currentReq = ++paymentsReqRef.current;
     Promise.all([
-      fetch(`${API_CONFIG_URL}/api_payments.php`).then(res => res.json()),
-      fetch(`${API_CONFIG_URL}/api_bookings.php`).then(res => res.json()),
+      fetch(`${API_CONFIG_URL}/api_payments.php`).then(res => res.json()).catch(() => ({ status: 'error', data: [] })),
+      fetch(`${API_CONFIG_URL}/api_bookings.php`).then(res => res.json()).catch(() => ({ status: 'error', data: [] })),
       fetch(`${API_CONFIG_URL}/api_guests.php`).then(res => res.json()).catch(() => ({ data: [] }))
     ]).then(([paymentsData, bookingsData, guestsData]) => {
+      if (currentReq !== paymentsReqRef.current) return;
       let fetchedBookings = [];
       if (bookingsData && bookingsData.status === 'success' && Array.isArray(bookingsData.data)) {
-        fetchedBookings = bookingsData.data;
+        fetchedBookings = bookingsData.data.filter(b => !isRemovedOfflineGuest(b));
       }
+
       let fetchedGuests = [];
       if (guestsData && guestsData.status === 'success' && Array.isArray(guestsData.data)) {
-        fetchedGuests = guestsData.data;
+        fetchedGuests = guestsData.data.filter(g => !isRemovedOfflineGuest(g.name));
       }
       if (paymentsData && paymentsData.status === 'success' && Array.isArray(paymentsData.data)) {
-        const mergedPayments = paymentsData.data.map(p => {
+        let basePayments = paymentsData.data.filter(p => !isRemovedOfflineGuest(p.guest_name));
+
+        const mergedPayments = basePayments.map(p => {
           const booking = fetchedBookings.find(b => b.id === p.booking_id);
           const guest = booking ? fetchedGuests.find(g => g.id === booking.guest_id) : (p.guest_id ? fetchedGuests.find(g => g.id === p.guest_id) : null);
           return {
@@ -2257,15 +2822,29 @@ function PaymentsTab() {
             discount: booking ? booking.discount : (p.discount || 0),
             payment_date: p.time || p.payment_date || p.created_at || p.date || (booking ? (booking.time || booking.created_at || booking.booking_date) : '')
           };
-        });
+        }).filter(p => !isRemovedOfflineGuest(p.guest_name));
         setPayments(mergedPayments);
       }
     }).catch(e => console.error("JSON Error in Payments:", e));
-  };
+  }, []);
 
   useEffect(() => {
     fetchPayments();
-  }, []);
+
+    const handleUpdate = () => {
+      fetchPayments();
+    };
+
+    window.addEventListener('meraki_booking_updated', handleUpdate);
+    window.addEventListener('meraki_rooms_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+
+    return () => {
+      window.removeEventListener('meraki_booking_updated', handleUpdate);
+      window.removeEventListener('meraki_rooms_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
+  }, [fetchPayments]);
 
   const handleFilterChange = (newFilter) => {
     setFilter(newFilter);
@@ -2294,6 +2873,8 @@ function PaymentsTab() {
       if(data && data.status === 'success') {
         fetchPayments();
         setEditingPayment(null);
+        window.dispatchEvent(new Event('meraki_booking_updated'));
+        window.dispatchEvent(new Event('meraki_rooms_updated'));
       } else {
         alert(data.message || 'Error saving payment');
       }
@@ -2310,7 +2891,9 @@ function PaymentsTab() {
     .then(res => res.json())
     .then(data => {
       if(data && data.status === 'success') {
-        setPayments(payments.filter(p => p.id !== id));
+        setPayments(prev => prev.filter(p => p.id !== id));
+        window.dispatchEvent(new Event('meraki_booking_updated'));
+        window.dispatchEvent(new Event('meraki_rooms_updated'));
       } else {
         alert(data.message || 'Error deleting payment');
       }
@@ -2960,11 +3543,22 @@ function GalleryTab() {
   const [activeTab, setActiveTab] = useState('explore');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [selectedImageIds, setSelectedImageIds] = useState([]);
   
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setSelectedImageIds([]);
+  };
+
   const fetchGallery = () => {
     fetch(`${API_CONFIG_URL}/api_gallery.php?t=${Date.now()}`)
       .then(res => res.json())
-      .then(data => { if(data && data.status === 'success') setImages(data.data); })
+      .then(data => { 
+        if(data && data.status === 'success' && Array.isArray(data.data)) {
+          const sorted = [...data.data].sort((a, b) => Number(a.image_id || a.id || 0) - Number(b.image_id || b.id || 0));
+          setImages(sorted);
+        }
+      })
       .catch(e => console.error("JSON Error in Gallery:", e));
   };
 
@@ -2973,59 +3567,83 @@ function GalleryTab() {
   }, []);
 
   const handleUpload = async (e, category, oldImageId = null) => {
-    const file = e.target.files[0];
-    // reset input to allow uploading the same file again immediately if needed
+    const files = Array.from(e.target.files);
     e.target.value = '';
     
-    if(!file) return;
+    if(files.length === 0) return;
+
+    for (const file of files) {
+      const validation = validateAvifFile(file);
+      if (!validation.valid) {
+        alert(validation.message);
+        return;
+      }
+    }
     
     setIsLoading(true);
-    setMessage('Uploading image...');
+    setMessage(files.length > 1 ? `Uploading ${files.length} images...` : 'Uploading image...');
     
-    const formData = new FormData();
-    formData.append('image', file);
-    formData.append('action', 'upload');
-    
+    let hasError = false;
+
     try {
-      const uploadRes = await fetch(`${API_CONFIG_URL}/api_rooms.php`, {
-        method: 'POST',
-        body: formData
-      });
-      const uploadData = await uploadRes.json();
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (files.length > 1) {
+          setMessage(`Uploading image ${i + 1} of ${files.length}...`);
+        }
+
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('action', 'upload');
+        
+        const uploadRes = await fetch(`${API_CONFIG_URL}/api_rooms.php`, {
+          method: 'POST',
+          body: formData
+        });
+        const uploadData = await uploadRes.json();
+        
+        if(uploadData.status === 'success') {
+           const galleryRes = await fetch(`${API_CONFIG_URL}/api_gallery.php`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ image_url: uploadData.image_url, category })
+           });
+           const galleryData = await galleryRes.json();
+           
+           if(galleryData.status === 'success') {
+              if (oldImageId && i === 0) {
+                 await fetch(`${API_CONFIG_URL}/api_gallery.php`, {
+                   method: 'DELETE',
+                   headers: { 'Content-Type': 'application/json' },
+                   body: JSON.stringify({ image_id: oldImageId })
+                 });
+              }
+           } else {
+              hasError = true;
+           }
+        } else {
+          hasError = true;
+        }
+      }
       
-      if(uploadData.status === 'success') {
-         setMessage('Saving to gallery...');
-         
-         const galleryRes = await fetch(`${API_CONFIG_URL}/api_gallery.php`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ image_url: uploadData.image_url, category })
-         });
-         const galleryData = await galleryRes.json();
-         
-         if(galleryData.status === 'success') {
-            if (oldImageId) {
-               setMessage('Removing old image...');
-               await fetch(`${API_CONFIG_URL}/api_gallery.php`, {
-                 method: 'DELETE',
-                 headers: { 'Content-Type': 'application/json' },
-                 body: JSON.stringify({ image_id: oldImageId })
-               });
-            }
-            setMessage('Update successful!');
-            fetchGallery();
-            // Dispatch event to notify other components of gallery change
-            if (typeof window !== 'undefined') {
-               window.dispatchEvent(new Event('galleryUpdated'));
-            }
-            setTimeout(() => setMessage(''), 3000);
-         } else {
-            setMessage('Error: Failed to save to gallery');
-            setTimeout(() => setMessage(''), 3000);
-         }
-      } else {
-        setMessage('Error: Failed to upload image');
+      if (hasError) {
+        setMessage('Error: Some images failed to upload');
         setTimeout(() => setMessage(''), 3000);
+      } else {
+        setMessage('Update successful!');
+        setTimeout(() => setMessage(''), 3000);
+      }
+      
+      fetchGallery();
+      if (typeof window !== 'undefined') {
+         window.dispatchEvent(new Event('galleryUpdated'));
+         window.dispatchEvent(new Event('meraki_rooms_updated'));
+         window.dispatchEvent(new Event('meraki_cafe_updated'));
+         try {
+           localStorage.setItem('meraki_gallery_updated_ts', Date.now().toString());
+           localStorage.setItem('meraki_rooms_updated_ts', Date.now().toString());
+           localStorage.setItem('meraki_cafe_updated_ts', Date.now().toString());
+         } catch(e){}
       }
     } catch (err) {
       console.error(err);
@@ -3050,12 +3668,92 @@ function GalleryTab() {
       if(data.status === 'success') {
         setMessage('Image removed successfully!');
         setImages(prev => prev.filter(img => img.image_id !== id));
+        setSelectedImageIds(prev => prev.filter(x => x !== id));
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('galleryUpdated'));
+          window.dispatchEvent(new Event('meraki_rooms_updated'));
+          window.dispatchEvent(new Event('meraki_cafe_updated'));
+          try {
+            localStorage.setItem('meraki_gallery_updated_ts', Date.now().toString());
+            localStorage.setItem('meraki_rooms_updated_ts', Date.now().toString());
+            localStorage.setItem('meraki_cafe_updated_ts', Date.now().toString());
+          } catch(e){}
+        }
       } else {
         setMessage('Error: Failed to remove image');
       }
     } catch(err) {
       console.error(err);
       setMessage('Error: An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
+      setTimeout(() => setMessage(''), 3000);
+    }
+  };
+
+  const toggleSelectImage = (id) => {
+    setSelectedImageIds(prev => 
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAllSection = (sectionImages) => {
+    const ids = sectionImages.map(img => img.image_id);
+    const allSelected = ids.length > 0 && ids.every(id => selectedImageIds.includes(id));
+    if (allSelected) {
+      setSelectedImageIds(prev => prev.filter(id => !ids.includes(id)));
+    } else {
+      setSelectedImageIds(prev => Array.from(new Set([...prev, ...ids])));
+    }
+  };
+
+  const handleDeleteSelected = async (sectionId) => {
+    const sectionImages = images.filter(img => img.category === sectionId);
+    const toDelete = sectionImages.filter(img => selectedImageIds.includes(img.image_id));
+    if (toDelete.length === 0) return;
+
+    if (!window.confirm(`Are you sure you want to remove ${toDelete.length} selected image(s)?`)) return;
+
+    setIsLoading(true);
+    setMessage(`Removing ${toDelete.length} selected image(s)...`);
+
+    try {
+      let hasDeleteError = false;
+      for (const img of toDelete) {
+        const res = await fetch(`${API_CONFIG_URL}/api_gallery.php`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image_id: img.image_id })
+        });
+        const data = await res.json();
+        if (data.status !== 'success') {
+          hasDeleteError = true;
+        }
+      }
+
+      const deletedIds = new Set(toDelete.map(img => img.image_id));
+      setImages(prev => prev.filter(img => !deletedIds.has(img.image_id)));
+      setSelectedImageIds(prev => prev.filter(id => !deletedIds.has(id)));
+
+      if (hasDeleteError) {
+        setMessage('Warning: Some images could not be removed');
+      } else {
+        setMessage('Selected image(s) removed successfully!');
+      }
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('galleryUpdated'));
+        window.dispatchEvent(new Event('meraki_rooms_updated'));
+        window.dispatchEvent(new Event('meraki_cafe_updated'));
+        try {
+          localStorage.setItem('meraki_gallery_updated_ts', Date.now().toString());
+          localStorage.setItem('meraki_rooms_updated_ts', Date.now().toString());
+          localStorage.setItem('meraki_cafe_updated_ts', Date.now().toString());
+        } catch(e){}
+      }
+    } catch (err) {
+      console.error(err);
+      setMessage('Error: An unexpected error occurred while deleting');
     } finally {
       setIsLoading(false);
       setTimeout(() => setMessage(''), 3000);
@@ -3070,48 +3768,116 @@ function GalleryTab() {
     { id: 'Explore - Cafe & Dining', title: 'Cafe & Dining' }
   ];
 
+  const ROOM_IMAGES_SECTIONS = [...ROOMS_DATA].sort((a, b) => a.id - b.id).map(room => ({
+    id: `Room Gallery - ${room.id}`,
+    title: room.title
+  }));
+
   const CAFE_AMBIANCE_SECTIONS = [
     { id: 'Cafe Ambiance Gallery', title: 'Cafe Ambiance Gallery' }
   ];
 
-  const OTHER_SECTIONS = [
-    { id: 'Rooms Gallery', title: 'Rooms Gallery (Existing)' },
-    { id: 'Cafe Ambiance', title: 'Cafe Ambiance (Old Legacy)' },
-    { id: 'Main Explore Gallery', title: 'Main Explore Gallery (Old Legacy)' }
-  ];
-
   const renderSectionBlock = (section) => {
-    const sectionImages = images.filter(img => img.category === section.id);
+    const sectionImages = images
+      .filter(img => img.category === section.id)
+      .sort((a, b) => Number(a.image_id || a.id || 0) - Number(b.image_id || b.id || 0));
+    const selectedInThisSection = sectionImages.filter(img => selectedImageIds.includes(img.image_id));
+    const allSelectedInThisSection = sectionImages.length > 0 && selectedInThisSection.length === sectionImages.length;
+
     return (
       <div key={section.id} className="admin-card" style={{marginBottom: '32px', backgroundColor: '#fff', border: '1px solid #eaeaea', borderRadius: '12px', padding: '24px'}}>
-         <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #f0f0f0', paddingBottom: '12px'}}>
-            <h3 style={{fontSize: '18px', fontWeight: 600, color: '#1a1a1a', margin: 0}}>{section.title}</h3>
-            <span style={{fontSize: '13px', color: '#666', backgroundColor: '#f5f5f5', padding: '4px 10px', borderRadius: '20px'}}>{sectionImages.length} Images</span>
+         <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #f0f0f0', paddingBottom: '12px', flexWrap: 'wrap', gap: '12px'}}>
+            <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
+              <h3 style={{fontSize: '18px', fontWeight: 600, color: '#1a1a1a', margin: 0}}>{section.title}</h3>
+              <span style={{fontSize: '13px', color: '#666', backgroundColor: '#f5f5f5', padding: '4px 10px', borderRadius: '20px'}}>{sectionImages.length} Images</span>
+            </div>
+            {sectionImages.length > 0 && (
+              <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                <button
+                  type="button"
+                  className="admin-btn-outline"
+                  style={{padding: '6px 14px', fontSize: '13px', borderRadius: '6px', cursor: isLoading ? 'not-allowed' : 'pointer'}}
+                  onClick={() => handleSelectAllSection(sectionImages)}
+                  disabled={isLoading}
+                >
+                  {allSelectedInThisSection ? 'Deselect All' : 'Select All'}
+                </button>
+                {selectedInThisSection.length > 0 && (
+                  <button
+                    type="button"
+                    className="admin-btn-outline"
+                    style={{padding: '6px 14px', fontSize: '13px', borderRadius: '6px', backgroundColor: '#fef2f2', color: '#dc2626', borderColor: '#fca5a5', fontWeight: 600, cursor: isLoading ? 'not-allowed' : 'pointer'}}
+                    onClick={() => handleDeleteSelected(section.id)}
+                    disabled={isLoading}
+                  >
+                    <Delete01Icon size={14} style={{marginRight: '6px'}} /> Delete Selected ({selectedInThisSection.length})
+                  </button>
+                )}
+              </div>
+            )}
          </div>
          
          <div className="admin-item-grid" style={{gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px'}}>
-            {sectionImages.map(img => (
-               <div key={img.image_id} style={{border: '1px solid #e0e0e0', borderRadius: '10px', overflow: 'hidden', backgroundColor: '#fafafa', position: 'relative', display: 'flex', flexDirection: 'column'}}>
-                  <div style={{position: 'relative', width: '100%', height: '160px'}}>
-                     <img src={img.image_url} alt={section.title} style={{width: '100%', height: '100%', objectFit: 'cover', display: 'block'}} />
-                  </div>
-                  <div style={{padding: '12px', display: 'flex', gap: '8px', justifyContent: 'space-between', borderTop: '1px solid #eee'}}>
-                     <label className="admin-btn-outline" style={{flex: 1, padding: '8px', fontSize: '13px', cursor: isLoading ? 'not-allowed' : 'pointer', textAlign: 'center', opacity: isLoading ? 0.5 : 1}}>
-                        Change
-                        <input type="file" style={{display: 'none'}} disabled={isLoading} onChange={(e) => handleUpload(e, section.id, img.image_id)} accept="image/*" />
-                     </label>
-                     <button className="admin-btn-outline" disabled={isLoading} style={{flex: 1, padding: '8px', fontSize: '13px', color: '#d9534f', borderColor: '#ffcdcd', backgroundColor: '#fff5f5', cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.5 : 1}} onClick={() => handleDeleteImage(img.image_id)}>
-                        Remove
-                     </button>
-                  </div>
-               </div>
-            ))}
+            {sectionImages.map((img, index) => {
+               const isSelected = selectedImageIds.includes(img.image_id);
+               return (
+                 <div 
+                   key={img.image_id} 
+                   style={{
+                     border: isSelected ? '2px solid #8A158F' : '1px solid #e0e0e0', 
+                     borderRadius: '10px', 
+                     overflow: 'hidden', 
+                     backgroundColor: '#fafafa', 
+                     position: 'relative', 
+                     display: 'flex', 
+                     flexDirection: 'column',
+                     transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+                     boxShadow: isSelected ? '0 0 0 1px #8A158F' : 'none'
+                   }}
+                 >
+                    <div style={{position: 'relative', width: '100%', height: '160px'}}>
+                       <OptimizedImage src={img.image_url} alt={section.title} style={{width: '100%', height: '160px', objectFit: 'cover', display: 'block'}} loading="eager" width={220} height={160} decoding="async" noWrapper={true} />
+                       <div 
+                         style={{
+                           position: 'absolute', 
+                           top: '8px', 
+                           left: '8px', 
+                           zIndex: 2, 
+                           backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                           borderRadius: '6px', 
+                           padding: '4px 6px', 
+                           display: 'flex', 
+                           alignItems: 'center', 
+                           boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
+                           cursor: 'pointer'
+                         }}
+                         onClick={(e) => { e.stopPropagation(); toggleSelectImage(img.image_id); }}
+                       >
+                         <input 
+                           type="checkbox" 
+                           checked={isSelected} 
+                           onChange={() => toggleSelectImage(img.image_id)} 
+                           style={{cursor: 'pointer', width: '16px', height: '16px', accentColor: '#8A158F', margin: 0}}
+                         />
+                       </div>
+                    </div>
+                    <div style={{padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #eee', background: '#fff'}}>
+                       <span style={{fontSize: '12px', color: '#666', fontWeight: 500}}>
+                         #{index + 1}
+                       </span>
+                       <button className="admin-btn-outline" disabled={isLoading} style={{padding: '6px 10px', color: '#dc2626', borderColor: '#fca5a5', backgroundColor: '#fef2f2', cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.5 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '6px'}} onClick={() => handleDeleteImage(img.image_id)} title="Delete image">
+                          <Delete01Icon size={15} />
+                       </button>
+                    </div>
+                 </div>
+               );
+            })}
             
             <label style={{border: '2px dashed #d9d9d9', borderRadius: '10px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '220px', cursor: isLoading ? 'not-allowed' : 'pointer', backgroundColor: '#fafbfc', transition: 'all 0.2s ease', opacity: isLoading ? 0.5 : 1}}>
                <PlusSignIcon size={28} style={{color: '#870097', marginBottom: '12px'}} />
-               <span style={{color: '#333', fontWeight: 500, fontSize: '15px'}}>Upload Image</span>
-               <span style={{color: '#888', fontSize: '12px', marginTop: '6px'}}>to {section.title}</span>
-               <input type="file" style={{display: 'none'}} disabled={isLoading} onChange={(e) => handleUpload(e, section.id, null)} accept="image/*" />
+               <span style={{color: '#333', fontWeight: 500, fontSize: '15px'}}>Upload Image(s)</span>
+               <span style={{color: '#dc2626', fontSize: '11px', marginTop: '6px', fontWeight: '600'}}>⚠️ Only .avif image files are allowed.</span>
+               <input type="file" multiple style={{display: 'none'}} disabled={isLoading} onChange={(e) => handleUpload(e, section.id, null)} accept=".avif,image/avif" />
             </label>
          </div>
       </div>
@@ -3120,7 +3886,7 @@ function GalleryTab() {
 
   return (
     <>
-      <PageHeader title="Gallery Manager" subtitle="Manage images for required sections like Home Explore and Cafe Ambiance." />
+      <PageHeader title="Gallery Manager" subtitle="Manage images for required sections like Home Explore, Room Images, and Cafe Ambiance." />
       
       {message && (
         <div style={{ padding: '12px 20px', backgroundColor: message.includes('Error') ? '#fef2f2' : '#f0fdf4', color: message.includes('Error') ? '#dc2626' : '#16a34a', borderRadius: '8px', marginBottom: '24px', border: `1px solid ${message.includes('Error') ? '#fca5a5' : '#bbf7d0'}`, fontWeight: '500' }}>
@@ -3129,15 +3895,15 @@ function GalleryTab() {
       )}
 
       <div className="admin-filter-bar" style={{marginBottom: '32px', display: 'flex', gap: '12px', borderBottom: '1px solid #eee', paddingBottom: '16px'}}>
-         <button className={`admin-filter-btn ${activeTab === 'explore' ? 'active' : ''}`} onClick={() => setActiveTab('explore')} style={{fontSize: '15px'}} disabled={isLoading}>Home → Explore</button>
-         <button className={`admin-filter-btn ${activeTab === 'cafe' ? 'active' : ''}`} onClick={() => setActiveTab('cafe')} style={{fontSize: '15px'}} disabled={isLoading}>Cafe Ambiance</button>
-         <button className={`admin-filter-btn ${activeTab === 'other' ? 'active' : ''}`} onClick={() => setActiveTab('other')} style={{fontSize: '15px'}} disabled={isLoading}>Other / Legacy</button>
+         <button className={`admin-filter-btn ${activeTab === 'explore' ? 'active' : ''}`} onClick={() => handleTabChange('explore')} style={{fontSize: '15px'}} disabled={isLoading}>Home → Explore</button>
+         <button className={`admin-filter-btn ${activeTab === 'rooms' ? 'active' : ''}`} onClick={() => handleTabChange('rooms')} style={{fontSize: '15px'}} disabled={isLoading}>Room Images</button>
+         <button className={`admin-filter-btn ${activeTab === 'cafe' ? 'active' : ''}`} onClick={() => handleTabChange('cafe')} style={{fontSize: '15px'}} disabled={isLoading}>Cafe Ambiance</button>
       </div>
       
       <div style={{animation: 'fadeIn 0.3s ease'}}>
          {activeTab === 'explore' && HOME_EXPLORE_SECTIONS.map(renderSectionBlock)}
+         {activeTab === 'rooms' && ROOM_IMAGES_SECTIONS.map(renderSectionBlock)}
          {activeTab === 'cafe' && CAFE_AMBIANCE_SECTIONS.map(renderSectionBlock)}
-         {activeTab === 'other' && OTHER_SECTIONS.map(renderSectionBlock)}
       </div>
     </>
   );
@@ -3773,14 +4539,14 @@ function SettingsTab() {
 function NotificationBell({ showNotificationDropdown, setShowNotificationDropdown, setShowDateDropdownTop }) {
   const [notifications, setNotifications] = useState([]);
 
-  useEffect(() => {
+  const fetchNotifications = useCallback(() => {
     Promise.all([
-      fetch(`${API_CONFIG_URL}/api_bookings.php`).then(r => r.json()),
-      fetch(`${API_CONFIG_URL}/api_payments.php`).then(r => r.json())
+      fetch(`${API_CONFIG_URL}/api_bookings.php`).then(r => r.json()).catch(() => ({ data: [] })),
+      fetch(`${API_CONFIG_URL}/api_payments.php`).then(r => r.json()).catch(() => ({ data: [] }))
     ]).then(([bData, pData]) => {
       let notifs = [];
       if (bData && bData.status === 'success' && Array.isArray(bData.data)) {
-        bData.data.forEach(b => {
+        bData.data.filter(b => !isRemovedOfflineGuest(b)).forEach(b => {
           notifs.push({
             id: `booking_${b.id}`,
             numericId: parseInt(b.id, 10) * 10, 
@@ -3794,7 +4560,7 @@ function NotificationBell({ showNotificationDropdown, setShowNotificationDropdow
         });
       }
       if (pData && pData.status === 'success' && Array.isArray(pData.data)) {
-        pData.data.forEach(p => {
+        pData.data.filter(p => !isRemovedOfflineGuest(p.guest_name)).forEach(p => {
           notifs.push({
             id: `payment_${p.id}`,
             numericId: parseInt(p.id, 10) * 10 + 1, 
@@ -3811,6 +4577,24 @@ function NotificationBell({ showNotificationDropdown, setShowNotificationDropdow
       setNotifications(notifs.slice(0, 15));
     }).catch(err => console.error(err));
   }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+
+    const handleUpdate = () => {
+      fetchNotifications();
+    };
+
+    window.addEventListener('meraki_booking_updated', handleUpdate);
+    window.addEventListener('meraki_rooms_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+
+    return () => {
+      window.removeEventListener('meraki_booking_updated', handleUpdate);
+      window.removeEventListener('meraki_rooms_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
+  }, [fetchNotifications]);
 
   return (
     <div style={{position: 'relative'}}>
@@ -4371,6 +5155,8 @@ function AdminChatbotRefundsTab() {
         setSelectedRefund(data.data);
         setStatusSuccess(`Refund request status updated to "${newStatus}" successfully.`);
         fetchRefunds(page, searchTerm, statusFilter);
+        window.dispatchEvent(new Event('meraki_booking_updated'));
+        window.dispatchEvent(new Event('meraki_rooms_updated'));
       } else {
         setStatusError(data?.message || 'Failed to update refund status.');
       }
@@ -4657,5 +5443,475 @@ function AdminChatbotRefundsTab() {
         </div>
       )}
     </>
+  );
+}
+
+function OwnAVillaTab({ subTab }) {
+  const enquiryFilter = subTab === 'contact-us' ? 'Contact Us' : 'Own A Villa';
+  const [enquiries, setEnquiries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [viewingEnquiry, setViewingEnquiry] = useState(null);
+
+  const fetchEnquiries = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      let res;
+      if (enquiryFilter === 'Contact Us') {
+        res = await fetch(`${API_CONFIG_URL}/api_contact.php`);
+        if (res.status === 404) {
+          res = await fetch(`${API_CONFIG_URL}/api_contactus.php`);
+        }
+      } else {
+        res = await fetch(`${API_CONFIG_URL}/api_ownvilla.php`);
+        if (res.status === 404) {
+          res = await fetch(`${API_CONFIG_URL}/api_ownvilla_enquiries.php`);
+        }
+      }
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      let rawList = [];
+      if (data && data.status === 'success' && Array.isArray(data.data)) {
+        rawList = data.data;
+      } else if (Array.isArray(data)) {
+        rawList = data;
+      } else if (data && data.status === 'error') {
+        setError(data.message || `Failed to fetch ${enquiryFilter.toLowerCase()} enquiries.`);
+        setEnquiries([]);
+        return;
+      } else {
+        setEnquiries([]);
+        return;
+      }
+
+      // Sort items chronologically ascending (oldest first) to assign separate 5-digit sequence IDs (00001..N)
+      const sortedAsc = [...rawList].sort((a, b) => {
+        const idA = Number(a.id) || 0;
+        const idB = Number(b.id) || 0;
+        if (idA !== idB) return idA - idB;
+        return new Date(a.created_at || 0) - new Date(b.created_at || 0);
+      });
+
+      const seqMap = new Map();
+      sortedAsc.forEach((item, index) => {
+        const seqStr = String(index + 1).padStart(5, '0');
+        const key = item.id !== undefined && item.id !== null ? item.id : item;
+        seqMap.set(key, seqStr);
+      });
+
+      const processed = rawList.map((item, index) => {
+        const key = item.id !== undefined && item.id !== null ? item.id : item;
+        const seqStr = seqMap.get(key) || String(rawList.length - index).padStart(5, '0');
+        return {
+          ...item,
+          enquiry_seq_id: seqStr
+        };
+      });
+
+      setEnquiries(processed);
+    } catch (err) {
+      setError(`Unable to load ${enquiryFilter.toLowerCase()} enquiries from server.`);
+    } finally {
+      setLoading(false);
+    }
+  }, [enquiryFilter]);
+
+  useEffect(() => {
+    fetchEnquiries();
+  }, [fetchEnquiries]);
+
+  const filteredEnquiries = enquiries.filter(item => {
+    if (!searchTerm.trim()) return true;
+    const term = searchTerm.toLowerCase();
+    const seqId = (item.enquiry_seq_id || '').toLowerCase();
+    const name = (item.name || item.full_name || '').toLowerCase();
+    const phone = (item.mobile_number || item.phone_number || '').toLowerCase();
+    const email = (item.email || item.email_address || '').toLowerCase();
+    const type = (item.enquiry_type || '').toLowerCase();
+    const msg = (item.message || '').toLowerCase();
+    return seqId.includes(term) || name.includes(term) || phone.includes(term) || email.includes(term) || type.includes(term) || msg.includes(term);
+  });
+
+  const sectionSubtitle = enquiryFilter === 'Own A Villa'
+    ? 'Manage leads and consultation requests submitted through the Own A Villa page.'
+    : 'Manage enquiries and messages submitted through the Contact Us page.';
+
+  return (
+    <div className="admin-fade-in" style={{ minHeight: 'calc(100vh - 64px)' }}>
+      <PageHeader
+        title={enquiryFilter === 'Own A Villa' ? 'Own A Villa Enquiries' : 'Contact Us Enquiries'}
+        subtitle={sectionSubtitle}
+        action={
+          <button
+            className="admin-btn-outline"
+            onClick={fetchEnquiries}
+            disabled={loading}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ animation: loading ? 'cb-spin 1s linear infinite' : 'none' }}
+            >
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+            </svg>
+            Refresh
+          </button>
+        }
+      />
+
+      {/* Stat Card */}
+      <div
+        className="admin-card"
+        style={{
+          marginBottom: '24px',
+          padding: '24px',
+          background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px'
+        }}
+      >
+        <div
+          style={{
+            background: '#fff',
+            width: '48px',
+            height: '48px',
+            borderRadius: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)'
+          }}
+        >
+          {enquiryFilter === 'Own A Villa' ? (
+            <Home01Icon size={24} color="#0f172a" />
+          ) : (
+            <Mail01Icon size={24} color="#0f172a" />
+          )}
+        </div>
+        <div>
+          <h3 style={{ margin: 0, fontSize: '14px', color: '#64748b', fontWeight: '500' }}>
+            Total {enquiryFilter === 'Own A Villa' ? 'Villa' : 'Contact Us'} Enquiries
+          </h3>
+          <p style={{ margin: '4px 0 0 0', fontSize: '24px', fontWeight: '700', color: '#0f172a' }}>
+            {enquiries.length}
+          </p>
+        </div>
+      </div>
+
+      {/* Search Bar */}
+      <div className="admin-chatbot-search-card" style={{ marginBottom: '20px' }}>
+        <input
+          type="text"
+          className="admin-chatbot-search-input"
+          placeholder="Search by enquiry ID (e.g. 00001), name, phone, email, enquiry topic, or message..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        {searchTerm && (
+          <button className="admin-btn-sm admin-btn-outline" onClick={() => setSearchTerm('')}>
+            Clear
+          </button>
+        )}
+      </div>
+
+      {/* Main Table Card */}
+      <div className="admin-card">
+        {loading ? (
+          <div style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
+            <div className="cb-spinner" style={{ margin: '0 auto 12px' }}></div>
+            <span>Loading {enquiryFilter.toLowerCase()} enquiries...</span>
+          </div>
+        ) : error ? (
+          <div style={{ padding: '40px', textAlign: 'center', color: '#dc2626' }}>
+            <p>{error}</p>
+            <button
+              className="admin-btn-sm admin-btn-primary"
+              onClick={fetchEnquiries}
+              style={{ marginTop: '12px' }}
+            >
+              Retry
+            </button>
+          </div>
+        ) : filteredEnquiries.length === 0 ? (
+          <div style={{ padding: '48px', textAlign: 'center', color: '#64748b' }}>
+            {enquiryFilter === 'Own A Villa' ? (
+              <Home01Icon size={36} color="#94a3b8" style={{ margin: '0 auto 12px', display: 'block' }} />
+            ) : (
+              <Mail01Icon size={36} color="#94a3b8" style={{ margin: '0 auto 12px', display: 'block' }} />
+            )}
+            <h4 style={{ margin: '0 0 6px', color: '#373737' }}>No Enquiries Found</h4>
+            <p style={{ margin: 0, fontSize: '13px' }}>
+              {searchTerm
+                ? 'No enquiries match your search query.'
+                : `No ${enquiryFilter.toLowerCase()} enquiries have been submitted yet.`}
+            </p>
+          </div>
+        ) : (
+          <div className="admin-table-wrapper">
+            <table className="admin-booking-table">
+              <thead>
+                <tr>
+                  <th>Enquiry ID</th>
+                  <th>Name</th>
+                  <th>Contact Details</th>
+                  <th>Enquiry Type</th>
+                  <th>Message Preview</th>
+                  <th>Date &amp; Time</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredEnquiries.map((item, idx) => {
+                  const itemDate = formatDateNumeric(item.created_at);
+                  const itemTime = formatBookingTime(item.created_at);
+                  const itemName = item.name || item.full_name || '—';
+                  const itemPhone = item.mobile_number || item.phone_number || '';
+                  const itemEmail = item.email || item.email_address || '';
+                  return (
+                    <tr key={item.id || idx}>
+                      <td>
+                        <span className="admin-booking-id">
+                          {item.enquiry_seq_id || String(idx + 1).padStart(5, '0')}
+                        </span>
+                      </td>
+                      <td className="admin-text-medium">{itemName}</td>
+                      <td>
+                        <div className="admin-cell-stack">
+                          {itemPhone ? (
+                            <span style={{ fontWeight: '500' }}>{itemPhone}</span>
+                          ) : (
+                            <span className="admin-cell-muted">No phone</span>
+                          )}
+                          {itemEmail ? (
+                            <span className="admin-cell-muted" style={{ fontSize: '11px' }}>
+                              {itemEmail}
+                            </span>
+                          ) : null}
+                        </div>
+                      </td>
+                      <td>
+                        <span className="admin-badge badge-primary" style={{ whiteSpace: 'nowrap' }}>
+                          {item.enquiry_type || 'General Enquiry'}
+                        </span>
+                      </td>
+                      <td>
+                        <div
+                          style={{
+                            maxWidth: '260px',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            color: '#475569',
+                            fontSize: '13px'
+                          }}
+                          title={item.message}
+                        >
+                          {item.message || <em style={{ color: '#94a3b8' }}>No message</em>}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="admin-cell-stack">
+                          <span>{itemDate}</span>
+                          {itemTime && (
+                            <span className="admin-cell-muted" style={{ fontSize: '11px' }}>
+                              {itemTime}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          className="admin-btn-sm admin-btn-outline"
+                          onClick={() => setViewingEnquiry(item)}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                          title="View Full Enquiry Details"
+                        >
+                          <EyeIcon size={14} />
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* View Enquiry Modal */}
+      {viewingEnquiry && (
+        <div
+          className="admin-modal-overlay admin-fade-in"
+          style={{ zIndex: 9999 }}
+          onClick={() => setViewingEnquiry(null)}
+        >
+          <div
+            className="admin-booking-modal-content"
+            style={{ maxWidth: '640px' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div
+              className="admin-modal-header"
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '20px',
+                borderBottom: '1px solid #f1f5f9',
+                paddingBottom: '14px'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                <h2 style={{ margin: 0, fontSize: '19px', color: '#373737', fontWeight: '700' }}>
+                  {enquiryFilter === 'Own A Villa' ? 'Villa Enquiry Details' : 'Contact Us Enquiry Details'}
+                </h2>
+                <span className="admin-booking-id" style={{ fontSize: '12px' }}>
+                  Enquiry ID: {viewingEnquiry.enquiry_seq_id || '00001'}
+                </span>
+                {viewingEnquiry.enquiry_type && (
+                  <span className="admin-badge badge-info">
+                    {viewingEnquiry.enquiry_type}
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setViewingEnquiry(null)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#64748B',
+                  padding: '4px',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
+                title="Close"
+              >
+                <Cancel01Icon size={22} strokeWidth={1.5} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="admin-booking-modal-body">
+              {/* Section 1: Lead Information */}
+              <div className="admin-modal-section">
+                <div className="admin-modal-section-title">Lead Information</div>
+                <div className="admin-modal-grid-2">
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Enquiry ID</span>
+                    <span className="admin-modal-value admin-text-medium" style={{ color: '#8A158F', fontWeight: '600' }}>
+                      {viewingEnquiry.enquiry_seq_id || '00001'}
+                    </span>
+                  </div>
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Name</span>
+                    <span className="admin-modal-value admin-text-medium">
+                      {viewingEnquiry.name || viewingEnquiry.full_name || '—'}
+                    </span>
+                  </div>
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Mobile Number</span>
+                    <span className="admin-modal-value">
+                      {(viewingEnquiry.mobile_number || viewingEnquiry.phone_number) ? (
+                        <a
+                          href={`tel:${viewingEnquiry.mobile_number || viewingEnquiry.phone_number}`}
+                          style={{ color: '#8A158F', textDecoration: 'none', fontWeight: '500' }}
+                        >
+                          {viewingEnquiry.mobile_number || viewingEnquiry.phone_number}
+                        </a>
+                      ) : (
+                        '—'
+                      )}
+                    </span>
+                  </div>
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Email Address</span>
+                    <span className="admin-modal-value">
+                      {(viewingEnquiry.email || viewingEnquiry.email_address) ? (
+                        <a
+                          href={`mailto:${viewingEnquiry.email || viewingEnquiry.email_address}`}
+                          style={{ color: '#8A158F', textDecoration: 'none', fontWeight: '500' }}
+                        >
+                          {viewingEnquiry.email || viewingEnquiry.email_address}
+                        </a>
+                      ) : (
+                        '—'
+                      )}
+                    </span>
+                  </div>
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Enquiry Type</span>
+                    <span className="admin-modal-value">
+                      {viewingEnquiry.enquiry_type || '—'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 2: Timestamp */}
+              <div className="admin-modal-section">
+                <div className="admin-modal-section-title">Submission Timestamp</div>
+                <div className="admin-modal-grid-2">
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Enquiry Date</span>
+                    <span className="admin-modal-value">
+                      {formatDateNumeric(viewingEnquiry.created_at)}
+                    </span>
+                  </div>
+                  <div className="admin-modal-field">
+                    <span className="admin-modal-label">Enquiry Time</span>
+                    <span className="admin-modal-value">
+                      {formatBookingTime(viewingEnquiry.created_at) || '—'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 3: Message */}
+              <div className="admin-modal-section">
+                <div className="admin-modal-section-title">Message / Query</div>
+                <div
+                  style={{
+                    background: '#f8fafc',
+                    padding: '14px 16px',
+                    borderRadius: '8px',
+                    border: '1px solid #e2e8f0',
+                    color: '#334155',
+                    fontSize: '14px',
+                    lineHeight: '1.6',
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word'
+                  }}
+                >
+                  {viewingEnquiry.message ? (
+                    viewingEnquiry.message
+                  ) : (
+                    <em style={{ color: '#94a3b8' }}>No message provided</em>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

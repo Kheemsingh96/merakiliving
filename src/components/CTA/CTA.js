@@ -1,12 +1,21 @@
 import React from 'react';
 import './CTA.css';
-import ctaBg from '../../assets/images/cta-bg.webp';
+import ctaBg from '../../assets/images/cta-bg.avif';
+import OptimizedImage from '../Common/OptimizedImage';
 
-const CTA = () => {
+const CTA = ({ setCurrentPage }) => {
   const handleWhatsAppClick = () => {
     const phone = '919456103445';
-    const message = encodeURIComponent('Hi Meraki Living! I am interested in booking a stay at your beautiful property. Could you please share availability and pricing details?');
+    const message = encodeURIComponent('Hi Meraki Living!\n\nI am interested in booking a stay at your beautiful property.\nCould you please share availability and pricing details?');
     window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+  };
+
+  const handleBookStayClick = () => {
+    if (setCurrentPage) {
+      setCurrentPage('booking');
+    } else {
+      window.location.hash = '#booking';
+    }
   };
 
   const handleMapClick = () => {
@@ -15,7 +24,19 @@ const CTA = () => {
 
   return (
     <section className="cta-section" aria-label="Plan Your Mountain Escape">
-      <div className="cta-bg" style={{ backgroundImage: `url(${ctaBg})` }}></div>
+      <div className="cta-bg">
+        <OptimizedImage
+          src={ctaBg}
+          alt=""
+          className="cta-bg-img"
+          width="1920"
+          height="1080"
+          loading="lazy"
+          decoding="async"
+          aria-hidden="true"
+          noWrapper={true}
+        />
+      </div>
 
       <div className="cta-container">
         <header className="cta-header">
@@ -104,51 +125,8 @@ const CTA = () => {
               </div>
             </div>
 
-            <div className="cta-features-row">
-              <div className="cta-feature-card">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
-                  <circle cx="7" cy="17" r="2"/>
-                  <path d="M9 17h6"/>
-                  <circle cx="17" cy="17" r="2"/>
-                </svg>
-                <span>Free Parking</span>
-              </div>
-              <div className="cta-feature-card">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                  <polyline points="9 22 9 12 15 12 15 22"/>
-                </svg>
-                <span>Easy Road Access</span>
-              </div>
-              <div className="cta-feature-card">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M2 22h20"/>
-                  <path d="M6 18v-7"/>
-                  <path d="M10 18v-10"/>
-                  <path d="M14 18v-5"/>
-                  <path d="M18 18v-8"/>
-                </svg>
-                <span>Mountain View</span>
-              </div>
-              <div className="cta-feature-card">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <circle cx="12" cy="12" r="5"/>
-                  <line x1="12" y1="1" x2="12" y2="3"/>
-                  <line x1="12" y1="21" x2="12" y2="23"/>
-                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                  <line x1="1" y1="12" x2="3" y2="12"/>
-                  <line x1="21" y1="12" x2="23" y2="12"/>
-                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-                </svg>
-                <span>Open Every Day</span>
-              </div>
-            </div>
-
             <div className="cta-actions">
-              <button className="cta-btn-primary" onClick={handleWhatsAppClick}>
+              <button className="cta-btn-primary" onClick={handleBookStayClick}>
                 <span>Book Your Stay</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M5 12h14M12 5l7 7-7 7"/>

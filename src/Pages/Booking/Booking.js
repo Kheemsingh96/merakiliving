@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useRooms } from '../../hooks/useRooms';
 import { parseRoomTitle } from '../../components/Rooms/Rooms';
+import OptimizedImage from '../../components/Common/OptimizedImage';
+import { API_CONFIG_URL } from '../../config/api';
+import { safeParseResponse } from '../../utils/apiHelper';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   Calendar01Icon,
@@ -11,30 +15,32 @@ import {
   ArrowLeft01Icon,
   PlusSignIcon,
   MinusSignIcon,
-  Edit02Icon,
   ViewIcon,
   MountainIcon,
   ArmchairIcon
 } from '@hugeicons/core-free-icons';
 import { FaWhatsapp } from 'react-icons/fa';
+import { FiSearch } from 'react-icons/fi';
+import { computeRoomAvailability, getAllMergedBookings } from '../../utils/dateAvailability';
 import './Booking.css';
+import '../RoomDetails/RoomDetails.css';
 
-import room1 from '../../assets/images/room-1.webp';
-import room1a from '../../assets/images/room-1a.webp';
-import room1b from '../../assets/images/room-1b.webp';
-import room1c from '../../assets/images/room-1c.webp';
-import room2 from '../../assets/images/room-2.webp';
-import room2a from '../../assets/images/room-2a.webp';
-import room2b from '../../assets/images/room-2b.webp';
-import room2c from '../../assets/images/room-2c.webp';
-import room3 from '../../assets/images/room-3.webp';
-import room3a from '../../assets/images/room-3a.webp';
-import room3b from '../../assets/images/room-3b.webp';
-import room3c from '../../assets/images/room-3c.webp';
-import room4 from '../../assets/images/room-4.webp';
-import room4a from '../../assets/images/room-4a.webp';
-import room4b from '../../assets/images/room-4b.webp';
-import room4c from '../../assets/images/room-4c.webp';
+import room1 from '../../assets/images/room-1.avif';
+import room1a from '../../assets/images/room-1a.avif';
+import room1b from '../../assets/images/room-1b.avif';
+import room1c from '../../assets/images/room-1c.avif';
+import room2 from '../../assets/images/room-2.avif';
+import room2a from '../../assets/images/room-2a.avif';
+import room2b from '../../assets/images/room-2b.avif';
+import room2c from '../../assets/images/room-2c.avif';
+import room3 from '../../assets/images/room-3.avif';
+import room3a from '../../assets/images/room-3a.avif';
+import room3b from '../../assets/images/room-3b.avif';
+import room3c from '../../assets/images/room-3c.avif';
+import room4 from '../../assets/images/room-4.avif';
+import room4a from '../../assets/images/room-4a.avif';
+import room4b from '../../assets/images/room-4b.avif';
+import room4c from '../../assets/images/room-4c.avif';
 
 const roomsData = [
   {
@@ -109,66 +115,55 @@ const getRoomViewIcon = (view) => {
 };
 
 const Booking = ({ setCurrentPage }) => {
+  const { rooms } = useRooms(roomsData);
+  const [backendBookings, setBackendBookings] = useState([]);
   const [selectedThumb, setSelectedThumb] = useState({});
   const [activePopup, setActivePopup] = useState(null);
   const [expandedDesc, setExpandedDesc] = useState({});
   const [showBookedPopup, setShowBookedPopup] = useState(false);
-  const [rooms, setRooms] = useState(roomsData);
+  const [galleryRoomModal, setGalleryRoomModal] = useState(null);
+  const [galleryImageIndex, setGalleryImageIndex] = useState(0);
+
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
-    fetch('http://localhost/merakiliving_backend/api_rooms.php')
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === 'success' && data.data) {
-          const merged = roomsData.map(localRoom => {
-            const backendRoom = data.data.find(r => r.id === localRoom.id);
-            if (backendRoom) {
-              const originalPrice = parseFloat(String(backendRoom.original_price || localRoom.originalPrice).replace(/,/g, ''));
-              const currentPrice = parseFloat(String(backendRoom.price || localRoom.price).replace(/,/g, ''));
-              let calculatedDiscount = localRoom.discount;
-              if (originalPrice > 0 && originalPrice > currentPrice) {
-                calculatedDiscount = Math.round(((originalPrice - currentPrice) / originalPrice) * 100).toString();
-              }
-              
-              return {
-                ...localRoom,
-                title: backendRoom.name || localRoom.title,
-                desc: backendRoom.description || localRoom.desc,
-                price: backendRoom.price?.toLocaleString() || localRoom.price,
-                originalPrice: backendRoom.original_price?.toLocaleString() || localRoom.originalPrice,
-                discount: calculatedDiscount,
-                image: backendRoom.image_url || localRoom.image,
-                gallery: backendRoom.image_url ? [backendRoom.image_url, ...localRoom.gallery.slice(1)] : localRoom.gallery,
-                status: backendRoom.status
-              };
-            }
-            return localRoom;
-          });
-          
-          const room1Booked = merged.find(r => r.id === 1)?.status?.toLowerCase() === 'booked' ? 1 : 0;
-          const room2Booked = merged.find(r => r.id === 2)?.status?.toLowerCase() === 'booked' ? 1 : 0;
-          const room3Booked = merged.find(r => r.id === 3)?.status?.toLowerCase() === 'booked' ? 1 : 0;
-          const bookedCount = room1Booked + room2Booked + room3Booked;
-          const entireHomestayBooked = merged.find(r => r.id === 4)?.status?.toLowerCase() === 'booked';
-
-          const finalRooms = merged.map(r => {
-            if (r.id === 4) {
-              if (r.status?.toLowerCase() === 'booked') return r;
-              return { ...r, status: bookedCount > 0 ? 'Not Available' : r.status };
-            } else if (r.id === 1 || r.id === 2 || r.id === 3) {
-              if (entireHomestayBooked) {
-                return { ...r, status: 'Not Available' };
-              }
-            }
-            return r;
-          });
-          
-          setRooms(finalRooms);
-        }
-      })
-      .catch(err => console.error(err));
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
   }, []);
 
+  const fetchBookings = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_CONFIG_URL}/api_bookings.php`);
+      const parsed = await safeParseResponse(res);
+      if (isMountedRef.current && parsed.ok && parsed.data && parsed.data.status === 'success' && Array.isArray(parsed.data.data)) {
+        setBackendBookings(parsed.data.data);
+      }
+    } catch (err) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Error fetching bookings:", err);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBookings();
+
+    const handleBookingUpdate = () => {
+      fetchBookings();
+    };
+
+    window.addEventListener('meraki_booking_updated', handleBookingUpdate);
+    window.addEventListener('meraki_rooms_updated', handleBookingUpdate);
+    window.addEventListener('storage', handleBookingUpdate);
+
+    return () => {
+      window.removeEventListener('meraki_booking_updated', handleBookingUpdate);
+      window.removeEventListener('meraki_rooms_updated', handleBookingUpdate);
+      window.removeEventListener('storage', handleBookingUpdate);
+    };
+  }, [fetchBookings]);
 
   const storedCheckIn = sessionStorage.getItem('meraki_checkIn');
   const storedCheckOut = sessionStorage.getItem('meraki_checkOut');
@@ -218,6 +213,14 @@ const Booking = ({ setCurrentPage }) => {
     sessionStorage.setItem('meraki_guests', JSON.stringify(guests));
   }, [checkInDate, checkOutDate, guests]);
 
+  const activeBookingsList = useMemo(() => {
+    return getAllMergedBookings(backendBookings);
+  }, [backendBookings]);
+
+  const displayRooms = useMemo(() => {
+    return computeRoomAvailability(rooms, activeBookingsList, checkInDate, checkOutDate);
+  }, [rooms, activeBookingsList, checkInDate, checkOutDate]);
+
   const formatDate = useCallback((date) => {
     if (!date) return 'Add Dates';
     const str = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -245,6 +248,14 @@ const Booking = ({ setCurrentPage }) => {
     });
   }, []);
 
+  const handleSearch = useCallback(() => {
+    setActivePopup(null);
+    if (checkInDate) sessionStorage.setItem('meraki_checkIn', checkInDate.toISOString());
+    if (checkOutDate) sessionStorage.setItem('meraki_checkOut', checkOutDate.toISOString());
+    sessionStorage.setItem('meraki_guests', JSON.stringify(guests));
+    fetchBookings();
+  }, [checkInDate, checkOutDate, guests, fetchBookings]);
+
   const handleBookNow = useCallback(async (e, room) => {
     e.stopPropagation();
     
@@ -256,12 +267,12 @@ const Booking = ({ setCurrentPage }) => {
     const adultsPerRoom = Math.ceil((guests.adults || 2) / (guests.rooms || 1));
     const kidsPerRoom = Math.ceil((guests.children || 0) / (guests.rooms || 1));
 
-    if (room.id === 1) {
+    if (Number(room.id) === 1) {
       if (adultsPerRoom > 2 || kidsPerRoom > 2) {
         alert('Himalayan View Room allows a maximum of 2 Adults and 2 Kids per room. Please adjust your guest count or add more rooms.');
         return;
       }
-    } else if (room.id === 2 || room.id === 3) {
+    } else if (Number(room.id) === 2 || Number(room.id) === 3) {
       if (adultsPerRoom > 6 || kidsPerRoom > 5) {
         alert(`${room.title} allows a maximum of 6 Adults and 5 Kids per room. Please adjust your guest count or add more rooms.`);
         return;
@@ -269,62 +280,41 @@ const Booking = ({ setCurrentPage }) => {
     }
     
     try {
-      const res = await fetch('http://localhost/merakiliving_backend/api_rooms.php');
-      const data = await res.json();
-      if (data && data.status === 'success' && data.data) {
-        let isBooked = false;
-        const r1 = data.data.find(r => r.id === 1)?.status?.toLowerCase() === 'booked' ? 1 : 0;
-        const r2 = data.data.find(r => r.id === 2)?.status?.toLowerCase() === 'booked' ? 1 : 0;
-        const r3 = data.data.find(r => r.id === 3)?.status?.toLowerCase() === 'booked' ? 1 : 0;
-        const r4 = data.data.find(r => r.id === 4)?.status?.toLowerCase() === 'booked' ? 1 : 0;
-        const entireHomestayBooked = r4 > 0;
-        
-        if (room.id === 4) {
-          isBooked = r4 > 0 || (r1 + r2 + r3) > 0;
-        } else if (room.id === 1 || room.id === 2 || room.id === 3) {
-          const backendRoom = data.data.find(r => r.id === room.id);
-          isBooked = (backendRoom && backendRoom.status?.toLowerCase() === 'booked') || entireHomestayBooked;
-        } else {
-          const backendRoom = data.data.find(r => r.id === room.id);
-          isBooked = backendRoom && backendRoom.status?.toLowerCase() === 'booked';
-        }
-        
-        if (isBooked) {
+      const res = await fetch(`${API_CONFIG_URL}/api_bookings.php`);
+      const parsed = await safeParseResponse(res);
+      const data = parsed.data;
+      if (parsed.ok && data && data.status === 'success' && Array.isArray(data.data)) {
+        setBackendBookings(data.data);
+        const liveAvailability = computeRoomAvailability(rooms, data.data, checkInDate, checkOutDate);
+        const currentLiveRoom = liveAvailability.find(r => Number(r.id) === Number(room.id));
+        if (currentLiveRoom && (currentLiveRoom.status?.toLowerCase() === 'booked' || currentLiveRoom.status?.toLowerCase() === 'not available')) {
           setShowBookedPopup(true);
-          setRooms(prev => prev.map(r => {
-            if (r.id === room.id) {
-              if (room.id === 4 && r4 === 0) return { ...r, status: 'Not Available' };
-              if ((room.id === 1 || room.id === 2 || room.id === 3) && entireHomestayBooked) return { ...r, status: 'Not Available' };
-              return { ...r, status: 'Booked' };
-            }
-            return r;
-          }));
           return;
         }
       }
     } catch (err) {
-      console.error(err);
+      console.error("Error verifying live booking availability:", err);
     }
 
     const nights = getNights();
-    let price = parseInt(String(room.price).split(',').join(''), 10);
+    let price = parseInt(String(room.price).replace(/,/g, ''), 10) || 0;
     let extraCharge = 0;
     
-    if (room.id === 2 || room.id === 3) {
+    if (Number(room.id) === 2 || Number(room.id) === 3) {
       const extraAdults = Math.max(0, adultsPerRoom - 2);
       const extraKids = Math.max(0, kidsPerRoom - 2);
       extraCharge = (extraAdults * 1000) + (extraKids * 500);
-    } else if (room.id === 4) {
+    } else if (Number(room.id) === 4) {
       const extraAdults = Math.max(0, guests.adults - 12);
       const extraKids = Math.max(0, (guests.children || 0) - 2);
       extraCharge = (extraAdults * 1000) + (extraKids * 500);
     }
     
     price += extraCharge;
-    const multiplier = room.id === 4 ? 1 : guests.rooms;
+    const multiplier = Number(room.id) === 4 ? 1 : guests.rooms;
     const totalPrice = price * nights * multiplier;
     const bookingData = {
-      roomId: room.id,
+      roomId: Number(room.id),
       roomTitle: room.title,
       roomPrice: room.price,
       roomOriginalPrice: room.originalPrice,
@@ -339,9 +329,9 @@ const Booking = ({ setCurrentPage }) => {
     };
     sessionStorage.setItem('meraki_booking', JSON.stringify(bookingData));
     if (setCurrentPage) {
-      setCurrentPage('guest-details', room.id);
+      setCurrentPage('guest-details', Number(room.id));
     }
-  }, [getNights, guests, checkInDate, checkOutDate, setCurrentPage]);
+  }, [getNights, guests, checkInDate, checkOutDate, setCurrentPage, rooms]);
 
   const handleViewDetails = useCallback((roomId) => {
     if (setCurrentPage) {
@@ -502,7 +492,7 @@ const Booking = ({ setCurrentPage }) => {
   const nights = getNights();
 
   const roomCards = useMemo(() => {
-    return rooms.map((room, roomIdx) => {
+    return displayRooms.map((room, roomIdx) => {
       let currentRoomPrice = parseInt(String(room.price).replace(/,/g, ''), 10);
       let extraChargePerNight = 0;
       let extraChargeLabel = null;
@@ -512,20 +502,20 @@ const Booking = ({ setCurrentPage }) => {
 
       const totalGuestsInBar = (guests.adults || 2) + (guests.children || 0);
       
-      if (room.id === 1) {
+      if (Number(room.id) === 1) {
         if (totalGuestsInBar > 3) return null;
         if (adultsPerRoom > 2 || kidsPerRoom > 2) return null; // fallback to capacity rule just in case
-      } else if (room.id === 2) {
+      } else if (Number(room.id) === 2) {
         if (adultsPerRoom > 6 || kidsPerRoom > 5) return null;
         const extraAdults = Math.max(0, adultsPerRoom - 2);
         const extraKids = Math.max(0, kidsPerRoom - 2);
         extraChargePerNight = (extraAdults * 1000) + (extraKids * 500);
-      } else if (room.id === 3) {
+      } else if (Number(room.id) === 3) {
         if (adultsPerRoom > 6 || kidsPerRoom > 5) return null;
         const extraAdults = Math.max(0, adultsPerRoom - 2);
         const extraKids = Math.max(0, kidsPerRoom - 2);
         extraChargePerNight = (extraAdults * 1000) + (extraKids * 500);
-      } else if (room.id === 4) {
+      } else if (Number(room.id) === 4) {
         if (guests.adults + (guests.children || 0) > 14) return null;
         const extraAdults = Math.max(0, guests.adults - 12);
         const extraKids = Math.max(0, (guests.children || 0) - 2);
@@ -535,15 +525,15 @@ const Booking = ({ setCurrentPage }) => {
       currentRoomPrice += extraChargePerNight;
       
       if (extraChargePerNight > 0) {
-        const multiplier = room.id === 4 ? 1 : (guests.rooms || 1);
+        const multiplier = Number(room.id) === 4 ? 1 : (guests.rooms || 1);
         
         let labelText = [];
         let extraA = 0;
         let extraK = 0;
-        if (room.id === 2 || room.id === 3) {
+        if (Number(room.id) === 2 || Number(room.id) === 3) {
           extraA = Math.max(0, adultsPerRoom - 2);
           extraK = Math.max(0, kidsPerRoom - 2);
-        } else if (room.id === 4) {
+        } else if (Number(room.id) === 4) {
           extraA = Math.max(0, guests.adults - 12);
           extraK = Math.max(0, (guests.children || 0) - 2);
         }
@@ -559,23 +549,63 @@ const Booking = ({ setCurrentPage }) => {
       <div className="booking-room-card" key={room.id} onClick={() => handleViewDetails(room.id)}>
         <div className="booking-room-gallery">
           <div className="booking-room-main-image">
-            <img
+            <OptimizedImage
               src={selectedThumb[room.id] !== undefined ? room.gallery[selectedThumb[room.id]] : room.image}
               alt={room.title}
-              loading={roomIdx === 0 ? "eager" : "lazy"}
+              width="370"
+              height="277"
+              loading="lazy"
               decoding="async"
+              noWrapper={true}
             />
           </div>
           <div className="booking-room-thumbs">
-            {room.gallery.map((thumb, idx) => (
-              <div
-                className={`booking-room-thumb ${selectedThumb[room.id] === idx ? 'active' : ''}`}
-                key={idx}
-                onClick={(e) => handleThumbClick(e, room.id, idx)}
-              >
-                <img src={thumb} alt={`${room.title} ${idx + 1}`} loading="lazy" decoding="async" />
-              </div>
-            ))}
+            {room.gallery.slice(0, 4).map((thumb, idx) => {
+              const isFourth = idx === 3;
+              if (isFourth) {
+                return (
+                  <div
+                    className="booking-room-thumb see-all-thumb"
+                    key={idx}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setGalleryRoomModal(room);
+                      setGalleryImageIndex(0);
+                    }}
+                    style={{ position: 'relative', cursor: 'pointer', overflow: 'hidden' }}
+                  >
+                    <OptimizedImage src={thumb} alt={`${room.title} See All`} width="80" height="64" loading="lazy" decoding="async" noWrapper={true} />
+                    <div
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: 'linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.85) 100%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#ffffff',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        letterSpacing: '0.5px',
+                        textAlign: 'center',
+                        borderRadius: 'inherit'
+                      }}
+                    >
+                      See All
+                    </div>
+                  </div>
+                );
+              }
+              return (
+                <div
+                  className={`booking-room-thumb ${selectedThumb[room.id] === idx ? 'active' : ''}`}
+                  key={idx}
+                  onClick={(e) => handleThumbClick(e, room.id, idx)}
+                >
+                  <OptimizedImage src={thumb} alt={`${room.title} ${idx + 1}`} width="80" height="64" loading="lazy" decoding="async" noWrapper={true} />
+                </div>
+              );
+            })}
           </div>
         </div>
         <div className="booking-room-details">
@@ -645,7 +675,7 @@ const Booking = ({ setCurrentPage }) => {
       </div>
       );
     });
-  }, [rooms, selectedThumb, expandedDesc, handleThumbClick, toggleDesc, handleViewDetails, handleBookNow, guests]);
+  }, [displayRooms, selectedThumb, expandedDesc, handleThumbClick, toggleDesc, handleViewDetails, handleBookNow, guests]);
 
   return (
     <section className="booking-section">
@@ -693,9 +723,9 @@ const Booking = ({ setCurrentPage }) => {
               </div>
               {activePopup === 'guests' && renderGuestsDropdown()}
             </div>
-            <button className="booking-edit-btn" onClick={() => setActivePopup(null)}>
-              <HugeiconsIcon icon={Edit02Icon} size={18} />
-              <span>Update</span>
+            <button className="booking-edit-btn" onClick={handleSearch}>
+              <FiSearch size={18} />
+              <span>Search</span>
             </button>
           </div>
         </div>
@@ -726,7 +756,7 @@ const Booking = ({ setCurrentPage }) => {
               <p className="booking-help-text">Our team can help you find the perfect room for your mountain stay.</p>
               <div className="booking-help-actions">
                 <a
-                  href="https://wa.me/919456103445?text=Hi%20Meraki%20Living!%20I%20need%20help%20choosing%20a%20room."
+                  href="https://wa.me/919456103445?text=Hi%20Meraki%20Living!%20%0A%0AI%20need%20help%20choosing%20a%20room."
                   target="_blank"
                   rel="noopener noreferrer"
                   className="booking-help-btn-primary"
@@ -772,6 +802,58 @@ const Booking = ({ setCurrentPage }) => {
             <button className="booking-btn-primary" style={{width: '100%', justifyContent: 'center', padding: '14px', fontSize: '15px'}} onClick={() => setShowBookedPopup(false)}>
               Okay, got it
             </button>
+          </div>
+        </div>
+      )}
+
+      {galleryRoomModal && (
+        <div className="rd-gallery-modal" onClick={() => setGalleryRoomModal(null)}>
+          <button className="rd-modal-close" onClick={() => setGalleryRoomModal(null)}>&times;</button>
+          <button
+            className="rd-modal-nav rd-modal-prev"
+            onClick={(e) => {
+              e.stopPropagation();
+              setGalleryImageIndex((prev) => (prev === 0 ? galleryRoomModal.gallery.length - 1 : prev - 1));
+            }}
+          >
+            <HugeiconsIcon icon={ArrowLeft01Icon} size={24} />
+          </button>
+          <div className="rd-modal-content" onClick={(e) => e.stopPropagation()}>
+            <OptimizedImage
+              className="rd-modal-main-image"
+              src={galleryRoomModal.gallery[galleryImageIndex]}
+              alt={`Gallery ${galleryImageIndex + 1}`}
+              width="800"
+              height="533"
+              loading="lazy"
+              decoding="async"
+              noWrapper={true}
+            />
+          </div>
+          <button
+            className="rd-modal-nav rd-modal-next"
+            onClick={(e) => {
+              e.stopPropagation();
+              setGalleryImageIndex((prev) => (prev + 1) % galleryRoomModal.gallery.length);
+            }}
+          >
+            <HugeiconsIcon icon={ArrowRight01Icon} size={24} />
+          </button>
+          <div className="rd-modal-thumbs" onClick={(e) => e.stopPropagation()}>
+            {galleryRoomModal.gallery.map((img, idx) => (
+              <OptimizedImage
+                key={idx}
+                src={img}
+                alt={`Thumbnail ${idx + 1}`}
+                className={`rd-modal-thumb ${galleryImageIndex === idx ? 'active' : ''}`}
+                onClick={() => setGalleryImageIndex(idx)}
+                width="80"
+                height="60"
+                loading="lazy"
+                decoding="async"
+                noWrapper={true}
+              />
+            ))}
           </div>
         </div>
       )}

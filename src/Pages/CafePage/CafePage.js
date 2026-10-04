@@ -1,4 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { API_CONFIG_URL } from '../../config/api';
+import { safeParseResponse, formatImageUrl } from '../../utils/apiHelper';
 import { 
   FiArrowRight, 
   FiX, 
@@ -16,7 +19,10 @@ import {
   FaStar, 
   FaWhatsapp 
 } from 'react-icons/fa';
-import { TbChefHat, TbMountain } from 'react-icons/tb';
+import { 
+  TbMountain, 
+  TbChefHat 
+} from 'react-icons/tb';
 import { 
   Location01Icon,
   Tick02Icon,
@@ -25,26 +31,50 @@ import {
   RestaurantTableIcon
 } from 'hugeicons-react';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { SaladIcon, PieIcon, HandPlatterIcon, TeaIcon, FilterIcon } from '@hugeicons/core-free-icons';
+import { PieIcon, HandPlatterIcon, TeaIcon } from '@hugeicons/core-free-icons';
 
 import './CafePage.css';
 import '../../components/Review/Review.css';
+import OptimizedImage from '../../components/Common/OptimizedImage';
 
-import cafeHeroImg1 from "../../assets/images/cafe-hero-1.webp";
-import cafeHeroImg2 from "../../assets/images/cafe-hero-2.webp";
-import cafeHeroImg3 from "../../assets/images/cafe-hero-3.webp";
-import cafeAboutImg from "../../assets/images/cafe-about.webp";
-import cafeMenuImg1 from "../../assets/images/cafe-menu-1.webp";
-import cafeMenuImg2 from "../../assets/images/cafe-menu-2.webp";
-import cafeMenuImg3 from "../../assets/images/cafe-menu-3.webp";
-import cafeMenuImg4 from "../../assets/images/cafe-menu-4.webp";
-import cafeMenuImg5 from "../../assets/images/cafe-menu-5.webp";
-import cafeAmbianceImg from "../../assets/images/cafe-ambiance.webp";
-import cafeLifestyle1 from "../../assets/images/cafe-lifestyle-1.webp";
-import cafeLifestyle2 from "../../assets/images/cafe-lifestyle-2.webp";
-import cafeFood1 from "../../assets/images/cafe-food-1.webp";
-import cafeFood2 from "../../assets/images/cafe-food-2.webp";
-import cafeFood3 from "../../assets/images/cafe-food-3.webp";
+import cafeHeroImg1 from "../../assets/images/cafe-hero-1.avif";
+import cafeHeroImg2 from "../../assets/images/cafe-hero-2.avif";
+import cafeHeroImg3 from "../../assets/images/cafe-hero-3.avif";
+import cafeAboutImg from "../../assets/images/cafe-about.avif";
+import ragi from "../../assets/images/ragi.avif";
+import mutton from "../../assets/images/mutton.avif";
+import sandwich from "../../assets/images/sandwich.avif";
+import omelette from "../../assets/images/omelette.avif";
+import fries from "../../assets/images/fries.avif";
+import cafeAmbianceImg from "../../assets/images/cafe-ambiance.avif";
+import cafeLifestyle1 from "../../assets/images/cafe-lifestyle-1.avif";
+import cafeLifestyle2 from "../../assets/images/cafe-menu-7.avif";
+import tea from "../../assets/images/tea.avif";
+import rosemary from "../../assets/images/rosemary.avif";
+import maggie from "../../assets/images/maggie.avif";
+
+const CAFE_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'CafeOrCoffeeShop',
+  'name': 'Meraki Mountain Cafe',
+  'description': 'Farm-to-table Himalayan dining, handcrafted coffees, artisanal beverages, and authentic Kumaoni cuisine in Peora, Mukteshwar.',
+  'url': 'https://www.merakiliving.in/cafe',
+  'telephone': '+91-94561-03445',
+  'servesCuisine': ['Himalayan', 'Kumaoni', 'Indian', 'Cafe', 'Organic'],
+  'address': {
+    '@type': 'PostalAddress',
+    'streetAddress': 'Village Peora, Near Mukteshwar',
+    'addressLocality': 'Peora, Mukteshwar',
+    'addressRegion': 'Uttarakhand',
+    'postalCode': '263138',
+    'addressCountry': 'IN'
+  },
+  'geo': {
+    '@type': 'GeoCoordinates',
+    'latitude': 29.475,
+    'longitude': 79.625
+  }
+};
 
 const SLIDES = [cafeHeroImg1, cafeHeroImg2, cafeHeroImg3];
 const SLIDE_INTERVAL = 4000;
@@ -65,14 +95,14 @@ const NonVegIcon = () => (
 );
 
 const featuredMenuItems = [
-  { id: 1, image: cafeMenuImg1, name: "Traditional Ragi Roti", desc: "Soft, wholesome mandua (ragi) roti served fresh with authentic Himalayan flavours and traditional local accompaniments.", category: "Healthy", tag: "Chef's Special", rating: 4.9, price: 120, originalPrice: 160, isVeg: true },
-  { id: 2, image: cafeMenuImg2, name: "Kumaoni Mutton Curry", desc: "Slow-cooked in traditional mountain spices, this rich and aromatic mutton curry delivers the true taste of Kumaoni heritage.", category: "Main Course", tag: "Popular", rating: 4.8, price: 550, originalPrice: 650, isVeg: false },
-  { id: 3, image: cafeMenuImg3, name: "Garden Veg Sandwich", desc: "Fresh seasonal vegetables, creamy cheese, and toasted artisan bread, grilled to golden perfection.", category: "Healthy", tag: "New", rating: 4.7, price: 180, originalPrice: 220, isVeg: true },
-  { id: 4, image: cafeMenuImg4, name: "Cheese Herb Omelette", desc: "Fluffy farm-fresh eggs with melted cheese and herbs, served hot for a wholesome breakfast.", category: "Breakfast", tag: "Best Seller", rating: 4.9, price: 150, originalPrice: 190, isVeg: false },
-  { id: 5, image: cafeMenuImg5, name: "Crispy French Fries", desc: "Golden, perfectly seasoned potato fries served hot and crispy, making the perfect snack anytime.", category: "Desserts", tag: "Must Try", rating: 4.8, price: 140, originalPrice: 180, isVeg: true },
-  { id: 6, image: cafeFood1, name: "Organic Himalayan Tea", desc: "A soothing blend of handpicked mountain herbs, perfect for relaxing in the crisp mountain air.", category: "Beverages", tag: "Signature", rating: 4.9, price: 90, originalPrice: 120, isVeg: true },
-  { id: 7, image: cafeFood2, name: "Spicy Chicken Tikka", desc: "Tender chicken pieces marinated in authentic spices and grilled to smoky perfection.", category: "Main Course", tag: "Chef's Special", rating: 4.8, price: 350, originalPrice: 400, isVeg: false },
-  { id: 8, image: cafeFood3, name: "Pahadi Masala Maggie", desc: "The ultimate mountain comfort food, loaded with fresh veggies and our secret spice mix.", category: "Breakfast", tag: "Popular", rating: 4.7, price: 120, originalPrice: 150, isVeg: true }
+  { id: 1, image: ragi, name: "Traditional Ragi Roti", desc: "Soft, wholesome mandua (ragi) roti served fresh with authentic Himalayan flavours and traditional local accompaniments.", category: "Healthy", tag: "Chef's Special", rating: 4.9, price: 120, originalPrice: 160, isVeg: true },
+  { id: 2, image: mutton, name: "Kumaoni Mutton Curry", desc: "Slow-cooked in traditional mountain spices, this rich and aromatic mutton curry delivers the true taste of Kumaoni heritage.", category: "Main Course", tag: "Popular", rating: 4.8, price: 550, originalPrice: 650, isVeg: false },
+  { id: 3, image: sandwich, name: "Garden Veg Sandwich", desc: "Fresh seasonal vegetables, creamy cheese, and toasted artisan bread, grilled to golden perfection.", category: "Healthy", tag: "New", rating: 4.7, price: 180, originalPrice: 220, isVeg: true },
+  { id: 4, image: omelette, name: "Cheese Herb Omelette", desc: "Fluffy farm-fresh eggs with melted cheese and herbs, served hot for a wholesome breakfast.", category: "Breakfast", tag: "Best Seller", rating: 4.9, price: 150, originalPrice: 190, isVeg: false },
+  { id: 5, image: fries, name: "Crispy French Fries", desc: "Golden, perfectly seasoned potato fries served hot and crispy, making the perfect snack anytime.", category: "Desserts", tag: "Must Try", rating: 4.8, price: 140, originalPrice: 180, isVeg: true },
+  { id: 6, image: tea, name: "Organic Himalayan Tea", desc: "A soothing blend of handpicked mountain herbs, perfect for relaxing in the crisp mountain air.", category: "Beverages", tag: "Signature", rating: 4.9, price: 90, originalPrice: 120, isVeg: true },
+  { id: 7, image: rosemary, name: "Rosemary Herbal Tea", desc: "A soothing herbal infusion with fragrant rosemary, offering a refreshing taste and calming mountain-inspired warmth.", category: "Beverages", tag: "Chef's Special", rating: 4.8, price: 80, originalPrice: 400, isVeg: true },
+  { id: 8, image: maggie, name: "Pahadi Masala Maggie", desc: "The ultimate mountain comfort food, loaded with fresh veggies and our secret spice mix.", category: "Breakfast", tag: "Popular", rating: 4.7, price: 120, originalPrice: 150, isVeg: true }
 ];
 
 const modalMenuPages = [
@@ -214,12 +244,11 @@ const ambianceItems = [
 const galleryImages = [
   cafeAmbianceImg,
   cafeLifestyle1,
-  cafeFood1,
-  cafeFood2,
+  tea,
+  rosemary,
   cafeLifestyle2,
-  cafeMenuImg4,
-  cafeFood3,
-  cafeMenuImg1
+  omelette,
+  ragi
 ];
 
 const DEFAULT_REVIEW_DATA = [
@@ -247,27 +276,40 @@ const DEFAULT_REVIEW_DATA = [
 ];
 
 const CafePage = () => {
-  const [activeCategory, setActiveCategory] = useState("All");
   const [foodIndex, setFoodIndex] = useState(0);
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
   const [currentMenuPage, setCurrentMenuPage] = useState(0);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [dietFilter, setDietFilter] = useState("All");
-  const [showFilter, setShowFilter] = useState(false);
 
-  const [featuredMenuState, setFeaturedMenuState] = useState(featuredMenuItems);
-  const [modalMenuState, setModalMenuState] = useState(modalMenuPages);
+  const [heroSlidesState] = useState(SLIDES);
+  const [aboutImgState] = useState(null);
+  const [featuredMenuState] = useState(featuredMenuItems);
+  const [modalMenuState] = useState(modalMenuPages);
   const [galleryImagesState, setGalleryImagesState] = useState(galleryImages);
-  
+  const [ambianceMainImg] = useState(null);
+  const [imgCacheBuster, setImgCacheBuster] = useState(() => Date.now());
+
+  const formatImageUrlWithBuster = useCallback((url, ts) => {
+    if (!url) return '';
+    const formatted = formatImageUrl(url);
+    if (!formatted) return '';
+    if (formatted.startsWith('data:') || formatted.startsWith('blob:')) return formatted;
+    const sep = formatted.includes('?') ? '&' : '?';
+    return `${formatted}${sep}v=${ts || imgCacheBuster}`;
+  }, [imgCacheBuster]);
+
   // Review section state
   const [activeReviewIndex, setActiveReviewIndex] = useState(0);
   const [reviews, setReviews] = useState(DEFAULT_REVIEW_DATA);
 
   useEffect(() => {
-    fetch('http://localhost/merakiliving_backend/api_reviews.php')
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.status === 'success' && Array.isArray(data.data)) {
+    let isMounted = true;
+    fetch(`${API_CONFIG_URL}/api_reviews.php`)
+      .then(res => safeParseResponse(res))
+      .then(parsed => {
+        if (!isMounted) return;
+        const data = parsed.data;
+        if (parsed.ok && data && data.status === 'success' && Array.isArray(data.data)) {
           const cafeReviews = data.data
             .filter(r => r.visibility === 'Visible' && r.type === 'Cafe')
             .map(r => ({
@@ -284,7 +326,15 @@ const CafePage = () => {
           }
         }
       })
-      .catch(e => console.error("Error fetching cafe reviews:", e));
+      .catch(e => {
+        if (process.env.NODE_ENV === 'development') {
+          console.error("Error fetching cafe reviews:", e);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -313,95 +363,81 @@ const CafePage = () => {
 
   const activeReview = reviews[activeReviewIndex];
 
-  const fetchCafeGallery = useCallback(() => {
-    fetch('http://localhost/merakiliving_backend/api_gallery.php')
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.status === 'success' && data.data) {
-           const ambianceImages = data.data.filter(img => img.category === 'Cafe Ambiance Gallery');
-           if (ambianceImages.length > 0) {
-              setGalleryImagesState(ambianceImages.map(img => img.image_url));
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const fetchCafeGallery = useCallback((ts) => {
+    const currentTs = ts || Date.now();
+    fetch(`${API_CONFIG_URL}/api_gallery.php?t=${Date.now()}`)
+      .then(res => safeParseResponse(res))
+      .then(parsed => {
+        if (!isMountedRef.current) return;
+        const data = parsed.data;
+        if (parsed.ok && data && data.status === 'success' && Array.isArray(data.data)) {
+           const cafeImages = data.data.filter(img => {
+             const cat = (img.category || '').toLowerCase().trim();
+             return cat.includes('cafe');
+           });
+           
+           if (cafeImages.length > 0) {
+              const formattedUrls = cafeImages.map(img => formatImageUrlWithBuster(img.image_url, currentTs));
+              setGalleryImagesState(formattedUrls);
+           } else {
+              setGalleryImagesState(galleryImages);
            }
         }
-      }).catch(e => console.error("Error fetching cafe gallery:", e));
-  }, []);
-
-  useEffect(() => {
-    fetchCafeGallery();
-  }, [fetchCafeGallery]);
-
-  useEffect(() => {
-    const handler = () => fetchCafeGallery();
-    window.addEventListener('galleryUpdated', handler);
-    return () => window.removeEventListener('galleryUpdated', handler);
-  }, [fetchCafeGallery]);
-
-  useEffect(() => {
-    fetch('http://localhost/merakiliving_backend/api_cafe.php')
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === 'success' && data.data.length > 0) {
-          const apiItems = data.data;
-          
-          const featured = apiItems.filter(i => Number(i.is_featured) === 1 || i.is_featured === true);
-          setFeaturedMenuState(featured.map(i => ({
-               id: i.item_id || i.id,
-               image: i.image_url,
-               name: i.title,
-               desc: i.description,
-               category: i.category,
-               tag: i.tag,
-               rating: i.rating || 4.8,
-               price: i.price,
-               originalPrice: i.original_price,
-               isVeg: Number(i.is_veg) === 1 || i.is_veg === true,
-               status: i.status
-          })));
-
-          const newModalMenuPages = JSON.parse(JSON.stringify(modalMenuPages));
-          newModalMenuPages.forEach(page => {
-            page.sections.forEach(section => {
-              const sectionItems = apiItems.filter(i => i.category === section.title);
-              if (sectionItems.length > 0) {
-                 section.items = sectionItems.map(i => ({
-                   name: i.title,
-                   desc: i.description,
-                   price: i.price,
-                   tag: i.tag || ''
-                 }));
-              }
-            });
-          });
-          setModalMenuState(newModalMenuPages);
+      }).catch(e => {
+        if (process.env.NODE_ENV === 'development') {
+          console.error("Error fetching cafe gallery:", e);
         }
-      })
-      .catch(e => console.error(e));
-  }, []);
+      });
+  }, [formatImageUrlWithBuster]);
+
+  useEffect(() => {
+    const handleUpdate = (isEvent = false) => {
+      let ts;
+      try {
+        ts = localStorage.getItem('meraki_cafe_updated_ts') || '1';
+      } catch (e) {
+        ts = '1';
+      }
+      setImgCacheBuster(ts);
+      fetchCafeGallery(ts);
+    };
+
+    const handleStorage = (e) => {
+      if (!e || e.key === 'meraki_gallery_updated_ts' || !e.key) {
+        handleUpdate(true);
+      }
+    };
+
+    handleUpdate(false);
+
+    const handleEventUpdate = () => handleUpdate(true);
+
+    window.addEventListener('galleryUpdated', handleEventUpdate);
+    window.addEventListener('storage', handleStorage);
+    return () => {
+      window.removeEventListener('galleryUpdated', handleEventUpdate);
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, [fetchCafeGallery]);
 
 
   const [activeSlide, setActiveSlide] = useState(0);
+  const [prevSlide, setPrevSlide] = useState(null);
   const [isHeroLoaded, setIsHeroLoaded] = useState(false);
 
-  const categories = [
-    { name: "All", icon: <FaStar size={16} /> },
-    { name: "Beverages", icon: <Coffee02Icon size={18} variant="stroke" /> },
-    { name: "Breakfast", icon: <TbChefHat size={18} /> },
-    { name: "Healthy", icon: <HugeiconsIcon icon={SaladIcon} size={18} color="currentColor" strokeWidth={1.5} /> },
-    { name: "Main Course", icon: <RestaurantTableIcon size={18} variant="stroke" /> },
-    { name: "Desserts", icon: <ApplePieIcon size={18} variant="stroke" /> }
-  ];
-
-  let filteredMenu = featuredMenuState.filter(item => {
-    const categoryMatch = activeCategory === "All" || item.category === activeCategory;
-    const dietMatch = dietFilter === "All" || (dietFilter === "Veg" ? item.isVeg === true : item.isVeg === false);
-    return categoryMatch && dietMatch;
-  });
-
   const itemsPerPage = 4;
-  const currentFoodItems = filteredMenu.slice(foodIndex, foodIndex + itemsPerPage);
+  const currentFoodItems = featuredMenuState.slice(foodIndex, foodIndex + itemsPerPage);
 
   const nextFood = () => {
-    if (foodIndex + itemsPerPage < filteredMenu.length) {
+    if (foodIndex + itemsPerPage < featuredMenuState.length) {
       setFoodIndex(foodIndex + itemsPerPage);
     }
   };
@@ -412,16 +448,18 @@ const CafePage = () => {
     }
   };
 
-  useEffect(() => {
-    setFoodIndex(0);
-  }, [activeCategory, dietFilter]);
+  const [mountedSlides] = useState([0, 1, 2]);
 
   const nextSlide = useCallback(() => {
-    setActiveSlide((prev) => (prev + 1) % SLIDES.length);
-  }, []);
+    setActiveSlide((prev) => {
+      setPrevSlide(prev);
+      const slideCount = heroSlidesState.length || 1;
+      return (prev + 1) % slideCount;
+    });
+  }, [heroSlidesState.length]);
 
   useEffect(() => {
-    const loadTimer = setTimeout(() => setIsHeroLoaded(true), 200);
+    const loadTimer = setTimeout(() => setIsHeroLoaded(true), 50);
     const intervalId = setInterval(nextSlide, SLIDE_INTERVAL);
     return () => {
       clearTimeout(loadTimer);
@@ -455,7 +493,7 @@ const CafePage = () => {
   };
 
   const handlePreOrder = (itemName) => {
-    const message = encodeURIComponent(`Hi Meraki Cafe! I would like to pre-order: ${itemName}`);
+    const message = encodeURIComponent(`Hi Meraki Cafe!\n\nI would like to pre-order: *${itemName}*`);
     window.open(`https://wa.me/${PHONE_NUMBER}?text=${message}`, '_blank');
   };
 
@@ -470,21 +508,49 @@ const CafePage = () => {
 
   return (
     <section className="mcf-section">
+      <Helmet>
+        <title>Cafe Meraki | Meraki Living</title>
+        <meta name="description" content="Savor farm-to-table Himalayan cuisine, artisanal coffees, and organic teas at Meraki Living Cafe in Peora, Mukteshwar surrounded by panoramic valley views." />
+        <link rel="canonical" href="https://www.merakiliving.in/cafe" />
+        <meta name="robots" content="index, follow" />
+        <meta property="og:site_name" content="Meraki Living" />
+        <meta property="og:title" content="Cafe Meraki | Meraki Living" />
+        <meta property="og:description" content="Savor farm-to-table Himalayan cuisine, artisanal coffees, and organic teas at Meraki Living Cafe in Peora, Mukteshwar surrounded by panoramic valley views." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://www.merakiliving.in/cafe" />
+        <meta property="og:image" content={cafeHeroImg1} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Cafe Meraki | Meraki Living" />
+        <meta name="twitter:description" content="Savor farm-to-table Himalayan cuisine, artisanal coffees, and organic teas at Meraki Living Cafe in Peora, Mukteshwar surrounded by panoramic valley views." />
+        <meta name="twitter:image" content={cafeHeroImg1} />
+        <script type="application/ld+json">{JSON.stringify(CAFE_SCHEMA)}</script>
+      </Helmet>
       <div className="mcf-hero-wrapper">
         <div className="mcf-hero-bg-wrapper">
-          {SLIDES.map((slide, index) => (
-            <img
-              key={index}
-              src={slide}
-              alt={`Cafe Hero ${index + 1}`}
-              className={index === activeSlide ? 'active' : ''}
-              loading="eager"
-              fetchPriority={index === activeSlide ? "high" : "low"}
-              decoding="async"
-              width="1920"
-              height="1080"
-            />
-          ))}
+          {heroSlidesState.map((slide, index) => {
+            if (!mountedSlides.includes(index)) return null;
+            let slideClass = '';
+            if (index === activeSlide) {
+              slideClass = 'active';
+            } else if (index === prevSlide) {
+              slideClass = 'prev';
+            }
+
+            return (
+              <OptimizedImage
+                key={index}
+                src={slide}
+                alt={`Meraki Mountain Cafe scenic view and dining in Peora Mukteshwar - view ${index + 1}`}
+                className={slideClass}
+                loading="eager"
+                fetchPriority={index === 0 ? 'high' : 'low'}
+                decoding="async"
+                width="1920"
+                height="1080"
+                noWrapper={true}
+              />
+            );
+          })}
         </div>
         <div className="mcf-hero-overlay-main" aria-hidden="true" />
         <div className="mcf-hero-overlay-bottom" aria-hidden="true" />
@@ -519,11 +585,8 @@ const CafePage = () => {
 
       <div id="about" className="mcf-about">
         <div className="mcf-about-container mcf-animate">
-          <div className="mcf-about-image mobile-only">
-            <img src={cafeAboutImg} alt="Cozy cafe interior with mountain views" loading="lazy" decoding="async" width="640" height="480" />
-          </div>
-          <div className="mcf-about-image desktop-only">
-            <img src={cafeAboutImg} alt="Cozy cafe interior with mountain views" loading="lazy" decoding="async" width="640" height="480" />
+          <div className="mcf-about-image">
+            <OptimizedImage src={aboutImgState || cafeAboutImg} alt="Cozy cafe interior with mountain views" loading="lazy" decoding="async" width="640" height="480" noWrapper={true} />
           </div>
           <div className="mcf-about-text-header">
             <h2 className="mcf-about-title">Experience the Soul of Café Meraki</h2>
@@ -571,57 +634,6 @@ const CafePage = () => {
                 Every dish is crafted with love using the freshest local ingredients,<br/> bringing you authentic mountain flavors with a modern twist.
               </p>
             </div>
-            <div className="mcf-filter-wrapper">
-              <button 
-                className={`mcf-filter-trigger ${showFilter ? 'active' : ''}`} 
-                onClick={() => setShowFilter(!showFilter)}
-              >
-                <HugeiconsIcon icon={FilterIcon} size={20} />
-                <span>Filter Menu</span>
-              </button>
-              {showFilter && (
-                <div className="mcf-filter-panel">
-                  <div className="mcf-fp-section">
-                    <h4>Dietary</h4>
-                    <div className="mcf-fp-chips">
-                      <button 
-                        className={`mcf-fp-chip ${dietFilter === 'All' ? 'active' : ''}`} 
-                        onClick={() => { setDietFilter('All'); setShowFilter(false); }}
-                      >
-                        All
-                      </button>
-                      <button 
-                        className={`mcf-fp-chip ${dietFilter === 'Veg' ? 'active' : ''}`} 
-                        onClick={() => { setDietFilter('Veg'); setShowFilter(false); }}
-                      >
-                        <VegIcon /> Veg
-                      </button>
-                      <button 
-                        className={`mcf-fp-chip ${dietFilter === 'Non-Veg' ? 'active' : ''}`} 
-                        onClick={() => { setDietFilter('Non-Veg'); setShowFilter(false); }}
-                      >
-                        <NonVegIcon /> Non-Veg
-                      </button>
-                    </div>
-                  </div>
-                  <div className="mcf-fp-section">
-                    <h4>Category</h4>
-                    <div className="mcf-fp-chips">
-                      {categories.map((cat) => (
-                        <button
-                          key={cat.name}
-                          className={`mcf-fp-chip ${activeCategory === cat.name ? 'active' : ''}`}
-                          onClick={() => { setActiveCategory(cat.name); setShowFilter(false); }}
-                        >
-                          <span className="mcf-cat-icon">{cat.icon}</span>
-                          <span>{cat.name}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
           </div>
 
           <div className="mcf-menu-board">
@@ -629,7 +641,7 @@ const CafePage = () => {
               {currentFoodItems.map((item) => (
                 <div className="mcf-premium-food-card" key={item.id}>
                   <div className="mcf-fc-image">
-                    <img src={item.image} alt={item.name} loading="lazy" decoding="async" width="400" height="300" />
+                    <OptimizedImage src={item.image} alt={item.name} loading="lazy" decoding="async" width="400" height="300" noWrapper={true} />
                     <span className={`mcf-fc-tag ${item.tag === 'Best Seller' ? 'gold' : ''}`}>{item.tag}</span>
                     <div className="mcf-fc-rating">
                       <FaStar size={12} color="#C78D3A" />
@@ -657,13 +669,6 @@ const CafePage = () => {
                   </div>
                 </div>
               ))}
-
-              {currentFoodItems.length === 0 && (
-                <div className="mcf-board-empty">
-                  <p>No {dietFilter !== "All" ? dietFilter : ""} items found in {activeCategory}.</p>
-                  <button onClick={() => {setDietFilter('All'); setActiveCategory('All');}} className="mcf-clear-btn">Clear Filters</button>
-                </div>
-              )}
             </div>
 
             <div className="mcf-board-controls-bottom">
@@ -677,7 +682,7 @@ const CafePage = () => {
               <button 
                 className="mcf-control-btn dark" 
                 onClick={nextFood} 
-                disabled={foodIndex + itemsPerPage >= filteredMenu.length}
+                disabled={foodIndex + itemsPerPage >= featuredMenuState.length}
               >
                 <FiChevronRight size={20}/>
               </button>
@@ -728,11 +733,8 @@ const CafePage = () => {
 
       <div id="ambiance" className="mcf-ambiance">
         <div className="mcf-ambiance-container mcf-animate">
-          <div className="mcf-ambiance-image mobile-only">
-            <img src={cafeAmbianceImg} alt="Cafe ambiance with mountain view" loading="lazy" decoding="async" width="640" height="480" />
-          </div>
-          <div className="mcf-ambiance-image desktop-only">
-            <img src={cafeAmbianceImg} alt="Cafe ambiance with mountain view" loading="lazy" decoding="async" width="640" height="480" />
+          <div className="mcf-ambiance-image">
+            <OptimizedImage src={ambianceMainImg || cafeAmbianceImg} alt="Cafe ambiance with mountain view" loading="lazy" decoding="async" width="640" height="480" noWrapper={true} />
           </div>
           <div className="mcf-ambiance-text-header">
             <h2 className="mcf-ambiance-title">Good Food in Good Company</h2>
@@ -769,7 +771,7 @@ const CafePage = () => {
                 key={idx}
                 onClick={() => setSelectedImage(img)}
               >
-                <img src={img} alt={`Gallery ${idx + 1}`} loading="lazy" decoding="async" width="400" height="300" />
+                <OptimizedImage src={img} alt={`Gallery ${idx + 1}`} loading="lazy" decoding="async" width="400" height="300" noWrapper={true} />
                 <div className="mcf-gallery-overlay">
                   <FiImage size={24} color="#ffffff" />
                 </div>
@@ -837,7 +839,7 @@ const CafePage = () => {
             <h2 className="mcf-contact-title">Come for the View,<br /><span className="mcf-contact-accent">Stay for the Moments</span></h2>
             <p className="mcf-contact-desc">Reserve your table today and experience the magic of mountain dining. We can't wait to welcome you!</p>
             <div className="mcf-contact-actions">
-              <a href={`https://wa.me/${PHONE_NUMBER}?text=Hi%20Meraki%20Cafe!%20I%20would%20like%20to%20reserve%20a%20table.`} target="_blank" rel="noopener noreferrer" className="mcf-contact-btn-primary">
+              <a href={`https://wa.me/${PHONE_NUMBER}?text=Hi%20Meraki%20Cafe!%20%0A%0AI%20would%20like%20to%20reserve%20a%20table.`} target="_blank" rel="noopener noreferrer" className="mcf-contact-btn-primary">
                 <FaWhatsapp size={20} />
                 <span>WhatsApp Reservation</span>
               </a>
@@ -849,7 +851,7 @@ const CafePage = () => {
             <div className="mcf-contact-info">
               <div className="mcf-contact-item">
                 <FiMapPin size={18} color="#C78D3A" />
-                <span>Meraki Mountain Cafe, Himalayan Foothills</span>
+                <span>Cafe Meraki Peora Mukteshwar, Uttarakhand India — 263138</span>
               </div>
               <div className="mcf-contact-item">
                 <FiClock size={18} color="#C78D3A" />
@@ -869,7 +871,7 @@ const CafePage = () => {
           <button className="mcf-lightbox-close" onClick={() => setSelectedImage(null)}>
             <FiX size={28} />
           </button>
-          <img src={selectedImage} alt="Gallery preview" loading="lazy" decoding="async" />
+          <OptimizedImage src={selectedImage} alt="Gallery preview" loading="lazy" decoding="async" objectFit="contain" noWrapper={true} />
         </div>
       )}
 
@@ -945,7 +947,7 @@ const CafePage = () => {
               <div className="mcf-menu-modal-cta-box">
                 <p>Pre-order your food to avoid waiting!</p>
                 <div className="mcf-menu-modal-cta-buttons">
-                  <a href={`https://wa.me/${PHONE_NUMBER}?text=Hi%20Meraki%20Cafe!%20I%20would%20like%20to%20pre-order...`} target="_blank" rel="noopener noreferrer" className="mcf-btn-whatsapp">
+                  <a href={`https://wa.me/${PHONE_NUMBER}?text=Hi%20Meraki%20Cafe!%20%0A%0AI%20would%20like%20to%20pre-order...`} target="_blank" rel="noopener noreferrer" className="mcf-btn-whatsapp">
                     <FaWhatsapp size={18} /> WhatsApp
                   </a>
                   <a href={`tel:+${PHONE_NUMBER}`} className="mcf-btn-call">

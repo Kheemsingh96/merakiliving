@@ -1,0 +1,59 @@
+.optimized-image-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.optimized-image-lazy-wrapper {
+  display: block !important;
+  width: 100%;
+  height: 100%;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-color: transparent !important;
+  overflow: hidden;
+}
+
+.optimized-image-lazy-wrapper.contain-mode {
+  background-size: contain !important;
+}
+
+.viewpoint-image-lazy-wrapper,
+.cafe-bg-img-lazy-wrapper,
+.cta-bg-img-lazy-wrapper,
+.hero-bg-lazy-wrapper {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.viewpoint-image-lazy-wrapper {
+  z-index: 1 !important;
+}
+
+.lazy-load-image-background.blur {
+  filter: blur(10px);
+}
+
+.lazy-load-image-background.blur.lazy-load-image-loaded {
+  filter: blur(0);
+  transition: filter 0.35s ease-out;
+}
+
+.lazy-load-image-background.blur > img {
+  opacity: 0;
+}
+
+.lazy-load-image-background.blur.lazy-load-image-loaded > img {
+  opacity: 1;
+  transition: opacity 0.35s ease-out;
+}
+
+.lazy-image-failed {
+  filter: blur(0) !important;
+}
+
+.lazy-image-failed > img {
+  opacity: 1 !important;
+}

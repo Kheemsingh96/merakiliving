@@ -1,43 +1,44 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import './Navbar.css';
-import logo from '../../assets/images/logo.webp';
-import ventureLogo from '../../assets/images/pranay-matiyani-ventures.webp';
+import logo from '../../assets/images/logo.avif';
+import ventureLogo from '../../assets/images/pranay-matiyani-ventures.avif';
+import OptimizedImage from '../Common/OptimizedImage';
 
 const NAV_ITEMS = [
   { id: 'home', label: 'Home' },
-  { id: 'stay', label: 'Stay' },
-  { id: 'experiences', label: 'Experiences' },
-  { id: 'cafe', label: 'Cafe' },
-  { id: 'gallery', label: 'Gallery' },
+  { id: 'own-a-villa', label: 'Own A Villa' },
+  { id: 'cafe', label: 'Cafe Meraki' },
+  { id: 'stay', label: 'Book a Stay' },
   { id: 'manage-booking', label: 'Manage Booking' },
+  { id: 'gallery', label: 'Gallery' },
   { id: 'about', label: 'About Us' },
-  { id: 'contact', label: 'Contact' },
+  { id: 'contact', label: 'Contact Us' },
 ];
+
+const HREF_MAP = {
+  home: '/',
+  'own-a-villa': '/own-a-villa',
+  stay: '/#stay',
+  cafe: '/cafe',
+  gallery: '/#gallery',
+  'manage-booking': '/manage-booking',
+  about: '/about-us',
+  contact: '/contact-us'
+};
 
 const PAGE_MAP = {
   home: 'home',
-  stay: 'rooms',
-  experiences: 'home',
+  'own-a-villa': 'own-a-villa',
+  stay: 'home',
   cafe: 'cafe',
   gallery: 'home',
   'manage-booking': 'manage-booking',
   about: 'about-us',
-  contact: 'home',
-};
-
-const REVERSE_PAGE_MAP = {
-  home: 'home',
-  rooms: 'stay',
-  cafe: 'cafe',
-  'about-us': 'about',
-  'manage-booking': 'manage-booking',
+  contact: 'contact-us'
 };
 
 function Navbar({ setCurrentPage, currentPage }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeHash, setActiveHash] = useState(
-    window.location.hash.replace('#', '')
-  );
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -72,26 +73,11 @@ function Navbar({ setCurrentPage, currentPage }) {
       if (!setCurrentPage) return;
 
       const targetPage = PAGE_MAP[navId] || navId;
-      const isSwitchingPage = currentPage !== targetPage;
+      const scrollToId = (navId === 'stay' || navId === 'gallery' || navId === 'home') ? navId : null;
 
-      if (isSwitchingPage) {
-        setCurrentPage(targetPage);
-      }
-
-      setTimeout(() => {
-        const element = document.getElementById(navId);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          window.history.pushState(null, '', `#${navId}`);
-          setActiveHash(navId);
-        } else if (navId === 'home') {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-          window.history.pushState(null, '', window.location.pathname);
-          setActiveHash('home');
-        }
-      }, isSwitchingPage ? 300 : 50);
+      setCurrentPage(targetPage, null, scrollToId);
     },
-    [currentPage, setCurrentPage]
+    [setCurrentPage]
   );
 
   const handleLogoClick = useCallback(
@@ -103,16 +89,36 @@ function Navbar({ setCurrentPage, currentPage }) {
 
   const isActive = useCallback(
     (navId) => {
-      if (PAGE_MAP[navId] === 'home' && currentPage === 'home') {
-        if (activeHash) return activeHash === navId;
-        return navId === 'home';
+      const currentPath = typeof window !== 'undefined' ? (window.location.pathname || '') : '';
+      const currentHash = typeof window !== 'undefined' ? (window.location.hash || '').toLowerCase() : '';
+
+      if (navId === 'about') {
+        return currentPage === 'about-us' || currentPath === '/about-us';
       }
-      const mappedPage = PAGE_MAP[navId];
-      return (
-        currentPage === mappedPage || REVERSE_PAGE_MAP[currentPage] === navId
-      );
+      if (navId === 'contact') {
+        return currentPage === 'contact-us' || currentPath === '/contact-us';
+      }
+      if (navId === 'own-a-villa') {
+        return currentPage === 'own-a-villa' || currentPath === '/own-a-villa';
+      }
+      if (navId === 'cafe') {
+        return currentPage === 'cafe' || currentPath === '/cafe';
+      }
+      if (navId === 'manage-booking') {
+        return currentPage === 'manage-booking' || currentPath === '/manage-booking';
+      }
+      if (navId === 'stay') {
+        return currentHash === '#stay' || currentPage === 'booking' || currentPath === '/booking';
+      }
+      if (navId === 'gallery') {
+        return currentHash === '#gallery';
+      }
+      if (navId === 'home') {
+        return (currentPage === 'home' || currentPath === '/' || currentPath === '') && (!currentHash || currentHash === '#home');
+      }
+      return false;
     },
-    [activeHash, currentPage]
+    [currentPage]
   );
 
   useEffect(() => {
@@ -128,30 +134,19 @@ function Navbar({ setCurrentPage, currentPage }) {
     };
   }, [isMenuOpen]);
 
-  useEffect(() => {
-    const handleHashChange = () =>
-      setActiveHash(window.location.hash.replace('#', ''));
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
-
   return (
     <header
       className={`navbar-wrapper ${scrolled ? 'navbar-scrolled' : ''}`}
       role="banner"
     >
       <nav className="navbar-container" aria-label="Main Navigation">
-        <div
+        <a
+          href="/"
           className="navbar-logo"
           onClick={handleLogoClick}
-          role="button"
-          tabIndex={0}
           aria-label="Go to Home"
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') handleLogoClick(e);
-          }}
         >
-          <img
+          <OptimizedImage
             src={logo}
             alt="Meraki Living"
             className="logo-img"
@@ -159,14 +154,17 @@ function Navbar({ setCurrentPage, currentPage }) {
             height="50"
             loading="eager"
             fetchPriority="high"
+            decoding="async"
+            style={{ filter: 'none', transition: 'none' }}
+            noWrapper={true}
           />
-        </div>
+        </a>
 
         <ul className="navbar-links" role="menubar">
           {NAV_ITEMS.map((item) => (
             <li key={item.id} role="none">
               <a
-                href={`#${item.id}`}
+                href={HREF_MAP[item.id] || `/${item.id}`}
                 role="menuitem"
                 onClick={(e) => handleNavClick(item.id, e)}
                 className={isActive(item.id) ? 'active-link' : ''}
@@ -178,14 +176,16 @@ function Navbar({ setCurrentPage, currentPage }) {
         </ul>
 
         <div className="navbar-right">
-          <img
+          <OptimizedImage
             src={ventureLogo}
             alt="Pranay Matiyani Ventures"
             className="venture-logo"
             width="150"
             height="50"
-            loading="eager"
-            fetchPriority="high"
+            loading="lazy"
+            fetchPriority="low"
+            decoding="async"
+            noWrapper={true}
           />
           <button
             className={`hamburger-btn ${isMenuOpen ? 'active' : ''}`}
@@ -219,13 +219,16 @@ function Navbar({ setCurrentPage, currentPage }) {
         aria-label="Mobile Navigation"
       >
         <div className="mobile-menu-header">
-          <img
+          <OptimizedImage
             src={logo}
             alt="Meraki Living"
             className="mobile-logo-img"
             width="120"
             height="40"
-            loading="eager"
+            loading="lazy"
+            fetchPriority="low"
+            decoding="async"
+            noWrapper={true}
           />
           <button
             className="mobile-close-btn"
@@ -241,7 +244,7 @@ function Navbar({ setCurrentPage, currentPage }) {
           {NAV_ITEMS.map((item) => (
             <li key={item.id} role="none">
               <a
-                href={`#${item.id}`}
+                href={HREF_MAP[item.id] || `/${item.id}`}
                 role="menuitem"
                 onClick={(e) => handleNavClick(item.id, e)}
                 className={isActive(item.id) ? 'active-link' : ''}

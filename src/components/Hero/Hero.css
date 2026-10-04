@@ -14,6 +14,7 @@
   position: absolute;
   inset: 0;
   z-index: 0;
+  background-color: #0a0a0a;
 }
 
 .hero-bg {
@@ -24,13 +25,20 @@
   object-fit: cover;
   object-position: center;
   opacity: 0;
-  transition: opacity 1.8s cubic-bezier(0.25, 1, 0.5, 1);
-  will-change: opacity;
+  z-index: 0;
   pointer-events: none;
+}
+
+.hero-bg.prev {
+  opacity: 1;
+  z-index: 1;
+  transition: none;
 }
 
 .hero-bg.active {
   opacity: 1;
+  z-index: 2;
+  transition: opacity 1.5s ease-in-out;
 }
 
 .hero-overlay-main {
@@ -165,7 +173,7 @@
 
 .hero-description {
   color: rgba(255, 255, 255, 0.8);
-  font-size: 16.5px;
+  font-size: 16px;
   line-height: 1.7;
   max-width: 540px;
   margin: 0;
@@ -199,17 +207,18 @@
 }
 
 .hero-btn {
-  background-color: #87008B;
+  background: linear-gradient(135deg, #870097 0%, #580063 100%);
   color: #FFFFFF;
-  border: 1px solid #87008B;
-  box-shadow: 0 6px 20px rgba(138, 21, 143, 0.3);
+  border: 1px solid rgba(135, 0, 151, 0.6);
+  box-shadow: 0 4px 14px rgba(135, 0, 151, 0.2);
+  transition: all 0.25s ease;
 }
 
 .hero-btn:hover {
-  background-color: #87008B;
-  border-color: #87008B;
-  transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(138, 21, 143, 0.5);
+  background: linear-gradient(135deg, #9b00ad 0%, #680075 100%);
+  border-color: rgba(135, 0, 151, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(135, 0, 151, 0.3);
 }
 
 .hero-btn-outline {
@@ -326,7 +335,7 @@
   .hero-btn,
   .hero-btn-outline {
     width: 100%;
-    max-width: 320px;
+    max-width: 210px;
     padding: 15px 32px;
     font-size: 14px;
   }
@@ -361,7 +370,7 @@
 
   .hero-btn,
   .hero-btn-outline {
-    max-width: 280px;
+    max-width: 200px;
     padding: 14px 28px;
   }
 }
@@ -395,7 +404,7 @@
 
   .hero-btn,
   .hero-btn-outline {
-    max-width: 260px;
+    max-width: 190px;
     padding: 13px 24px;
     font-size: 13px;
   }

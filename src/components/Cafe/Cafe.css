@@ -1,14 +1,22 @@
 .cafe-section {
   width: 100%;
   background-color: #2D002E;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
   padding: 80px var(--layout-padding);
   box-sizing: border-box;
   color: #ffffff;
   position: relative;
   overflow: hidden;
+}
+
+.cafe-bg-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .cafe-overlay {
