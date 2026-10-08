@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { API_CONFIG_URL } from '../../config/api';
-import { safeParseResponse, formatImageUrl } from '../../utils/apiHelper';
+import { safeParseResponse, formatImageUrl, isPrerendering } from '../../utils/apiHelper';
 import './Explore.css';
 
 import luxuryMain from '../../assets/images/luxury-main.avif';
@@ -118,6 +118,7 @@ function Explore() {
   }, []);
 
   const fetchExploreData = useCallback(() => {
+    if (isPrerendering()) return;
     fetch(`${API_CONFIG_URL}/api_gallery.php`)
       .then(res => safeParseResponse(res))
       .then(parsed => {
@@ -142,13 +143,14 @@ function Explore() {
         }
       })
       .catch(err => {
-        if (process.env.NODE_ENV === 'development') {
-          console.error("Error fetching explore images:", err);
+        if (process.env.NODE_ENV === 'development' && !isPrerendering()) {
+          console.warn("Could not load backend explore gallery, maintaining default gallery.");
         }
       });
   }, []);
 
   useEffect(() => {
+    if (isPrerendering()) return;
     fetchExploreData();
     const handler = () => {
       fetchExploreData();
@@ -252,7 +254,7 @@ function Explore() {
                   <div className="gallery-card" key={index}>
                     <OptimizedImage
                       src={photo.src}
-                      alt={`${activeGallery.title} - ${index + 1}`}
+                      alt={`${activeGallery.title} - Scenic View ${index + 1} at Meraki Living`}
                       width="800"
                       height="600"
                       loading="lazy"

@@ -261,7 +261,7 @@ function OwnAVilla({ setCurrentPage }) {
         <title>Own a Villa in Mukteshwar | Luxury Mountain Cottages | Meraki Living</title>
         <meta
           name="description"
-          content="Invest in fully serviced luxury mountain villas and cottages at Meraki Living in Peora, Mukteshwar, Uttarakhand. Panoramic Himalayan views, 5G connectivity, and managed rental returns."
+          content="Invest in fully serviced luxury holiday villas and cottages at Meraki Living in Peora, Mukteshwar. Enjoy panoramic Himalayan views and full estate management."
         />
         <link rel="canonical" href="https://www.merakiliving.in/own-a-villa" />
         <meta name="robots" content="index, follow" />
@@ -269,7 +269,7 @@ function OwnAVilla({ setCurrentPage }) {
         <meta property="og:title" content="Own a Villa in Mukteshwar | Luxury Mountain Cottages | Meraki Living" />
         <meta
           property="og:description"
-          content="Invest in fully serviced luxury mountain villas and cottages at Meraki Living in Peora, Mukteshwar, Uttarakhand. Panoramic Himalayan views, 5G connectivity, and managed rental returns."
+          content="Invest in fully serviced luxury holiday villas and cottages at Meraki Living in Peora, Mukteshwar. Enjoy panoramic Himalayan views and full estate management."
         />
         <meta property="og:url" content="https://www.merakiliving.in/own-a-villa" />
         <meta property="og:image" content={ownvillaHero} />
@@ -277,7 +277,7 @@ function OwnAVilla({ setCurrentPage }) {
         <meta name="twitter:title" content="Own a Villa in Mukteshwar | Luxury Mountain Cottages | Meraki Living" />
         <meta
           name="twitter:description"
-          content="Invest in fully serviced luxury mountain villas and cottages at Meraki Living in Peora, Mukteshwar, Uttarakhand."
+          content="Invest in fully serviced luxury holiday villas and cottages at Meraki Living in Peora, Mukteshwar. Enjoy panoramic Himalayan views and full estate management."
         />
         <meta name="twitter:image" content={ownvillaHero} />
         <script type="application/ld+json">{JSON.stringify(ownAVillaSchema)}</script>

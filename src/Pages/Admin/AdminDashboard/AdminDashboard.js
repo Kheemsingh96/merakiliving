@@ -18,7 +18,9 @@ import {
   checkRoomConflict,
   getAllMergedBookings,
   isRemovedOfflineGuest,
-  markBookingAsCancelled
+  isAdminBlockBooking,
+  markBookingAsCancelled,
+  markBookingAsDeleted
 } from '../../../utils/dateAvailability';
 import room1 from '../../../assets/images/room-1.avif';
 import room2 from '../../../assets/images/room-2.avif';
@@ -246,6 +248,28 @@ const computeLiveRoomStatuses = (roomStatusesList, allBookings) => {
   });
 };
 
+const isBookingSourceAdmin = (b) => {
+  if (!b) return false;
+  const s = String(b.booking_source || b.source || b.bookingSource || '').trim().toLowerCase();
+  if (s === 'admin' || s === 'direct / admin' || s.includes('admin') || s === 'offline') return true;
+  if (b.is_offline === true || b.booking_type === 'offline' || b.booking_type === 'admin') return true;
+  if (isAdminBlockBooking(b)) return true;
+  const ref = String(b.booking_reference || b.id || '').trim().toUpperCase();
+  try {
+    const raw = typeof window !== 'undefined' && window.localStorage ? window.localStorage.getItem('meraki_admin_created_bookings') : null;
+    if (raw) {
+      const list = JSON.parse(raw);
+      if (Array.isArray(list) && list.some(ab => 
+        String(ab.id || '').trim().toUpperCase() === ref || 
+        String(ab.booking_reference || '').trim().toUpperCase() === ref
+      )) {
+        return true;
+      }
+    }
+  } catch (e) {}
+  return false;
+};
+
 export default function AdminDashboard({ setCurrentPage }) {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [subTab, setSubTab] = useState('');
@@ -321,7 +345,7 @@ export default function AdminDashboard({ setCurrentPage }) {
 
   const renderContent = () => {
     if (activeTab === 'dashboard') return <DashboardTab setActiveTab={setActiveTab} setSubTab={setSubTab} />;
-    if (activeTab === 'bookings' && subTab === 'all-bookings') return <BookingsTab />;
+    if (activeTab === 'bookings' && (subTab === 'all-bookings' || !subTab)) return <BookingsTab />;
     if (activeTab === 'bookings' && subTab === 'calendar') return <CalendarTab />;
     if (activeTab === 'rooms' && subTab === 'manage-rooms') return <ManageRoomsTab />;
 
@@ -663,9 +687,30 @@ function RoomAvailabilityCalendarModal({ room, onClose, onDataChanged }) {
 
       const parsed = await safeParseResponse(res);
       if (parsed.ok && parsed.data && (parsed.data.status === 'success' || parsed.data.id || parsed.status === 200)) {
+        const createdId = (parsed.data && (parsed.data.id || (parsed.data.data && parsed.data.data.id))) || Date.now();
+        const newAdminBooking = {
+          ...payload,
+          id: createdId,
+          booking_reference: (parsed.data && parsed.data.booking_reference) || `MERI_BLK_${createdId}`,
+          created_at: new Date().toISOString()
+        };
+        [window.sessionStorage, window.localStorage].forEach(store => {
+          try {
+            if (!store) return;
+            const raw = store.getItem('meraki_admin_created_bookings');
+            const list = raw ? JSON.parse(raw) : [];
+            list.push(newAdminBooking);
+            store.setItem('meraki_admin_created_bookings', JSON.stringify(list));
+          } catch (e) {}
+        });
+
         setActionSuccess(`Room marked as Booked for ${formatDisplay(finalStart)} → ${formatDisplay(finalEnd)}.`);
         setRangeStart(null);
         setRangeEnd(null);
+        try {
+          localStorage.setItem('meraki_rooms_updated_ts', Date.now().toString());
+          localStorage.setItem('meraki_booking_updated_ts', Date.now().toString());
+        } catch (e) {}
         window.dispatchEvent(new Event('meraki_booking_updated'));
         window.dispatchEvent(new Event('meraki_rooms_updated'));
         await fetchBookings();
@@ -705,13 +750,25 @@ function RoomAvailabilityCalendarModal({ room, onClose, onDataChanged }) {
       return;
     }
 
+    // Distinguish admin block bookings from genuine guest online bookings
+    const directAdminBookings = directBookings.filter(b => isAdminBlockBooking(b) || isBookingSourceAdmin(b));
+    const directGuestBookings = directBookings.filter(b => !isAdminBlockBooking(b) && !isBookingSourceAdmin(b));
+
+    // Do not overwrite or hide actual Guest online booking data
+    if (directGuestBookings.length > 0 && directAdminBookings.length === 0) {
+      setActionError('Selected dates contain a confirmed Guest online booking. Guest bookings must not be overwritten or removed from Room Status Overview.');
+      return;
+    }
+
     setSubmitting(true);
     setActionError('');
     setActionSuccess('');
 
     try {
-      // Cancel each direct booking covering this date range
-      for (const b of directBookings) {
+      // Cancel/delete direct Admin block bookings covering this date range
+      const bookingsToRelease = directAdminBookings.length > 0 ? directAdminBookings : directBookings;
+      for (const b of bookingsToRelease) {
+        markBookingAsDeleted(b);
         markBookingAsCancelled(b);
         await fetch(`${API_CONFIG_URL}/api_bookings.php`, {
           method: 'DELETE',
@@ -723,6 +780,10 @@ function RoomAvailabilityCalendarModal({ room, onClose, onDataChanged }) {
       setActionSuccess(`Selected dates (${formatDisplay(finalStart)} → ${formatDisplay(finalEnd)}) marked as Available!`);
       setRangeStart(null);
       setRangeEnd(null);
+      try {
+        localStorage.setItem('meraki_rooms_updated_ts', Date.now().toString());
+        localStorage.setItem('meraki_booking_updated_ts', Date.now().toString());
+      } catch (e) {}
       window.dispatchEvent(new Event('meraki_booking_updated'));
       window.dispatchEvent(new Event('meraki_rooms_updated'));
       await fetchBookings();
@@ -1004,8 +1065,13 @@ function DashboardTab({ setActiveTab, setSubTab }) {
       const mergedAll = getAllMergedBookings(rawBookings).filter(b => !isRemovedOfflineGuest(b));
 
       const mappedBookings = mergedAll.map(b => {
-        const payment = fetchedPayments.find(p => p.booking_id === b.id && (p.status === 'Success' || p.status === 'Completed')) ||
-                        fetchedPayments.find(p => p.booking_id === b.id);
+        const payment = fetchedPayments.find(p => (
+          (p.booking_id && b.id && String(p.booking_id).trim().toUpperCase() === String(b.id).trim().toUpperCase()) ||
+          (p.booking_reference && b.booking_reference && String(p.booking_reference).trim().toUpperCase() === String(b.booking_reference).trim().toUpperCase()) ||
+          (p.booking_id && b.booking_reference && String(p.booking_id).trim().toUpperCase() === String(b.booking_reference).trim().toUpperCase()) ||
+          (p.booking_reference && b.id && String(p.booking_reference).trim().toUpperCase() === String(b.id).trim().toUpperCase()) ||
+          (p.razorpay_payment_id && b.razorpay_payment_id && p.razorpay_payment_id === b.razorpay_payment_id)
+        ));
         const guest = fetchedGuests.find(g => g.id === b.guest_id);
         const bIn = b.check_in || b.checkIn || b.check_in_date || b.start_date || '';
         const bOut = b.check_out || b.checkOut || b.check_out_date || b.end_date || '';
@@ -1029,10 +1095,10 @@ function DashboardTab({ setActiveTab, setSubTab }) {
           booking_date: rawBookingDate,
           created_at: rawBookingTimestamp || b.created_at,
           booking_time: b.booking_time || b.time || (payment ? payment.time : '') || rawBookingTimestamp,
-          paid_amount: payment ? payment.amount : (b.room_price || b.paid_amount || 0),
+          paid_amount: payment ? payment.amount : (b.room_price || b.paid_amount || b.amount || 0),
           payment_status: payment ? payment.status : (b.payment_status || (b.status === 'Confirmed' || b.status === 'Completed' ? 'Paid' : b.status === 'Pending' ? 'Pending' : 'Unpaid')),
           payment_method: payment ? payment.payment_method : (b.payment_method || (b.paid_amount ? 'Online / UPI' : 'Pending')),
-          transaction_id: payment ? (payment.razorpay_payment_id || payment.transaction_id || 'N/A') : (b.transaction_id || 'N/A'),
+          transaction_id: payment ? (payment.razorpay_payment_id || payment.transaction_id || 'N/A') : (b.transaction_id || b.razorpay_payment_id || 'N/A'),
           check_in: bIn,
           check_out: bOut,
           room_id: extractBookingRoomId(b) || b.room_id || b.roomId || 1
@@ -1051,19 +1117,51 @@ function DashboardTab({ setActiveTab, setSubTab }) {
         ];
       }
 
-      // Compute date-based live room statuses for today
+      // Compute date-based live room statuses for today (reflects emergency availability controls)
       const liveStatuses = computeLiveRoomStatuses(initialRoomStatuses, mappedBookings);
       setRoomStatuses(liveStatuses);
 
-      const totalRooms = liveStatuses.length;
-      const bookedRooms = liveStatuses.filter(r => r.status === 'Booked' || r.status === 'Not Available').length;
+      // Dashboard statistics MUST ONLY include bookings completed through the normal Guest online booking flow
+      // with successful Razorpay payment.
+      // Admin-created Offline bookings, Pending bookings, and pending payment amounts must NOT be included.
+      const onlinePaidBookings = mappedBookings.filter(b => {
+        if (!b) return false;
+        if (isRemovedOfflineGuest(b)) return false;
+        if (isBookingSourceAdmin(b)) return false;
+
+        const status = String(b.status || '').trim().toLowerCase();
+        if (status === 'pending' || status.includes('pending')) return false;
+        if (status.includes('cancel') || status.includes('refund') || status === 'failed') return false;
+
+        const paymentStatus = String(b.payment_status || '').trim().toLowerCase();
+        if (paymentStatus === 'pending' || paymentStatus.includes('pending') || paymentStatus === 'unpaid') return false;
+
+        const payment = fetchedPayments.find(p => (
+          (p.booking_id && b.id && String(p.booking_id).trim().toUpperCase() === String(b.id).trim().toUpperCase()) ||
+          (p.booking_reference && b.booking_reference && String(p.booking_reference).trim().toUpperCase() === String(b.booking_reference).trim().toUpperCase()) ||
+          (p.booking_id && b.booking_reference && String(p.booking_id).trim().toUpperCase() === String(b.booking_reference).trim().toUpperCase()) ||
+          (p.booking_reference && b.id && String(p.booking_reference).trim().toUpperCase() === String(b.id).trim().toUpperCase()) ||
+          (p.razorpay_payment_id && b.razorpay_payment_id && p.razorpay_payment_id === b.razorpay_payment_id)
+        ) && (['success', 'completed', 'paid'].includes(String(p.status || '').toLowerCase().trim())));
+
+        const hasValidPayment = Boolean(payment);
+        const hasRazorpayTxn = Boolean((b.transaction_id && b.transaction_id !== 'N/A' && !b.transaction_id.toLowerCase().includes('pending')) || b.razorpay_payment_id);
+        const hasConfirmedPaymentStatus = (paymentStatus === 'paid' || paymentStatus === 'success' || paymentStatus === 'completed') &&
+                                          (status === 'confirmed' || status === 'completed');
+
+        return hasValidPayment || hasRazorpayTxn || hasConfirmedPaymentStatus;
+      });
+
+      // Compute occupancy rate strictly from successfully paid online bookings
+      const onlineLiveStatuses = computeLiveRoomStatuses(initialRoomStatuses, onlinePaidBookings);
+      const totalRooms = onlineLiveStatuses.length;
+      const bookedRoomsOnline = onlineLiveStatuses.filter(r => r.status === 'Booked' || r.status === 'Not Available').length;
       if (totalRooms > 0) {
-        finalStats.occupancyRate = Math.round((bookedRooms / totalRooms) * 100) + '%';
+        finalStats.occupancyRate = Math.round((bookedRoomsOnline / totalRooms) * 100) + '%';
       }
 
-      // Populate recent bookings dynamically from real sorted bookings
-      const sortedRecent = [...mappedBookings]
-        .filter(b => !isRemovedOfflineGuest(b))
+      // Populate recent bookings dynamically from online paid bookings only
+      const sortedRecent = [...onlinePaidBookings]
         .sort((a, b) => {
           const timeA = new Date(a.created_at || a.booking_date || 0).getTime() || (Number(a.id) || 0);
           const timeB = new Date(b.created_at || b.booking_date || 0).getTime() || (Number(b.id) || 0);
@@ -1072,30 +1170,47 @@ function DashboardTab({ setActiveTab, setSubTab }) {
 
       if (sortedRecent.length > 0) {
         setRecentBookings(sortedRecent.slice(0, 5));
-      } else if (dashboardData && Array.isArray(dashboardData.recentBookings)) {
-        setRecentBookings(dashboardData.recentBookings.filter(b => !isRemovedOfflineGuest(b)));
       } else {
         setRecentBookings([]);
       }
 
-      finalStats.totalBookings = mappedBookings.length;
-      const totalG = mappedBookings.reduce((sum, b) => sum + parseInt(b.guest_count || 1, 10), 0);
+      finalStats.totalBookings = onlinePaidBookings.length;
+      const totalG = onlinePaidBookings.reduce((sum, b) => sum + parseInt(b.guest_count || 1, 10), 0);
       finalStats.totalGuests = totalG;
       
-      const totalRev = mappedBookings.reduce((sum, b) => {
-        const payment = fetchedPayments.find(p => p.booking_id === b.id && (p.status === 'Success' || p.status === 'Completed'));
-        let amount = payment ? parseFloat(payment.amount) : parseFloat(String(b.room_price || b.paid_amount || 0).replace(/,/g, ''));
-        return sum + (isNaN(amount) ? 0 : amount);
+      const totalRev = onlinePaidBookings.reduce((sum, b) => {
+        const payment = fetchedPayments.find(p => (
+          (p.booking_id && b.id && String(p.booking_id).trim().toUpperCase() === String(b.id).trim().toUpperCase()) ||
+          (p.booking_reference && b.booking_reference && String(p.booking_reference).trim().toUpperCase() === String(b.booking_reference).trim().toUpperCase()) ||
+          (p.booking_id && b.booking_reference && String(p.booking_id).trim().toUpperCase() === String(b.booking_reference).trim().toUpperCase()) ||
+          (p.booking_reference && b.id && String(p.booking_reference).trim().toUpperCase() === String(b.id).trim().toUpperCase()) ||
+          (p.razorpay_payment_id && b.razorpay_payment_id && p.razorpay_payment_id === b.razorpay_payment_id)
+        ) && (['success', 'completed', 'paid'].includes(String(p.status || '').toLowerCase().trim())));
+
+        let amount = 0;
+        if (payment && !isNaN(parseFloat(payment.amount))) {
+          amount = parseFloat(payment.amount);
+        } else if (b.paid_amount !== undefined && b.paid_amount !== null && !isNaN(parseFloat(String(b.paid_amount).replace(/,/g, '')))) {
+          amount = parseFloat(String(b.paid_amount).replace(/,/g, ''));
+        } else if (b.amount !== undefined && b.amount !== null && !isNaN(parseFloat(String(b.amount).replace(/,/g, '')))) {
+          amount = parseFloat(String(b.amount).replace(/,/g, ''));
+        } else if (b.room_price !== undefined && b.room_price !== null && !isNaN(parseFloat(String(b.room_price).replace(/,/g, '')))) {
+          amount = parseFloat(String(b.room_price).replace(/,/g, ''));
+        }
+        if (!isNaN(amount) && amount > 0) {
+          return sum + amount;
+        }
+        return sum;
       }, 0);
       
-      finalStats.totalRevenue = '₹' + totalRev.toLocaleString('en-IN');
+      finalStats.totalRevenue = '₹' + Math.round(totalRev).toLocaleString('en-IN');
 
-      // Calculate chart data for the last 7 days
+      // Calculate chart data for the last 7 days using online paid bookings
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const counts = [0, 0, 0, 0, 0, 0, 0];
       
-      mappedBookings.forEach(b => {
+      onlinePaidBookings.forEach(b => {
         const bDateStr = b.created_at || b.booking_date;
         if (bDateStr) {
           const bDate = new Date(bDateStr);
@@ -1112,23 +1227,32 @@ function DashboardTab({ setActiveTab, setSubTab }) {
     }).catch(e => console.error("Dashboard/Bookings JSON Error:", e));
   }, []);
 
+  const updateTimeoutRef = useRef(null);
+  const debouncedLoadData = useCallback(() => {
+    if (updateTimeoutRef.current) clearTimeout(updateTimeoutRef.current);
+    updateTimeoutRef.current = setTimeout(() => {
+      loadDashboardData();
+    }, 50);
+  }, [loadDashboardData]);
+
   useEffect(() => {
     loadDashboardData();
 
-    const handleUpdate = () => {
-      loadDashboardData();
-    };
-
-    window.addEventListener('meraki_booking_updated', handleUpdate);
-    window.addEventListener('meraki_rooms_updated', handleUpdate);
-    window.addEventListener('storage', handleUpdate);
+    window.addEventListener('meraki_booking_updated', debouncedLoadData);
+    window.addEventListener('meraki_rooms_updated', debouncedLoadData);
+    window.addEventListener('storage', debouncedLoadData);
+    window.addEventListener('focus', debouncedLoadData);
+    document.addEventListener('visibilitychange', debouncedLoadData);
 
     return () => {
-      window.removeEventListener('meraki_booking_updated', handleUpdate);
-      window.removeEventListener('meraki_rooms_updated', handleUpdate);
-      window.removeEventListener('storage', handleUpdate);
+      if (updateTimeoutRef.current) clearTimeout(updateTimeoutRef.current);
+      window.removeEventListener('meraki_booking_updated', debouncedLoadData);
+      window.removeEventListener('meraki_rooms_updated', debouncedLoadData);
+      window.removeEventListener('storage', debouncedLoadData);
+      window.removeEventListener('focus', debouncedLoadData);
+      document.removeEventListener('visibilitychange', debouncedLoadData);
     };
-  }, [loadDashboardData]);
+  }, [loadDashboardData, debouncedLoadData]);
 
   const handleRoomStatusClick = (room) => {
     setCalendarModalRoom(room);
@@ -1404,11 +1528,23 @@ function BookingsTab() {
         fetchedGuests = guestsData.data.filter(g => !isRemovedOfflineGuest(g.name));
       }
       const rawBookings = (bookingsData && bookingsData.status === 'success' && Array.isArray(bookingsData.data)) ? bookingsData.data.filter(b => !isRemovedOfflineGuest(b)) : [];
-      const mergedBookingsList = getAllMergedBookings(rawBookings).filter(b => !isRemovedOfflineGuest(b));
+      const mergedBookingsList = getAllMergedBookings(rawBookings).filter(b => !isRemovedOfflineGuest(b) && !isAdminBlockBooking(b) && !isBookingSourceAdmin(b));
 
-      const mergedBookings = mergedBookingsList.map(b => {
-        const payment = fetchedPayments.find(p => p.booking_id === b.id && (p.status === 'Success' || p.status === 'Completed')) ||
-                        fetchedPayments.find(p => p.booking_id === b.id);
+      const mappedBookings = mergedBookingsList.map(b => {
+        const payment = fetchedPayments.find(p => (
+          (p.booking_id && b.id && String(p.booking_id).trim().toUpperCase() === String(b.id).trim().toUpperCase()) ||
+          (p.booking_reference && b.booking_reference && String(p.booking_reference).trim().toUpperCase() === String(b.booking_reference).trim().toUpperCase()) ||
+          (p.booking_id && b.booking_reference && String(p.booking_id).trim().toUpperCase() === String(b.booking_reference).trim().toUpperCase()) ||
+          (p.booking_reference && b.id && String(p.booking_reference).trim().toUpperCase() === String(b.id).trim().toUpperCase()) ||
+          (p.razorpay_payment_id && b.razorpay_payment_id && p.razorpay_payment_id === b.razorpay_payment_id)
+        ) && (['success', 'completed', 'paid'].includes(String(p.status || '').toLowerCase().trim()))) ||
+        fetchedPayments.find(p => (
+          (p.booking_id && b.id && String(p.booking_id).trim().toUpperCase() === String(b.id).trim().toUpperCase()) ||
+          (p.booking_reference && b.booking_reference && String(p.booking_reference).trim().toUpperCase() === String(b.booking_reference).trim().toUpperCase()) ||
+          (p.booking_id && b.booking_reference && String(p.booking_id).trim().toUpperCase() === String(b.booking_reference).trim().toUpperCase()) ||
+          (p.booking_reference && b.id && String(p.booking_reference).trim().toUpperCase() === String(b.id).trim().toUpperCase()) ||
+          (p.razorpay_payment_id && b.razorpay_payment_id && p.razorpay_payment_id === b.razorpay_payment_id)
+        ));
         const guest = fetchedGuests.find(g => g.id === b.guest_id);
         const timeCandidates = [
           b.time,
@@ -1421,43 +1557,134 @@ function BookingsTab() {
         const rawBookingTimestamp = timeCandidates.find(t => typeof t === 'string' && (t.includes(':') || t.includes('T'))) || b.created_at || b.booking_date || '';
         const rawBookingDate = b.booking_date || b.created_at || (payment ? (payment.payment_date || payment.created_at || payment.date) : '') || '';
 
+        const hasSuccessfulPayment = payment && (['success', 'completed', 'paid'].includes(String(payment.status || '').toLowerCase().trim()));
+        const rawPaymentStatus = String(b.payment_status || (payment ? payment.status : '')).toLowerCase().trim();
+        const rawStatus = String(b.status || '').toLowerCase().trim();
+        const isPaid = hasSuccessfulPayment ||
+                       ['paid', 'success', 'completed'].includes(rawPaymentStatus) ||
+                       (b.razorpay_payment_id && !String(b.razorpay_payment_id).includes('pending')) ||
+                       ((Number(b.paid_amount || b.room_price || b.amount || 0) > 0) && ['confirmed', 'completed', 'success'].includes(rawStatus));
+
+        let resolvedStatus = b.status || 'Pending';
+        if (isPaid && (resolvedStatus.toLowerCase().trim() === 'pending' || !resolvedStatus)) {
+          resolvedStatus = 'Confirmed';
+        }
+
+        const isPending = (resolvedStatus || '').toLowerCase().trim() === 'pending';
+        const resolvedGuestId = isPending ? null : (b.guest_id !== undefined && b.guest_id !== null ? b.guest_id : (guest ? guest.id : null));
+
         return {
           ...b,
+          status: resolvedStatus,
           booking_date: rawBookingDate,
           created_at: rawBookingTimestamp,
           booking_time: b.booking_time || b.time || (payment ? payment.time : '') || rawBookingTimestamp,
-          paid_amount: payment ? payment.amount : (b.room_price || b.paid_amount || 0),
+          paid_amount: payment ? payment.amount : (b.room_price || b.paid_amount || b.amount || 0),
           payment_info: payment,
-          payment_status: payment ? payment.status : (b.payment_status || (b.status === 'Confirmed' || b.status === 'Completed' ? 'Paid' : b.status === 'Pending' ? 'Pending' : 'Unpaid')),
+          payment_status: payment ? payment.status : (isPaid ? 'Paid' : (resolvedStatus === 'Confirmed' || resolvedStatus === 'Completed' ? 'Paid' : resolvedStatus === 'Pending' ? 'Pending' : 'Unpaid')),
           payment_method: payment ? payment.payment_method : (b.payment_method || (b.paid_amount ? 'Online / UPI' : 'Pending')),
-          transaction_id: payment ? (payment.razorpay_payment_id || payment.transaction_id || 'N/A') : (b.transaction_id || 'N/A'),
+          transaction_id: payment ? (payment.razorpay_payment_id || payment.transaction_id || 'N/A') : (b.transaction_id || b.razorpay_payment_id || 'N/A'),
           payment_date: payment ? (payment.created_at || payment.payment_date || payment.date || rawBookingTimestamp) : rawBookingTimestamp,
-          guest_name: b.guest_name || (guest ? guest.name : (b.guest_id ? `Guest ${b.guest_id}` : 'Guest')),
+          guest_name: b.guest_name || (guest ? guest.name : (resolvedGuestId ? `Guest ${resolvedGuestId}` : 'Guest')),
           guest_email: b.guest_email || (guest ? guest.email : 'N/A'),
-          guest_phone: b.guest_phone || (guest ? guest.phone : '')
+          guest_phone: b.guest_phone || (guest ? guest.phone : ''),
+          guest_id: resolvedGuestId
         };
-      }).filter(b => !isRemovedOfflineGuest(b));
-      setBookings(mergedBookings);
+      }).filter(b => !isRemovedOfflineGuest(b) && !isAdminBlockBooking(b) && !isBookingSourceAdmin(b));
+
+      // Deduplicate: If guest completes payment and booking is confirmed, do not show the same booking in both Pending and Confirmed!
+      // A successfully paid booking must never appear as Pending.
+      const confirmedBookings = mappedBookings.filter(b => {
+        const s = (b.status || '').toLowerCase().trim();
+        return s === 'confirmed' || s === 'completed';
+      });
+
+      const deduplicatedBookings = mappedBookings.filter(b => {
+        if (!b || isBookingSourceAdmin(b)) return false;
+        const isPending = (b.status || '').toLowerCase().trim() === 'pending';
+        if (!isPending) return true;
+
+        const matchingConfirmed = confirmedBookings.find(c => {
+          if (c.id && b.id && String(c.id).toUpperCase() === String(b.id).toUpperCase()) return true;
+          if (c.booking_reference && b.booking_reference && String(c.booking_reference).toUpperCase() === String(b.booking_reference).toUpperCase() && String(b.booking_reference).toUpperCase() !== 'MERI') return true;
+          if (c.db_id && b.db_id && String(c.db_id).toUpperCase() === String(b.db_id).toUpperCase()) return true;
+
+          const bPhone = String(b.guest_phone || '').replace(/\D/g, '');
+          const cPhone = String(c.guest_phone || '').replace(/\D/g, '');
+          const bIn = normalizeDateToMidnight(b.check_in || b.checkIn || b.check_in_date);
+          const cIn = normalizeDateToMidnight(c.check_in || c.checkIn || c.check_in_date);
+          const phoneMatches = bPhone && cPhone && (bPhone.slice(-10) === cPhone.slice(-10));
+          const dateMatches = bIn && cIn && bIn === cIn;
+
+          if (phoneMatches && dateMatches) return true;
+
+          const bEmail = String(b.guest_email || '').trim().toLowerCase();
+          const cEmail = String(c.guest_email || '').trim().toLowerCase();
+          const emailMatches = bEmail && cEmail && bEmail !== 'n/a' && bEmail === cEmail;
+
+          if (emailMatches && dateMatches) return true;
+
+          return false;
+        });
+
+        if (matchingConfirmed) {
+          const pId = b.id || b.booking_reference;
+          if (pId) {
+            ['meraki_pending_bookings'].forEach(key => {
+              [window.sessionStorage, window.localStorage].forEach(store => {
+                try {
+                  if (!store) return;
+                  const raw = store.getItem(key);
+                  if (raw) {
+                    const list = JSON.parse(raw);
+                    if (Array.isArray(list)) {
+                      const filtered = list.filter(item =>
+                        String(item.id || '').toUpperCase() !== String(pId).toUpperCase() &&
+                        String(item.booking_reference || '').toUpperCase() !== String(pId).toUpperCase()
+                      );
+                      store.setItem(key, JSON.stringify(filtered));
+                    }
+                  }
+                } catch (e) {}
+              });
+            });
+          }
+          return false;
+        }
+
+        return true;
+      });
+
+      setBookings(deduplicatedBookings);
     }).catch(e => console.error("JSON Error in Bookings:", e));
   }, []);
+
+  const updateTimeoutRef = useRef(null);
+  const debouncedFetchBookings = useCallback(() => {
+    if (updateTimeoutRef.current) clearTimeout(updateTimeoutRef.current);
+    updateTimeoutRef.current = setTimeout(() => {
+      fetchBookings();
+    }, 50);
+  }, [fetchBookings]);
 
   useEffect(() => {
     fetchBookings();
 
-    const handleUpdate = () => {
-      fetchBookings();
-    };
-
-    window.addEventListener('meraki_booking_updated', handleUpdate);
-    window.addEventListener('meraki_rooms_updated', handleUpdate);
-    window.addEventListener('storage', handleUpdate);
+    window.addEventListener('meraki_booking_updated', debouncedFetchBookings);
+    window.addEventListener('meraki_rooms_updated', debouncedFetchBookings);
+    window.addEventListener('storage', debouncedFetchBookings);
+    window.addEventListener('focus', debouncedFetchBookings);
+    document.addEventListener('visibilitychange', debouncedFetchBookings);
 
     return () => {
-      window.removeEventListener('meraki_booking_updated', handleUpdate);
-      window.removeEventListener('meraki_rooms_updated', handleUpdate);
-      window.removeEventListener('storage', handleUpdate);
+      if (updateTimeoutRef.current) clearTimeout(updateTimeoutRef.current);
+      window.removeEventListener('meraki_booking_updated', debouncedFetchBookings);
+      window.removeEventListener('meraki_rooms_updated', debouncedFetchBookings);
+      window.removeEventListener('storage', debouncedFetchBookings);
+      window.removeEventListener('focus', debouncedFetchBookings);
+      document.removeEventListener('visibilitychange', debouncedFetchBookings);
     };
-  }, [fetchBookings]);
+  }, [fetchBookings, debouncedFetchBookings]);
 
   const handleFilterChange = (newFilter) => {
     setFilter(newFilter);
@@ -1498,24 +1725,61 @@ function BookingsTab() {
   };
 
   const deleteBooking = (id) => {
-    if(!window.confirm("Are you sure you want to delete this booking?")) return;
+    if (!id) return;
+    if (!window.confirm("Are you sure you want to delete this booking?")) return;
+    markBookingAsDeleted(id);
     markBookingAsCancelled(id);
+
+    // Clean up local/session storage directly
+    ['meraki_admin_created_bookings', 'meraki_pending_bookings'].forEach(key => {
+      [window.sessionStorage, window.localStorage].forEach(store => {
+        try {
+          if (!store) return;
+          const raw = store.getItem(key);
+          if (raw) {
+            const list = JSON.parse(raw);
+            if (Array.isArray(list)) {
+              const filtered = list.filter(item => 
+                String(item.id || '').toUpperCase() !== String(id || '').toUpperCase() &&
+                String(item.booking_reference || '').toUpperCase() !== String(id || '').toUpperCase() &&
+                String(item.db_id || '').toUpperCase() !== String(id || '').toUpperCase() &&
+                String(item.formattedId || '').toUpperCase() !== String(id || '').toUpperCase()
+              );
+              store.setItem(key, JSON.stringify(filtered));
+            }
+          }
+        } catch (e) {}
+      });
+    });
+
+    try {
+      const pRef = window.sessionStorage.getItem('meraki_pending_booking_ref');
+      if (pRef && String(pRef).toUpperCase() === String(id).toUpperCase()) {
+        window.sessionStorage.removeItem('meraki_pending_booking_ref');
+      }
+    } catch (e) {}
+
+    // Immediately remove from UI state
+    setBookings(prev => prev.filter(b => 
+      String(b.id || '').toUpperCase() !== String(id || '').toUpperCase() &&
+      String(b.booking_reference || '').toUpperCase() !== String(id || '').toUpperCase() &&
+      String(b.db_id || '').toUpperCase() !== String(id || '').toUpperCase() &&
+      String(b.formattedId || '').toUpperCase() !== String(id || '').toUpperCase()
+    ));
+    setViewingBooking(null);
+
+    // Call backend DELETE API
     fetch(`${API_CONFIG_URL}/api_bookings.php`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: id })
     })
     .then(res => res.json())
-    .then(data => {
-      if(data && data.status === 'success') {
-        setBookings(prev => prev.filter(b => b.id !== id));
-        setViewingBooking(null);
-        window.dispatchEvent(new Event('meraki_booking_updated'));
-        window.dispatchEvent(new Event('meraki_rooms_updated'));
-      } else {
-        alert(data.message || 'Error deleting booking');
-      }
-    }).catch(e => console.error(e));
+    .catch(() => null)
+    .finally(() => {
+      window.dispatchEvent(new Event('meraki_booking_updated'));
+      window.dispatchEvent(new Event('meraki_rooms_updated'));
+    });
   };
 
   const calculateNights = (inDate, outDate) => {
@@ -1550,11 +1814,6 @@ function BookingsTab() {
       <PageHeader
         title="Booking Management"
         subtitle="View and manage all homestay reservations."
-        action={
-          <button className="admin-btn-primary" onClick={() => setEditingBooking({status: 'Pending', guest_id: 1, room_id: 1})}>
-            <PlusSignIcon size={18} /> Create Booking
-          </button>
-        }
       />
 
       <div className="admin-card">
@@ -1589,14 +1848,18 @@ function BookingsTab() {
               {paginatedBookings.map((b) => (
                 <tr key={b.id}>
                   <td>
-                    <span className="admin-booking-id">
-                      {b.booking_reference || `MERI${String(b.id).padStart(4, '0')}`}
-                    </span>
+                    <div style={{display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-start'}}>
+                      <span className="admin-booking-id">
+                        {(b.status || '').toLowerCase().trim() === 'pending'
+                          ? 'MERI'
+                          : (b.booking_reference || `MERI${String(b.id).padStart(4, '0')}`)}
+                      </span>
+                    </div>
                   </td>
                   <td>
                     <div className="admin-guest-cell">
                       <span className="admin-guest-name">
-                        {b.guest_name || (b.guest_id ? `Guest ${b.guest_id}` : 'Guest')}
+                        {b.guest_name || 'Guest'}
                       </span>
                       {b.guest_phone && (
                         <span className="admin-guest-phone">{b.guest_phone}</span>
@@ -1622,18 +1885,20 @@ function BookingsTab() {
                     {getStatusBadge(b.status)}
                   </td>
                   <td style={{textAlign: 'right'}}>
-                    <button
-                      type="button"
-                      className="admin-btn-view"
-                      onClick={() => setViewingBooking(b)}
-                      title="View Details"
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                        <circle cx="12" cy="12" r="3" />
-                      </svg>
-                      <span>View</span>
-                    </button>
+                    <div style={{display: 'inline-flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end'}}>
+                      <button
+                        type="button"
+                        className="admin-btn-view"
+                        onClick={() => setViewingBooking(b)}
+                        title="View Details"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                        <span>View</span>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -1696,7 +1961,9 @@ function BookingsTab() {
                   Booking Details
                 </h2>
                 <span className="admin-booking-id" style={{fontSize: '12px'}}>
-                  {viewingBooking.booking_reference || `MERI${String(viewingBooking.id).padStart(4, '0')}`}
+                  {(viewingBooking.status || '').toLowerCase().trim() === 'pending'
+                    ? 'MERI'
+                    : (viewingBooking.booking_reference || `MERI${String(viewingBooking.id).padStart(4, '0')}`)}
                 </span>
                 {getStatusBadge(viewingBooking.status)}
               </div>
@@ -1720,9 +1987,17 @@ function BookingsTab() {
                   <div className="admin-modal-field">
                     <span className="admin-modal-label">Guest Name</span>
                     <span className="admin-modal-value admin-text-medium">
-                      {viewingBooking.guest_name || (viewingBooking.guest_id ? `Guest ${viewingBooking.guest_id}` : 'Guest')}
+                      {viewingBooking.guest_name || 'Guest'}
                     </span>
                   </div>
+                  {(viewingBooking.status || '').toLowerCase().trim() !== 'pending' && viewingBooking.guest_id && (
+                    <div className="admin-modal-field">
+                      <span className="admin-modal-label">Guest ID</span>
+                      <span className="admin-modal-value admin-text-medium">
+                        {viewingBooking.guest_id}
+                      </span>
+                    </div>
+                  )}
                   <div className="admin-modal-field">
                     <span className="admin-modal-label">Mobile Number</span>
                     <span className="admin-modal-value">
@@ -1798,6 +2073,33 @@ function BookingsTab() {
               <div className="admin-modal-section">
                 <div className="admin-modal-section-title">Booking Information</div>
                 <div className="admin-modal-grid-2">
+                  {(() => {
+                    const isSourceAdmin = isBookingSourceAdmin(viewingBooking);
+                    if (isSourceAdmin) {
+                      return (
+                        <div className="admin-modal-field">
+                          <span className="admin-modal-label">Booking Source</span>
+                          <span className="admin-modal-value">
+                            <span style={{
+                              display: 'inline-block',
+                              padding: '3px 8px',
+                              borderRadius: '4px',
+                              fontSize: '11px',
+                              fontWeight: '700',
+                              letterSpacing: '0.5px',
+                              background: '#fdf2f8',
+                              color: '#9d174d',
+                              border: '1px solid #fbcfe8',
+                              textTransform: 'uppercase'
+                            }}>
+                              Admin
+                            </span>
+                          </span>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
                   <div className="admin-modal-field">
                     <span className="admin-modal-label">Booking Date</span>
                     <span className="admin-modal-value">
@@ -1895,7 +2197,7 @@ function BookingsTab() {
                 type="button"
                 className="admin-modal-btn-delete"
                 onClick={() => {
-                  const idToDelete = viewingBooking.id;
+                  const idToDelete = viewingBooking.id || viewingBooking.booking_reference;
                   deleteBooking(idToDelete);
                 }}
               >
@@ -1982,6 +2284,7 @@ function BookingsTab() {
           </div>
         </div>
       )}
+
     </>
   );
 }
@@ -2003,23 +2306,28 @@ function CalendarTab() {
       }).catch(err => console.error(err));
   }, []);
 
+  const updateTimeoutRef = useRef(null);
+  const debouncedFetchCalendarBookings = useCallback(() => {
+    if (updateTimeoutRef.current) clearTimeout(updateTimeoutRef.current);
+    updateTimeoutRef.current = setTimeout(() => {
+      fetchCalendarBookings();
+    }, 50);
+  }, [fetchCalendarBookings]);
+
   useEffect(() => {
     fetchCalendarBookings();
 
-    const handleUpdate = () => {
-      fetchCalendarBookings();
-    };
-
-    window.addEventListener('meraki_booking_updated', handleUpdate);
-    window.addEventListener('meraki_rooms_updated', handleUpdate);
-    window.addEventListener('storage', handleUpdate);
+    window.addEventListener('meraki_booking_updated', debouncedFetchCalendarBookings);
+    window.addEventListener('meraki_rooms_updated', debouncedFetchCalendarBookings);
+    window.addEventListener('storage', debouncedFetchCalendarBookings);
 
     return () => {
-      window.removeEventListener('meraki_booking_updated', handleUpdate);
-      window.removeEventListener('meraki_rooms_updated', handleUpdate);
-      window.removeEventListener('storage', handleUpdate);
+      if (updateTimeoutRef.current) clearTimeout(updateTimeoutRef.current);
+      window.removeEventListener('meraki_booking_updated', debouncedFetchCalendarBookings);
+      window.removeEventListener('meraki_rooms_updated', debouncedFetchCalendarBookings);
+      window.removeEventListener('storage', debouncedFetchCalendarBookings);
     };
-  }, [fetchCalendarBookings]);
+  }, [fetchCalendarBookings, debouncedFetchCalendarBookings]);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -2035,21 +2343,19 @@ function CalendarTab() {
   const getBookingsForDay = (day) => {
     const d = new Date(year, month, day);
     d.setHours(0,0,0,0);
+    const dTime = d.getTime();
     return bookings.filter(b => {
       if (b.check_in && b.check_out) {
-        const dIn = new Date(b.check_in);
-        dIn.setHours(0,0,0,0);
-        const dOut = new Date(b.check_out);
-        dOut.setHours(0,0,0,0);
-        if (!isNaN(dIn.getTime()) && !isNaN(dOut.getTime())) {
-          return d.getTime() >= dIn.getTime() && d.getTime() < dOut.getTime();
+        const dIn = normalizeDateToMidnight(b.check_in || b.checkIn || b.start_date || b.check_in_date);
+        const dOut = normalizeDateToMidnight(b.check_out || b.checkOut || b.end_date || b.check_out_date);
+        if (dIn !== null && dOut !== null) {
+          return dTime >= dIn && dTime < dOut;
         }
       }
       const createdStr = b.booking_date || b.created_at;
       if (!createdStr) return false;
-      const createdDate = new Date(createdStr);
-      createdDate.setHours(0,0,0,0);
-      return d.getTime() === createdDate.getTime();
+      const createdTime = normalizeDateToMidnight(createdStr);
+      return createdTime !== null && dTime === createdTime;
     });
   };
 
@@ -2367,11 +2673,11 @@ function GuestsTab() {
       fetch(`${API_CONFIG_URL}/api_payments.php`).then(res => res.json()).catch(() => ({ data: [] }))
     ]).then(([guestsData, bookingsData, paymentsData]) => {
       if (currentReq !== guestsReqRef.current) return;
-      let rawGuests = (guestsData && guestsData.status === 'success' && Array.isArray(guestsData.data)) ? guestsData.data.filter(g => !isRemovedOfflineGuest(g.name)) : [];
-      let rawBookings = (bookingsData && bookingsData.status === 'success' && Array.isArray(bookingsData.data)) ? bookingsData.data.filter(b => !isRemovedOfflineGuest(b)) : [];
-      let rawPayments = (paymentsData && paymentsData.status === 'success' && Array.isArray(paymentsData.data)) ? paymentsData.data.filter(p => !isRemovedOfflineGuest(p.guest_name)) : [];
+      let rawGuests = (guestsData && guestsData.status === 'success' && Array.isArray(guestsData.data)) ? guestsData.data.filter(g => !isRemovedOfflineGuest(g.name) && !isAdminBlockBooking(g)) : [];
+      let rawBookings = (bookingsData && bookingsData.status === 'success' && Array.isArray(bookingsData.data)) ? bookingsData.data.filter(b => !isRemovedOfflineGuest(b) && !isAdminBlockBooking(b)) : [];
+      let rawPayments = (paymentsData && paymentsData.status === 'success' && Array.isArray(paymentsData.data)) ? paymentsData.data.filter(p => !isRemovedOfflineGuest(p.guest_name) && !isAdminBlockBooking(p)) : [];
 
-      // Calculate total guest head count across all bookings
+      // Calculate total guest head count across genuine guest bookings
       const totalG = rawBookings.reduce((sum, b) => sum + parseInt(b.guest_count || 1, 10), 0);
       setTotalGuestsCount(totalG);
 
@@ -2414,8 +2720,8 @@ function GuestsTab() {
         bookings: []
       }));
 
-      // Match each booking to existing guest group or create a new one
-      enrichedBookings.forEach(b => {
+      // Match each non-pending booking to existing guest group or create a new one
+      enrichedBookings.filter(b => (b.status || '').toLowerCase().trim() !== 'pending').forEach(b => {
         const bPhone = normalizePhone(b.guest_phone || b.phone);
         const bEmail = normalizeEmail(b.guest_email || b.email);
         const bName = normalizeName(b.guest_name || b.name);
@@ -2777,7 +3083,6 @@ function GuestsTab() {
 function PaymentsTab() {
   const [payments, setPayments] = useState([]);
   const [filter, setFilter] = useState('All');
-  const [editingPayment, setEditingPayment] = useState(null);
   const [viewingPayment, setViewingPayment] = useState(null);
   const [currentPage, setCurrentPageNum] = useState(1);
   const paymentsReqRef = useRef(0);
@@ -2794,15 +3099,15 @@ function PaymentsTab() {
       if (currentReq !== paymentsReqRef.current) return;
       let fetchedBookings = [];
       if (bookingsData && bookingsData.status === 'success' && Array.isArray(bookingsData.data)) {
-        fetchedBookings = bookingsData.data.filter(b => !isRemovedOfflineGuest(b));
+        fetchedBookings = bookingsData.data.filter(b => !isRemovedOfflineGuest(b) && !isAdminBlockBooking(b));
       }
 
       let fetchedGuests = [];
       if (guestsData && guestsData.status === 'success' && Array.isArray(guestsData.data)) {
-        fetchedGuests = guestsData.data.filter(g => !isRemovedOfflineGuest(g.name));
+        fetchedGuests = guestsData.data.filter(g => !isRemovedOfflineGuest(g.name) && !isAdminBlockBooking(g));
       }
       if (paymentsData && paymentsData.status === 'success' && Array.isArray(paymentsData.data)) {
-        let basePayments = paymentsData.data.filter(p => !isRemovedOfflineGuest(p.guest_name));
+        let basePayments = paymentsData.data.filter(p => !isRemovedOfflineGuest(p.guest_name) && !isAdminBlockBooking(p));
 
         const mergedPayments = basePayments.map(p => {
           const booking = fetchedBookings.find(b => b.id === p.booking_id);
@@ -2828,57 +3133,32 @@ function PaymentsTab() {
     }).catch(e => console.error("JSON Error in Payments:", e));
   }, []);
 
+  const updateTimeoutRef = useRef(null);
+  const debouncedFetchPayments = useCallback(() => {
+    if (updateTimeoutRef.current) clearTimeout(updateTimeoutRef.current);
+    updateTimeoutRef.current = setTimeout(() => {
+      fetchPayments();
+    }, 50);
+  }, [fetchPayments]);
+
   useEffect(() => {
     fetchPayments();
 
-    const handleUpdate = () => {
-      fetchPayments();
-    };
-
-    window.addEventListener('meraki_booking_updated', handleUpdate);
-    window.addEventListener('meraki_rooms_updated', handleUpdate);
-    window.addEventListener('storage', handleUpdate);
+    window.addEventListener('meraki_booking_updated', debouncedFetchPayments);
+    window.addEventListener('meraki_rooms_updated', debouncedFetchPayments);
+    window.addEventListener('storage', debouncedFetchPayments);
 
     return () => {
-      window.removeEventListener('meraki_booking_updated', handleUpdate);
-      window.removeEventListener('meraki_rooms_updated', handleUpdate);
-      window.removeEventListener('storage', handleUpdate);
+      if (updateTimeoutRef.current) clearTimeout(updateTimeoutRef.current);
+      window.removeEventListener('meraki_booking_updated', debouncedFetchPayments);
+      window.removeEventListener('meraki_rooms_updated', debouncedFetchPayments);
+      window.removeEventListener('storage', debouncedFetchPayments);
     };
-  }, [fetchPayments]);
+  }, [fetchPayments, debouncedFetchPayments]);
 
   const handleFilterChange = (newFilter) => {
     setFilter(newFilter);
     setCurrentPageNum(1);
-  };
-
-  const savePayment = () => {
-    const isNew = !editingPayment.id;
-    const method = isNew ? 'POST' : 'PUT';
-    
-    fetch(`${API_CONFIG_URL}/api_payments.php`, {
-      method: method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-         id: editingPayment.id,
-         booking_id: editingPayment.booking_id || 1,
-         razorpay_order_id: editingPayment.razorpay_order_id || '',
-         razorpay_payment_id: editingPayment.razorpay_payment_id || '',
-         amount: editingPayment.amount || 0,
-         payment_method: editingPayment.payment_method || 'Online / Card',
-         status: editingPayment.status || 'Pending'
-      })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if(data && data.status === 'success') {
-        fetchPayments();
-        setEditingPayment(null);
-        window.dispatchEvent(new Event('meraki_booking_updated'));
-        window.dispatchEvent(new Event('meraki_rooms_updated'));
-      } else {
-        alert(data.message || 'Error saving payment');
-      }
-    }).catch(e => console.error(e));
   };
 
   const deletePayment = (id) => {
@@ -2912,11 +3192,6 @@ function PaymentsTab() {
       <PageHeader
         title="Payment History"
         subtitle="Track all transactions, settlements, and refunds."
-        action={
-          <button className="admin-btn-primary" onClick={() => setEditingPayment({status: 'Pending', booking_id: 1, amount: 0})}>
-            <PlusSignIcon size={18} /> New Payment
-          </button>
-        }
       />
 
       <div className="admin-card">
@@ -3040,58 +3315,6 @@ function PaymentsTab() {
           </div>
         )}
       </div>
-
-      {/* Edit Payment Modal */}
-      {editingPayment && (
-        <div className="admin-modal-overlay admin-fade-in" style={{zIndex: 9999}}>
-          <div className="admin-booking-modal-content" style={{maxWidth: '500px'}}>
-            <div className="admin-modal-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #f1f5f9', paddingBottom: '14px'}}>
-              <h2 style={{margin: 0, fontSize: '19px', color: '#373737', fontWeight: '700'}}>{editingPayment.id ? 'Edit Payment' : 'New Payment'}</h2>
-              <button onClick={() => setEditingPayment(null)} style={{background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', padding: '4px', display: 'flex', alignItems: 'center'}}>
-                <Cancel01Icon size={22} strokeWidth={1.5} />
-              </button>
-            </div>
-            
-            <div className="admin-booking-modal-body">
-              <div className="admin-form-group" style={{margin: 0}}>
-                <label className="admin-form-label" style={{marginBottom: '6px', color: '#373737', fontWeight: '600', fontSize: '13px'}}>Booking ID</label>
-                <input type="number" className="admin-form-input" style={{fontSize: '13px'}} value={editingPayment.booking_id || ''} onChange={e => setEditingPayment({...editingPayment, booking_id: e.target.value})} />
-              </div>
-              <div className="admin-form-group" style={{margin: 0}}>
-                <label className="admin-form-label" style={{marginBottom: '6px', color: '#373737', fontWeight: '600', fontSize: '13px'}}>Razorpay Order ID</label>
-                <input type="text" className="admin-form-input" style={{fontSize: '13px'}} value={editingPayment.razorpay_order_id || ''} onChange={e => setEditingPayment({...editingPayment, razorpay_order_id: e.target.value})} />
-              </div>
-              <div className="admin-form-group" style={{margin: 0}}>
-                <label className="admin-form-label" style={{marginBottom: '6px', color: '#373737', fontWeight: '600', fontSize: '13px'}}>Razorpay Payment ID</label>
-                <input type="text" className="admin-form-input" style={{fontSize: '13px'}} value={editingPayment.razorpay_payment_id || ''} onChange={e => setEditingPayment({...editingPayment, razorpay_payment_id: e.target.value})} />
-              </div>
-              <div className="admin-form-row" style={{margin: 0, gap: '12px'}}>
-                <div className="admin-form-group" style={{margin: 0}}>
-                  <label className="admin-form-label" style={{marginBottom: '6px', color: '#373737', fontWeight: '600', fontSize: '13px'}}>Amount (₹)</label>
-                  <input type="number" className="admin-form-input" style={{fontSize: '13px'}} value={editingPayment.amount || ''} onChange={e => setEditingPayment({...editingPayment, amount: e.target.value})} />
-                </div>
-                <div className="admin-form-group" style={{margin: 0}}>
-                  <label className="admin-form-label" style={{marginBottom: '6px', color: '#373737', fontWeight: '600', fontSize: '13px'}}>Method</label>
-                  <input type="text" className="admin-form-input" style={{fontSize: '13px'}} value={editingPayment.payment_method || ''} onChange={e => setEditingPayment({...editingPayment, payment_method: e.target.value})} />
-                </div>
-              </div>
-              <div className="admin-form-group" style={{margin: 0}}>
-                <label className="admin-form-label" style={{marginBottom: '6px', color: '#373737', fontWeight: '600', fontSize: '13px'}}>Status</label>
-                <select className="admin-form-input" style={{fontSize: '13px'}} value={editingPayment.status || 'Pending'} onChange={e => setEditingPayment({...editingPayment, status: e.target.value})}>
-                  <option value="Pending">Pending</option>
-                  <option value="Success">Success</option>
-                  <option value="Failed">Failed</option>
-                  <option value="Refunded">Refunded</option>
-                </select>
-              </div>
-            </div>
-            <div className="admin-modal-footer" style={{justifyContent: 'flex-end'}}>
-              <button className="admin-modal-btn-close" onClick={() => setEditingPayment(null)}>Cancel</button>
-              <button className="admin-modal-btn-edit" onClick={savePayment}>Save Payment</button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Premium Payment Details View Popup */}
       {viewingPayment && (
@@ -4546,7 +4769,7 @@ function NotificationBell({ showNotificationDropdown, setShowNotificationDropdow
     ]).then(([bData, pData]) => {
       let notifs = [];
       if (bData && bData.status === 'success' && Array.isArray(bData.data)) {
-        bData.data.filter(b => !isRemovedOfflineGuest(b)).forEach(b => {
+        bData.data.filter(b => !isRemovedOfflineGuest(b) && !isAdminBlockBooking(b)).forEach(b => {
           notifs.push({
             id: `booking_${b.id}`,
             numericId: parseInt(b.id, 10) * 10, 
@@ -4560,7 +4783,7 @@ function NotificationBell({ showNotificationDropdown, setShowNotificationDropdow
         });
       }
       if (pData && pData.status === 'success' && Array.isArray(pData.data)) {
-        pData.data.filter(p => !isRemovedOfflineGuest(p.guest_name)).forEach(p => {
+        pData.data.filter(p => !isRemovedOfflineGuest(p.guest_name) && !isAdminBlockBooking(p)).forEach(p => {
           notifs.push({
             id: `payment_${p.id}`,
             numericId: parseInt(p.id, 10) * 10 + 1, 

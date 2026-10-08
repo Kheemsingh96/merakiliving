@@ -88,6 +88,67 @@ export function isRemovedOfflineGuest(item) {
 }
 
 /**
+ * Distinguishes Admin block bookings (created through Room Status Overview / Admin block booking)
+ * from genuine guest bookings using existing booking data, source, and type fields.
+ */
+export function isAdminBlockBooking(item) {
+  if (!item) return false;
+  if (typeof item === 'string') {
+    const s = item.toLowerCase().trim();
+    return s === 'admin block' || s.includes('admin block') || s === 'direct / admin';
+  }
+
+  // 1. Check booking source
+  const source = String(item.source || item.booking_source || item.bookingSource || '').toLowerCase().trim();
+  if (
+    source === 'direct / admin' ||
+    source.includes('direct / admin') ||
+    source === 'admin block' ||
+    source === 'admin_block' ||
+    source === 'admin-block'
+  ) {
+    return true;
+  }
+
+  // 2. Check booking type or category
+  const type = String(item.booking_type || item.type || item.category || '').toLowerCase().trim();
+  if (
+    type === 'block' ||
+    type === 'admin_block' ||
+    type === 'admin block' ||
+    type === 'admin-block' ||
+    type === 'blocked'
+  ) {
+    return true;
+  }
+
+  // 3. Check guest name
+  const name = String(item.guest_name || item.name || item.guestName || '').toLowerCase().trim();
+  if (
+    name === 'admin block' ||
+    name.includes('admin block') ||
+    name === 'admin blocked' ||
+    name === 'room block' ||
+    name === 'blocked by admin'
+  ) {
+    return true;
+  }
+
+  // 4. Check guest email
+  const email = String(item.guest_email || item.email || item.guestEmail || '').toLowerCase().trim();
+  if (email === 'admin@merakiliving.com') {
+    return true;
+  }
+
+  // 5. Check boolean flags
+  if (item.is_admin_block === true || item.is_block === true || item.is_blocked === true) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
  * Retrieves set of cancelled booking IDs tracked in session/local storage.
  */
 export function getCancelledBookingIds() {
@@ -112,6 +173,99 @@ export function getCancelledBookingIds() {
     } catch (e) {}
   });
   return ids;
+}
+
+/**
+ * Retrieves set of deleted booking IDs tracked in session/local storage.
+ */
+export function getDeletedBookingIds() {
+  const ids = new Set();
+  if (typeof window === 'undefined') return ids;
+  
+  [window.sessionStorage, window.localStorage].forEach(store => {
+    try {
+      if (!store) return;
+      const raw = store.getItem('meraki_deleted_booking_ids');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          parsed.forEach(id => {
+            if (id !== undefined && id !== null && String(id).trim()) {
+              ids.add(String(id).trim().toUpperCase());
+              ids.add(String(id).trim());
+            }
+          });
+        }
+      }
+    } catch (e) {}
+  });
+  return ids;
+}
+
+/**
+ * Permanently tracks a booking as deleted locally so it is removed from UI and storage.
+ */
+export function markBookingAsDeleted(bookingOrId) {
+  if (!bookingOrId || typeof window === 'undefined') return;
+  
+  const toAdd = new Set();
+  if (typeof bookingOrId === 'object') {
+    if (bookingOrId.id) toAdd.add(String(bookingOrId.id));
+    if (bookingOrId.db_id) toAdd.add(String(bookingOrId.db_id));
+    if (bookingOrId.booking_reference) toAdd.add(String(bookingOrId.booking_reference));
+    if (bookingOrId.formattedId) toAdd.add(String(bookingOrId.formattedId));
+  } else {
+    toAdd.add(String(bookingOrId));
+  }
+
+  const currentSet = getDeletedBookingIds();
+  toAdd.forEach(id => {
+    currentSet.add(String(id).trim().toUpperCase());
+    currentSet.add(String(id).trim());
+  });
+
+  const arrayToStore = Array.from(currentSet);
+  [window.sessionStorage, window.localStorage].forEach(store => {
+    try {
+      if (!store) return;
+      store.setItem('meraki_deleted_booking_ids', JSON.stringify(arrayToStore));
+    } catch (e) {}
+  });
+
+  // Remove matching booking objects from local/session storage arrays
+  ['meraki_admin_created_bookings', 'meraki_pending_bookings'].forEach(key => {
+    [window.sessionStorage, window.localStorage].forEach(store => {
+      try {
+        if (!store) return;
+        const raw = store.getItem(key);
+        if (raw) {
+          const list = JSON.parse(raw);
+          if (Array.isArray(list)) {
+            const filtered = list.filter(item => {
+              const matches = Array.from(toAdd).some(id => 
+                String(item.id || '').toUpperCase() === String(id).toUpperCase() ||
+                String(item.booking_reference || '').toUpperCase() === String(id).toUpperCase() ||
+                String(item.db_id || '').toUpperCase() === String(id).toUpperCase() ||
+                String(item.formattedId || '').toUpperCase() === String(id).toUpperCase()
+              );
+              return !matches;
+            });
+            store.setItem(key, JSON.stringify(filtered));
+          }
+        }
+      } catch (e) {}
+    });
+  });
+
+  try {
+    const pRef = window.sessionStorage.getItem('meraki_pending_booking_ref');
+    if (pRef && Array.from(toAdd).map(x => x.toUpperCase()).includes(String(pRef).toUpperCase())) {
+      window.sessionStorage.removeItem('meraki_pending_booking_ref');
+    }
+  } catch (e) {}
+
+  window.dispatchEvent(new Event('meraki_booking_updated'));
+  window.dispatchEvent(new Event('meraki_rooms_updated'));
 }
 
 /**
@@ -178,6 +332,23 @@ export function isBookingActive(booking) {
   if (!booking) return false;
   if (isRemovedOfflineGuest(booking)) return false;
 
+  // Check locally tracked deleted IDs
+  const deletedIds = getDeletedBookingIds();
+  if (deletedIds.size > 0) {
+    const idList = [
+      booking.id,
+      booking.db_id,
+      booking.booking_reference,
+      booking.formattedId
+    ].filter(Boolean).map(x => String(x).trim());
+
+    for (const id of idList) {
+      if (deletedIds.has(id) || deletedIds.has(id.toUpperCase())) {
+        return false;
+      }
+    }
+  }
+
   // Check locally tracked cancelled IDs
   const cancelledIds = getCancelledBookingIds();
   if (cancelledIds.size > 0) {
@@ -198,8 +369,10 @@ export function isBookingActive(booking) {
   const status = String(booking.status || booking.booking_status || '').toLowerCase().trim();
   const paymentStatus = String(booking.payment_status || '').toLowerCase().trim();
 
-  // Any cancelled, refunded, rejected, deleted, or failed status is NOT active
+  // Any pending, cancelled, refunded, rejected, deleted, or failed status is NOT active
   if (
+    status === 'pending' ||
+    status.includes('pending') ||
     status.includes('cancel') ||
     status.includes('refund') ||
     status.includes('reject') ||
@@ -211,7 +384,9 @@ export function isBookingActive(booking) {
     status === 'inactive' ||
     paymentStatus.includes('refund') ||
     paymentStatus.includes('cancel') ||
-    paymentStatus.includes('fail')
+    paymentStatus.includes('fail') ||
+    paymentStatus === 'pending' ||
+    paymentStatus.includes('pending')
   ) {
     return false;
   }
@@ -264,13 +439,126 @@ export function normalizeRoomId(roomOrId) {
 }
 
 /**
+ * Retrieves Admin-created bookings tracked across session/local storage.
+ */
+export function getAdminCreatedBookings() {
+  const adminBookings = [];
+  if (typeof window === 'undefined') return adminBookings;
+  
+  [window.sessionStorage, window.localStorage].forEach(store => {
+    try {
+      if (!store) return;
+      const raw = store.getItem('meraki_admin_created_bookings');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          parsed.forEach(b => {
+            if (b && !adminBookings.some(existing => (existing.id && existing.id === b.id) || (existing.booking_reference && existing.booking_reference === b.booking_reference))) {
+              adminBookings.push(b);
+            }
+          });
+        }
+      }
+    } catch (e) {}
+  });
+  return adminBookings;
+}
+
+/**
+ * Retrieves incomplete / Pending bookings tracked across session/local storage.
+ */
+export function getPendingBookings() {
+  const pendingBookings = [];
+  if (typeof window === 'undefined') return pendingBookings;
+  
+  [window.sessionStorage, window.localStorage].forEach(store => {
+    try {
+      if (!store) return;
+      const raw = store.getItem('meraki_pending_bookings');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          parsed.forEach(b => {
+            if (b && !pendingBookings.some(existing => 
+              (existing.id && String(existing.id) === String(b.id)) || 
+              (existing.booking_reference && String(existing.booking_reference).toUpperCase() === String(b.booking_reference).toUpperCase())
+            )) {
+              pendingBookings.push(b);
+            }
+          });
+        }
+      }
+    } catch (e) {}
+  });
+  return pendingBookings;
+}
+
+/**
  * Returns genuine bookings with cancelled status synchronized.
- * API response is the single source of truth.
+ * Merges backend bookings with locally synchronized admin-created and pending bookings.
  */
 export function getAllMergedBookings(backendBookings = []) {
   const cancelledIds = getCancelledBookingIds();
-  const list = (Array.isArray(backendBookings) ? backendBookings : [])
-    .filter(b => b && !isRemovedOfflineGuest(b))
+  const deletedIds = getDeletedBookingIds();
+  const rawList = Array.isArray(backendBookings) ? [...backendBookings] : [];
+
+  const localAdminBookings = getAdminCreatedBookings();
+  localAdminBookings.forEach(ab => {
+    const exists = rawList.some(b => 
+      (b.id && String(b.id) === String(ab.id)) ||
+      (b.booking_reference && String(b.booking_reference).trim().toUpperCase() === String(ab.booking_reference).trim().toUpperCase())
+    );
+    if (!exists) {
+      rawList.push(ab);
+    }
+  });
+
+  const localPendingBookings = getPendingBookings();
+  localPendingBookings.forEach(pb => {
+    const exists = rawList.some(b => 
+      (b.id && String(b.id) === String(pb.id)) ||
+      (b.booking_reference && String(b.booking_reference).trim().toUpperCase() === String(pb.booking_reference).trim().toUpperCase())
+    );
+    if (!exists) {
+      rawList.push(pb);
+    }
+  });
+
+  if (typeof window !== 'undefined') {
+    [window.sessionStorage, window.localStorage].forEach(store => {
+      try {
+        if (!store) return;
+        ['meraki_latest_booking', 'meraki_confirmed_booking'].forEach(key => {
+          const raw = store.getItem(key);
+          if (raw) {
+            const cb = JSON.parse(raw);
+            if (cb && !isRemovedOfflineGuest(cb)) {
+              const exists = rawList.some(b => 
+                (b.id && String(b.id).trim().toUpperCase() === String(cb.id || '').trim().toUpperCase()) ||
+                (b.booking_reference && cb.booking_reference && String(b.booking_reference).trim().toUpperCase() === String(cb.booking_reference).trim().toUpperCase()) ||
+                (b.db_id && cb.db_id && String(b.db_id) === String(cb.db_id))
+              );
+              if (!exists) {
+                rawList.push(cb);
+              }
+            }
+          }
+        });
+      } catch (e) {}
+    });
+  }
+
+  const list = rawList
+    .filter(b => {
+      if (!b || isRemovedOfflineGuest(b)) return false;
+      const isDeletedLocally = [
+        b.id,
+        b.db_id,
+        b.booking_reference,
+        b.formattedId
+      ].filter(Boolean).some(id => deletedIds.has(String(id).trim()) || deletedIds.has(String(id).trim().toUpperCase()));
+      return !isDeletedLocally;
+    })
     .map(b => {
       const isCancelledLocally = [
         b.id,

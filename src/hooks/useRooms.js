@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { API_CONFIG_URL } from '../config/api';
-import { safeParseResponse, formatImageUrl } from '../utils/apiHelper';
+import { safeParseResponse, formatImageUrl, isPrerendering } from '../utils/apiHelper';
 import room1 from '../assets/images/room-1.avif';
 
 let cachedBackendRooms = null;
@@ -11,9 +11,16 @@ export function useRooms(localRoomsData) {
   const [rooms, setRooms] = useState(() => {
     return mergeRooms(localRoomsData, cachedBackendRooms, cachedBackendGallery);
   });
-  const [loading, setLoading] = useState(!cachedBackendRooms);
+  const [loading, setLoading] = useState(!cachedBackendRooms && !isPrerendering());
 
   useEffect(() => {
+    // During prerendering, bypass remote API calls.
+    // localRoomsData provides the complete, canonical room data for static SEO generation.
+    if (isPrerendering()) {
+      setLoading(false);
+      return;
+    }
+
     let isMounted = true;
 
     const fetchLatestData = (force = false) => {
@@ -27,25 +34,33 @@ export function useRooms(localRoomsData) {
             const galleryData = galleryRes && galleryRes.ok ? galleryRes.data : null;
             return { roomsData, galleryData };
           })
+          .catch(() => ({ roomsData: null, galleryData: null }))
           .finally(() => {
             activeFetchPromise = null;
           });
       }
 
-      activeFetchPromise.then(({ roomsData, galleryData }) => {
-        if (!isMounted) return;
-        const bRooms = roomsData && roomsData.status === 'success' && Array.isArray(roomsData.data) ? roomsData.data : cachedBackendRooms;
-        const bGallery = galleryData && galleryData.status === 'success' && Array.isArray(galleryData.data) ? galleryData.data : cachedBackendGallery;
-        
-        cachedBackendRooms = bRooms;
-        cachedBackendGallery = bGallery;
+      activeFetchPromise
+        .then(({ roomsData, galleryData }) => {
+          if (!isMounted) return;
+          const bRooms = roomsData && roomsData.status === 'success' && Array.isArray(roomsData.data) ? roomsData.data : cachedBackendRooms;
+          const bGallery = galleryData && galleryData.status === 'success' && Array.isArray(galleryData.data) ? galleryData.data : cachedBackendGallery;
+          
+          cachedBackendRooms = bRooms;
+          cachedBackendGallery = bGallery;
 
-        setRooms(mergeRooms(localRoomsData, bRooms, bGallery));
-        setLoading(false);
-      });
+          setRooms(mergeRooms(localRoomsData, bRooms, bGallery));
+          setLoading(false);
+        })
+        .catch(() => {
+          if (isMounted) {
+            setRooms(mergeRooms(localRoomsData, cachedBackendRooms, cachedBackendGallery));
+            setLoading(false);
+          }
+        });
     };
 
-    fetchLatestData(true);
+    fetchLatestData(false);
 
     // Listen for room & gallery updates triggered by Admin Panel and storage changes
     const handleUpdates = () => {

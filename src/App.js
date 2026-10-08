@@ -198,6 +198,18 @@ function App() {
     return true;
   });
 
+  const [isWebsiteReady, setIsWebsiteReady] = useState(() => {
+    if (typeof navigator !== 'undefined' && /ReactSnap/i.test(navigator.userAgent)) return true;
+    const path = typeof window !== 'undefined' ? window.location.pathname : '';
+    if (path.startsWith('/Pranay-admin')) return true;
+    return false;
+  });
+
+  const handlePreloaderComplete = useCallback(() => {
+    setShowPreloader(false);
+    setIsWebsiteReady(true);
+  }, []);
+
   const getCurrentPage = useCallback((pathname) => {
     const clean = (pathname || '').replace(/\/+$/, '') || '/';
     if (clean === '/') return 'home';
@@ -311,6 +323,8 @@ function App() {
 
   // Handle anchor scrolling and top scroll restoration
   useEffect(() => {
+    if (!isWebsiteReady) return;
+
     const rawHash = (window.location.hash || '').toLowerCase();
     const targetId = rawHash.replace('#', '');
     if (targetId && document.getElementById(targetId)) {
@@ -321,7 +335,7 @@ function App() {
     } else if (!rawHash) {
       window.scrollTo(0, 0);
     }
-  }, [location.pathname, location.hash]);
+  }, [location.pathname, location.hash, isWebsiteReady]);
 
   const isAdminPath = location.pathname.startsWith('/Pranay-admin');
 
@@ -345,7 +359,7 @@ function App() {
 
   return (
     <div className="app-container">
-      {showPreloader && <Preloader onComplete={() => setShowPreloader(false)} />}
+      {showPreloader && <Preloader onComplete={handlePreloaderComplete} />}
       <Navbar setCurrentPage={handleNavigate} currentPage={currentPage} />
       <React.Suspense fallback={<div className="suspense-loader"><div className="suspense-spinner"></div></div>}>
         <Routes>
@@ -354,19 +368,19 @@ function App() {
             element={
               <>
                 <Helmet>
-                  <title>Meraki Living SROT Peora Mukteshwar</title>
-                  <meta name="description" content="Nestled in the serene Himalayan village of Peora, surrounded by lush forests, fruit orchards, and a perennial mountain stream, SROT offers thoughtfully designed cottages, farm-fresh cuisine, and unforgettable Himalayan experiences." />
+                  <title>Meraki Living SROT | Luxury Homestay in Peora Mukteshwar</title>
+                  <meta name="description" content="Experience luxury mountain cottages, farm-fresh Kumaoni dining, and panoramic Himalayan views at Meraki Living SROT in Peora near Mukteshwar, Uttarakhand." />
                   <link rel="canonical" href="https://www.merakiliving.in/" />
-                  <meta name="robots" content="index, follow" />
+                  <meta name="robots" content="index, follow, max-image-preview:large" />
                   <meta property="og:site_name" content="Meraki Living" />
-                  <meta property="og:title" content="Meraki Living SROT Peora Mukteshwar" />
-                  <meta property="og:description" content="Nestled in the serene Himalayan village of Peora, surrounded by lush forests, fruit orchards, and a perennial mountain stream, SROT offers thoughtfully designed cottages, farm-fresh cuisine, and unforgettable Himalayan experiences." />
+                  <meta property="og:title" content="Meraki Living SROT | Luxury Homestay in Peora Mukteshwar" />
+                  <meta property="og:description" content="Experience luxury mountain cottages, farm-fresh Kumaoni dining, and panoramic Himalayan views at Meraki Living SROT in Peora near Mukteshwar, Uttarakhand." />
                   <meta property="og:type" content="website" />
                   <meta property="og:url" content="https://www.merakiliving.in/" />
                   <meta property="og:image" content={linkPreviewImg} />
                   <meta name="twitter:card" content="summary_large_image" />
-                  <meta name="twitter:title" content="Meraki Living SROT Peora Mukteshwar" />
-                  <meta name="twitter:description" content="Nestled in the serene Himalayan village of Peora, surrounded by lush forests, fruit orchards, and a perennial mountain stream, SROT offers thoughtfully designed cottages, farm-fresh cuisine, and unforgettable Himalayan experiences." />
+                  <meta name="twitter:title" content="Meraki Living SROT | Luxury Homestay in Peora Mukteshwar" />
+                  <meta name="twitter:description" content="Experience luxury mountain cottages, farm-fresh Kumaoni dining, and panoramic Himalayan views at Meraki Living SROT in Peora near Mukteshwar, Uttarakhand." />
                   <meta name="twitter:image" content={linkPreviewImg} />
                   <script type="application/ld+json">{JSON.stringify(HOME_WEBSITE_SCHEMA)}</script>
                   <script type="application/ld+json">{JSON.stringify(HOME_ORGANIZATION_SCHEMA)}</script>
@@ -469,7 +483,7 @@ function App() {
         </Routes>
       </React.Suspense>
       <div id="contact"><Footer setCurrentPage={handleNavigate} /></div>
-      <CookieConsent setCurrentPage={handleNavigate} preloaderActive={showPreloader} />
+      <CookieConsent setCurrentPage={handleNavigate} isWebsiteReady={isWebsiteReady} />
       <Chatbot setCurrentPage={handleNavigate} />
       <FloatingBookingDetails setCurrentPage={handleNavigate} />
       <StickyFooter setCurrentPage={handleNavigate} currentPage={currentPage} />

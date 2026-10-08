@@ -1,31 +1,72 @@
 import React, { useState, useEffect } from 'react';
 import './CookieConsent.css';
 
-export default function CookieConsent({ setCurrentPage, preloaderActive = false }) {
+export default function CookieConsent({ setCurrentPage, isWebsiteReady = false }) {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    if (preloaderActive) {
+    // 1. The disclaimer must NEVER appear before or during the opening animation
+    if (!isWebsiteReady) {
+      setIsVisible(false);
       return;
     }
 
-    // Check if consent has already been given or declined
-    const savedConsent = localStorage.getItem('meraki_cookie_consent');
+    // 2. Check if consent has already been given or declined
+    const savedConsent = typeof window !== 'undefined' ? localStorage.getItem('meraki_cookie_consent') : null;
     if (savedConsent) {
+      setIsVisible(false);
       return;
     }
 
-    // Show popup once after initial page load if no prior consent is recorded
-    const timer = setTimeout(() => {
-      if (!localStorage.getItem('meraki_cookie_consent')) {
-        setIsVisible(true);
-      }
-    }, 1500);
+    // 3. If already visible, no need to listen
+    if (isVisible) {
+      return;
+    }
 
-    return () => {
-      clearTimeout(timer);
+    let isDetached = false;
+
+    const cleanup = () => {
+      if (isDetached) return;
+      isDetached = true;
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('touchmove', handleTouchMove);
     };
-  }, [preloaderActive]);
+
+    const triggerDisclaimer = () => {
+      setIsVisible(true);
+      cleanup();
+    };
+
+    // 4. The disclaimer should appear only after the user starts scrolling the website
+    const handleScroll = () => {
+      const scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+      if (scrollY > 15) {
+        triggerDisclaimer();
+      }
+    };
+
+    const handleWheel = (e) => {
+      if (e && e.deltaY > 5) {
+        triggerDisclaimer();
+      }
+    };
+
+    const handleTouchMove = () => {
+      requestAnimationFrame(() => {
+        const scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+        if (scrollY > 10) {
+          triggerDisclaimer();
+        }
+      });
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('wheel', handleWheel, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+
+    return cleanup;
+  }, [isWebsiteReady, isVisible]);
 
   const handleAccept = () => {
     localStorage.setItem('meraki_cookie_consent', 'accepted');
@@ -47,7 +88,7 @@ export default function CookieConsent({ setCurrentPage, preloaderActive = false 
     }
   };
 
-  if (!isVisible) return null;
+  if (!isWebsiteReady || !isVisible) return null;
 
   return (
     <div className="cookie-consent-container" role="dialog" aria-live="polite" aria-label="Website Disclaimer and Cookie Consent">

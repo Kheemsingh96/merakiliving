@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { API_CONFIG_URL } from '../../config/api';
-import { safeParseResponse } from '../../utils/apiHelper';
+import { safeParseResponse, isPrerendering } from '../../utils/apiHelper';
 import './CancellationPolicy.css';
 
 const DEFAULT_CANCELLATION_POLICY = `
@@ -86,6 +86,7 @@ const CancellationPolicy = () => {
   const [content, setContent] = useState(DEFAULT_CANCELLATION_POLICY);
 
   useEffect(() => {
+    if (isPrerendering()) return;
     let isMounted = true;
     fetch(`${API_CONFIG_URL}/api_settings.php`)
       .then(res => safeParseResponse(res))
@@ -113,7 +114,7 @@ const CancellationPolicy = () => {
         <title>Cancellation Policy | Meraki Living</title>
         <meta
           name="description"
-          content="Understand the booking cancellation, refund timelines, and rescheduling policy for Meraki Living Farmstay in Peora, Mukteshwar."
+          content="Understand our booking cancellation, refund timelines, and rescheduling policies for reservations at Meraki Living luxury homestay in Peora, Mukteshwar."
         />
         <link rel="canonical" href="https://www.merakiliving.in/cancellation-policy" />
         <meta name="robots" content="index, follow" />
@@ -121,14 +122,14 @@ const CancellationPolicy = () => {
         <meta property="og:title" content="Cancellation Policy | Meraki Living" />
         <meta
           property="og:description"
-          content="Understand the booking cancellation, refund timelines, and rescheduling policy for Meraki Living Farmstay in Peora, Mukteshwar."
+          content="Understand our booking cancellation, refund timelines, and rescheduling policies for reservations at Meraki Living luxury homestay in Peora, Mukteshwar."
         />
         <meta property="og:url" content="https://www.merakiliving.in/cancellation-policy" />
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:title" content="Cancellation Policy | Meraki Living" />
         <meta
           name="twitter:description"
-          content="Understand the booking cancellation, refund timelines, and rescheduling policy for Meraki Living Farmstay in Peora, Mukteshwar."
+          content="Understand our booking cancellation, refund timelines, and rescheduling policies for reservations at Meraki Living luxury homestay in Peora, Mukteshwar."
         />
         <script type="application/ld+json">{JSON.stringify(cancellationSchema)}</script>
       </Helmet>

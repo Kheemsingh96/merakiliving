@@ -2,66 +2,37 @@ import React, { useState, useEffect, useRef } from 'react';
 import './Preloader.css';
 import logo from '../../assets/images/logo.avif';
 import animationArt from '../../assets/images/animation.avif';
-import introWav from '../../assets/images/intro.wav';
 import OptimizedImage from '../Common/OptimizedImage';
 
 function Preloader({ onComplete }) {
   const [phase, setPhase] = useState('initial');
   const [targetStyles, setTargetStyles] = useState({});
   const splashLogoRef = useRef(null);
-  const audioRef = useRef(null);
-  const hasPlayedRef = useRef(false);
+  const onCompleteRef = useRef(onComplete);
 
   useEffect(() => {
-    try {
-      if (typeof Audio !== 'undefined') {
-        const audio = new Audio(introWav);
-        audio.volume = 0.75;
-        audioRef.current = audio;
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
+  useEffect(() => {
+    // 1. Reset scroll to top and set manual scroll restoration during opening animation
+    if (typeof window !== 'undefined') {
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'manual';
       }
-    } catch (e) {}
+      window.scrollTo(0, 0);
+    }
 
-    const forcePlayAudio = () => {
-      const audio = audioRef.current;
-      if (!audio || hasPlayedRef.current) return;
-      try {
-        const playPromise = audio.play();
-        if (playPromise !== undefined) {
-          playPromise.then(() => {
-            hasPlayedRef.current = true;
-            removeInteractionListeners();
-          }).catch(() => {});
-        }
-      } catch (e) {}
-    };
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
 
-    const interactionEvents = ['touchstart', 'click', 'keydown'];
-    
-    const handleUserInteraction = () => {
-      forcePlayAudio();
-    };
-
-    const addInteractionListeners = () => {
-      interactionEvents.forEach(event => {
-        window.addEventListener(event, handleUserInteraction, { once: true, passive: true });
-      });
-    };
-
-    const removeInteractionListeners = () => {
-      interactionEvents.forEach(event => {
-        window.removeEventListener(event, handleUserInteraction);
-      });
-    };
-
-    addInteractionListeners();
-
-    const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
     document.body.classList.add('preloader-running');
+    document.documentElement.classList.add('preloader-running');
 
     const revealTimer = setTimeout(() => {
       setPhase('revealed');
-      forcePlayAudio();
     }, 40);
 
     const travelTimer = setTimeout(() => {
@@ -106,30 +77,35 @@ function Preloader({ onComplete }) {
     }, 1350);
 
     const completeTimer = setTimeout(() => {
-      document.body.style.overflow = originalOverflow;
+      document.body.style.overflow = originalBodyOverflow;
+      document.documentElement.style.overflow = originalHtmlOverflow;
       document.body.classList.remove('preloader-running');
-      removeInteractionListeners();
-      if (onComplete) onComplete();
+      document.documentElement.classList.remove('preloader-running');
+
+      if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'auto';
+      }
+
+      if (onCompleteRef.current) {
+        onCompleteRef.current();
+      }
     }, 2100);
 
     return () => {
       clearTimeout(revealTimer);
       clearTimeout(travelTimer);
       clearTimeout(completeTimer);
-      removeInteractionListeners();
-      
-      document.body.style.overflow = originalOverflow;
+
+      document.body.style.overflow = originalBodyOverflow;
+      document.documentElement.style.overflow = originalHtmlOverflow;
       document.body.classList.remove('preloader-running');
-      
-      try {
-        const audio = audioRef.current;
-        if (audio && typeof audio.pause === 'function') {
-          audio.pause();
-          audio.currentTime = 0;
-        }
-      } catch (e) {}
+      document.documentElement.classList.remove('preloader-running');
+
+      if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'auto';
+      }
     };
-  }, [onComplete]);
+  }, []);
 
   return (
     <div
@@ -196,7 +172,7 @@ function Preloader({ onComplete }) {
         </div>
 
         <div className={`preloader-bottom-wrap ${phase}`}>
-          <h1 className="preloader-welcome-text">Welcome</h1>
+          <span className="preloader-welcome-text">Welcome</span>
           <div className="preloader-location-row">
             <svg
               className="preloader-pin-icon"

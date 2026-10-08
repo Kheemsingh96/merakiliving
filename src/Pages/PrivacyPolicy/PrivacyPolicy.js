@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { API_CONFIG_URL } from '../../config/api';
-import { safeParseResponse } from '../../utils/apiHelper';
+import { safeParseResponse, isPrerendering } from '../../utils/apiHelper';
 import './PrivacyPolicy.css';
 
 const DEFAULT_PRIVACY_POLICY = `
@@ -65,6 +65,7 @@ const PrivacyPolicy = () => {
   const [content, setContent] = useState(DEFAULT_PRIVACY_POLICY);
 
   useEffect(() => {
+    if (isPrerendering()) return;
     let isMounted = true;
     fetch(`${API_CONFIG_URL}/api_settings.php`)
       .then(res => safeParseResponse(res))
@@ -92,7 +93,7 @@ const PrivacyPolicy = () => {
         <title>Privacy Policy | Meraki Living</title>
         <meta
           name="description"
-          content="Read the Privacy Policy of Meraki Living to understand how guest information and personal data are collected, protected, and handled."
+          content="Read the Privacy Policy of Meraki Living to understand how your personal information is safely collected, protected, and handled during reservations and visits."
         />
         <link rel="canonical" href="https://www.merakiliving.in/privacy-policy" />
         <meta name="robots" content="index, follow" />
@@ -100,14 +101,14 @@ const PrivacyPolicy = () => {
         <meta property="og:title" content="Privacy Policy | Meraki Living" />
         <meta
           property="og:description"
-          content="Read the Privacy Policy of Meraki Living to understand how guest information and personal data are collected, protected, and handled."
+          content="Read the Privacy Policy of Meraki Living to understand how your personal information is safely collected, protected, and handled during reservations and visits."
         />
         <meta property="og:url" content="https://www.merakiliving.in/privacy-policy" />
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:title" content="Privacy Policy | Meraki Living" />
         <meta
           name="twitter:description"
-          content="Read the Privacy Policy of Meraki Living to understand how guest information and personal data are collected, protected, and handled."
+          content="Read the Privacy Policy of Meraki Living to understand how your personal information is safely collected, protected, and handled during reservations and visits."
         />
         <script type="application/ld+json">{JSON.stringify(privacySchema)}</script>
       </Helmet>

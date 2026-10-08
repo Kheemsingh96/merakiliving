@@ -1,9 +1,10 @@
 import { FaWhatsapp } from 'react-icons/fa';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import './GuestDetails.css';
 import { parseRoomTitle } from '../../components/Rooms/Rooms';
 import { useRooms } from '../../hooks/useRooms';
 import { API_CONFIG_URL } from '../../config/api';
+import { isPrerendering, safeParseResponse } from '../../utils/apiHelper';
 import OptimizedImage from '../../components/Common/OptimizedImage';
 
 import room1 from '../../assets/images/room-1.avif';
@@ -152,22 +153,49 @@ const EMPTY_GUEST_FORM = {
   agreePrivacy: false
 };
 
-const isPageReload = () => {
+const DEFAULT_TERMS_CONDITIONS = `
+<div style="font-family: inherit; color: #373737;">
+  <h3 style="margin-top: 0; margin-bottom: 8px; font-size: 16px; color: #1e293b;">1. Check-in & Check-out</h3>
+  <p style="margin-bottom: 14px;"><strong>Check-in:</strong> 12:00 PM onwards &middot; <strong>Check-out:</strong> 11:00 AM<br/>Early check-in or late check-out is subject to availability and may attract additional charges.</p>
+  <h3 style="margin-bottom: 8px; font-size: 16px; color: #1e293b;">2. Occupancy & Identification</h3>
+  <p style="margin-bottom: 14px;">Only the number of guests mentioned in the booking are permitted to stay. All adult guests must present a valid government-issued photo ID at check-in.</p>
+  <h3 style="margin-bottom: 8px; font-size: 16px; color: #1e293b;">3. Property Care & Quiet Hours</h3>
+  <p style="margin-bottom: 14px;">Guests are requested to respect the serene mountain environment and observe quiet hours between 10:00 PM and 7:00 AM.</p>
+  <h3 style="margin-bottom: 8px; font-size: 16px; color: #1e293b;">4. Smoking, Alcohol & Pets</h3>
+  <p style="margin-bottom: 14px;">Smoking is strictly prohibited inside the cottages. Alcohol may be consumed responsibly. Pets are welcome only with prior approval.</p>
+</div>
+`;
+
+const DEFAULT_CANCELLATION_POLICY = `
+<div style="font-family: inherit; color: #373737;">
+  <h3 style="margin-top: 0; margin-bottom: 8px; font-size: 16px; color: #1e293b;">Free Cancellation</h3>
+  <p style="margin-bottom: 14px;">Cancel up to 24 hours before your check-in date for a 100% full refund.</p>
+  <h3 style="margin-bottom: 8px; font-size: 16px; color: #1e293b;">Late Cancellation</h3>
+  <p style="margin-bottom: 14px;">Cancellations made within 24 hours of check-in may incur a one-night charge. No-shows will be charged the full booking amount.</p>
+  <h3 style="margin-bottom: 8px; font-size: 16px; color: #1e293b;">Refund Timeline</h3>
+  <p style="margin-bottom: 14px;">Approved refunds are processed back to the original payment method within 5-7 business days.</p>
+</div>
+`;
+
+const DEFAULT_PRIVACY_POLICY = `
+<div style="font-family: inherit; color: #373737;">
+  <h3 style="margin-top: 0; margin-bottom: 8px; font-size: 16px; color: #1e293b;">Information We Collect</h3>
+  <p style="margin-bottom: 14px;">When you make a reservation, we collect your Name, Email address, and Mobile number solely to process your booking and communicate essential stay details.</p>
+  <h3 style="margin-bottom: 8px; font-size: 16px; color: #1e293b;">Payment Security</h3>
+  <p style="margin-bottom: 14px;">Payment information is processed securely through Razorpay. We do not store your credit card or UPI credentials on our servers.</p>
+  <h3 style="margin-bottom: 8px; font-size: 16px; color: #1e293b;">Data Protection</h3>
+  <p style="margin-bottom: 14px;">We never sell, rent, or trade your personal information with third parties.</p>
+</div>
+`;
+
+const shouldRestoreGuestData = () => {
   try {
-    const navEntries = performance.getEntriesByType('navigation');
-    if (navEntries && navEntries.length > 0) {
-      return navEntries[0].type === 'reload';
-    }
-    return performance.navigation && performance.navigation.type === 1;
+    if (typeof window === 'undefined') return false;
+    return !!(sessionStorage.getItem('meraki_guestDetails') || localStorage.getItem('meraki_guestDetails'));
   } catch (e) {
     return false;
   }
 };
-
-let pendingReloadReset = isPageReload();
-
-const shouldRestoreGuestData = () =>
-  !pendingReloadReset && sessionStorage.getItem('meraki_restoreGuestDetails') === 'true';
 
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -184,18 +212,29 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
   const [confirmedBooking, setConfirmedBooking] = useState(null);
+  const [activePolicyModal, setActivePolicyModal] = useState(null);
+  const [policySettings, setPolicySettings] = useState({
+    terms: '',
+    cancellation: '',
+    privacy: ''
+  });
   const sentEmailBookingsRef = useRef(new Set());
+  const paymentCompletedRef = useRef(false);
+  const hasReachedPaymentRef = useRef(false);
+  const latestPendingRef = useRef(null);
 
   const [formData, setFormData] = useState(() => {
-    if (shouldRestoreGuestData()) {
-      try {
-        const savedDetails = sessionStorage.getItem('meraki_guestDetails');
+    try {
+      if (typeof window !== 'undefined') {
+        const savedDetails = sessionStorage.getItem('meraki_guestDetails') || localStorage.getItem('meraki_guestDetails');
         if (savedDetails) {
-          return { ...EMPTY_GUEST_FORM, ...JSON.parse(savedDetails) };
+          const parsed = JSON.parse(savedDetails);
+          if (parsed && typeof parsed === 'object') {
+            return { ...EMPTY_GUEST_FORM, ...parsed };
+          }
         }
-      } catch (e) {
       }
-    }
+    } catch (e) {}
     return { ...EMPTY_GUEST_FORM };
   });
 
@@ -215,6 +254,7 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
   const [availableCoupons, setAvailableCoupons] = useState([]);
 
   useEffect(() => {
+    if (isPrerendering()) return;
     fetch(`${API_CONFIG_URL}/api_coupons.php`)
       .then(res => res.json())
       .then(data => {
@@ -222,8 +262,52 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
           setAvailableCoupons(data.data.filter(c => c.status === 'Active'));
         }
       })
-      .catch(err => console.error("Error fetching coupons:", err));
+      .catch(err => {
+        if (process.env.NODE_ENV === 'development' && !isPrerendering()) {
+          console.warn("Could not fetch coupons:", err);
+        }
+      });
+
+    fetch(`${API_CONFIG_URL}/api_settings.php`)
+      .then(res => safeParseResponse(res))
+      .then(parsed => {
+        const data = parsed.data;
+        if (parsed.ok && data && data.status === 'success' && Array.isArray(data.data) && data.data.length > 0) {
+          setPolicySettings({
+            terms: data.data[0].terms_conditions || '',
+            cancellation: data.data[0].cancellation_policy || '',
+            privacy: data.data[0].privacy_policy || ''
+          });
+        }
+      })
+      .catch(() => {});
   }, []);
+
+  const openPolicyView = useCallback((type) => {
+    try {
+      const serialized = JSON.stringify(formData);
+      sessionStorage.setItem('meraki_guestDetails', serialized);
+      sessionStorage.setItem('meraki_restoreGuestDetails', 'true');
+      localStorage.setItem('meraki_guestDetails', serialized);
+    } catch (e) {}
+
+    if (type === 'terms') {
+      setActivePolicyModal({
+        title: 'Terms & Conditions',
+        content: policySettings.terms || DEFAULT_TERMS_CONDITIONS
+      });
+    } else if (type === 'cancellation') {
+      setActivePolicyModal({
+        title: 'Cancellation Policy',
+        content: policySettings.cancellation || DEFAULT_CANCELLATION_POLICY
+      });
+    } else if (type === 'privacy') {
+      setActivePolicyModal({
+        title: 'Privacy Policy',
+        content: policySettings.privacy || DEFAULT_PRIVACY_POLICY
+      });
+    }
+  }, [formData, policySettings]);
 
   const { rooms } = useRooms(roomsData);
   const room = rooms.find(r => r.id === selectedRoomId) || rooms[0];
@@ -241,17 +325,20 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
   const checkInDate = parseSafeDate(storedCheckIn, 0);
   const checkOutDate = parseSafeDate(storedCheckOut, 1);
 
-  let guests = { adults: 2, children: 0, rooms: 1 };
-  try {
-    if (storedGuests) {
-      const parsed = JSON.parse(storedGuests);
-      guests = {
-        adults: parsed.adults || 2,
-        children: parsed.children || 0,
-        rooms: parsed.rooms || 1
-      };
-    }
-  } catch (e) { }
+  const guests = useMemo(() => {
+    let g = { adults: 2, children: 0, rooms: 1 };
+    try {
+      if (storedGuests) {
+        const parsed = JSON.parse(storedGuests);
+        g = {
+          adults: parsed.adults || 2,
+          children: parsed.children || 0,
+          rooms: parsed.rooms || 1
+        };
+      }
+    } catch (e) { }
+    return g;
+  }, [storedGuests]);
 
   let nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
   if (isNaN(nights) || nights < 1) nights = 1;
@@ -288,14 +375,6 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
     sessionStorage.removeItem('meraki_bookingId');
     sessionStorage.removeItem('meraki_paymentAmount');
     sessionStorage.removeItem('meraki_paymentMethod');
-    if (pendingReloadReset) {
-      pendingReloadReset = false;
-      sessionStorage.removeItem('meraki_guestDetails');
-      sessionStorage.removeItem('meraki_restoreGuestDetails');
-      sessionStorage.removeItem('meraki_couponCode');
-      sessionStorage.removeItem('meraki_couponApplied');
-      sessionStorage.removeItem('meraki_couponDiscount');
-    }
   }, []);
 
   const formatDate = (date) => {
@@ -320,10 +399,19 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+    setFormData(prev => {
+      const updated = {
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      };
+      try {
+        const serialized = JSON.stringify(updated);
+        sessionStorage.setItem('meraki_guestDetails', serialized);
+        sessionStorage.setItem('meraki_restoreGuestDetails', 'true');
+        localStorage.setItem('meraki_guestDetails', serialized);
+      } catch (err) {}
+      return updated;
+    });
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -426,6 +514,108 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
     return newErrors;
   };
 
+  const savePendingBooking = useCallback((currentForm = formData) => {
+    const fName = (currentForm.firstName || '').replace(/[<>]/g, '').trim();
+    const lName = (currentForm.lastName || '').replace(/[<>]/g, '').trim();
+    const cleanPhone = (currentForm.phone || '').replace(/\D/g, '');
+    const cleanEmail = (currentForm.email || '').trim().toLowerCase();
+
+    // Requires at least Name and Phone to be considered a valid pending booking lead
+    const fullName = `${fName} ${lName}`.trim() || fName || lName || 'Guest';
+    const hasName = fName.length >= 1 || lName.length >= 1;
+    const hasPhone = cleanPhone.length >= 7;
+    if (!hasName || !hasPhone) return null;
+    const fullPhone = `${currentForm.countryCode || '+91'} ${cleanPhone}`;
+
+    let pendingRef = sessionStorage.getItem('meraki_pending_booking_ref');
+    if (!pendingRef) {
+      pendingRef = `MERI_P${Date.now()}`;
+      sessionStorage.setItem('meraki_pending_booking_ref', pendingRef);
+    }
+
+    const pendingBookingObj = {
+      id: pendingRef,
+      booking_reference: 'MERI',
+      formattedId: 'MERI',
+      guest_name: fullName,
+      guest_email: cleanEmail || 'N/A',
+      guest_phone: fullPhone,
+      guest_id: null,
+      room_id: selectedRoomId,
+      room_name: room.title,
+      image: room.image,
+      check_in: formatDateForDB(checkInDate),
+      check_out: formatDateForDB(checkOutDate),
+      check_in_display: formatDate(checkInDate),
+      check_out_display: formatDate(checkOutDate),
+      guest_count: guests.adults + guests.children,
+      guest_count_display: `${guests.adults + guests.children} Guests`,
+      amount: totalAmount,
+      room_price: totalAmount,
+      paid_amount: 0,
+      payment_status: 'Pending',
+      payment_method: 'Pending',
+      status: 'Pending',
+      booking_date: new Date().toISOString(),
+      created_at: new Date().toISOString()
+    };
+
+    latestPendingRef.current = pendingBookingObj;
+
+    // Save in session and local storage under meraki_pending_bookings
+    try {
+      ['meraki_pending_bookings'].forEach(key => {
+        [sessionStorage, localStorage].forEach(store => {
+          try {
+            const raw = store.getItem(key);
+            const list = raw ? JSON.parse(raw) : [];
+            const filtered = Array.isArray(list) ? list.filter(b => b.id !== pendingRef && b.booking_reference !== pendingRef) : [];
+            filtered.unshift(pendingBookingObj);
+            store.setItem(key, JSON.stringify(filtered));
+          } catch (e) {}
+        });
+      });
+    } catch (e) {}
+
+    try {
+      const formStr = JSON.stringify(currentForm);
+      sessionStorage.setItem('meraki_guestDetails', formStr);
+      sessionStorage.setItem('meraki_restoreGuestDetails', 'true');
+      localStorage.setItem('meraki_guestDetails', formStr);
+    } catch (e) {}
+
+    window.dispatchEvent(new Event('meraki_booking_updated'));
+
+    // Non-blocking POST to backend api_bookings.php
+    fetch(`${API_CONFIG_URL}/api_bookings.php`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...pendingBookingObj,
+        action: 'save_pending'
+      }),
+      keepalive: true
+    }).catch(() => {});
+
+    return pendingBookingObj;
+  }, [formData, selectedRoomId, room.title, room.image, checkInDate, checkOutDate, guests, totalAmount]);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (hasReachedPaymentRef.current && !paymentCompletedRef.current) {
+        savePendingBooking(formData);
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      if (hasReachedPaymentRef.current && !paymentCompletedRef.current) {
+        savePendingBooking(formData);
+      }
+    };
+  }, [formData, savePendingBooking]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isProcessing) return;
@@ -462,16 +652,27 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
         return;
       }
 
+      hasReachedPaymentRef.current = true;
+
       const options = {
-        key: "rzp_test_TTUNJUYE5Iw7qw",
+        key: "rzp_test_TTUNJUYE5Iw7qw", 
         amount: totalAmount * 100,
         currency: "INR",
         name: "Meraki Living Homestay",
         description: room.title,
         order_id: orderData.id,
+        modal: {
+          ondismiss: function () {
+            setIsProcessing(false);
+            if (!paymentCompletedRef.current) {
+              savePendingBooking(formData);
+            }
+          }
+        },
         handler: async function (response) {
           setIsVerifyingPayment(true);
           try {
+            paymentCompletedRef.current = true;
             const fName = (formData.firstName || '').replace(/[<>]/g, '').trim();
             const lName = (formData.lastName || '').replace(/[<>]/g, '').trim();
             const cleanEmail = (formData.email || '').trim().toLowerCase();
@@ -517,6 +718,28 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
                 finalDisplayId = rawStr;
               }
 
+              // Remove the pending booking since it is now Confirmed
+              const pRef = sessionStorage.getItem('meraki_pending_booking_ref');
+              [sessionStorage, localStorage].forEach(store => {
+                try {
+                  const raw = store.getItem('meraki_pending_bookings');
+                  if (raw) {
+                    const list = JSON.parse(raw);
+                    const filtered = Array.isArray(list) ? list.filter(b => {
+                      if (pRef && (b.id === pRef || b.booking_reference === pRef)) return false;
+                      const bPhone = String(b.guest_phone || '').replace(/\D/g, '');
+                      if (cleanPhone && bPhone && bPhone.slice(-10) === cleanPhone.slice(-10)) return false;
+                      return true;
+                    }) : [];
+                    store.setItem('meraki_pending_bookings', JSON.stringify(filtered));
+                  }
+                } catch (e) {}
+              });
+              sessionStorage.removeItem('meraki_pending_booking_ref');
+              sessionStorage.removeItem('meraki_guestDetails');
+              sessionStorage.removeItem('meraki_restoreGuestDetails');
+              localStorage.removeItem('meraki_guestDetails');
+
               sessionStorage.setItem('meraki_bookingId', finalDisplayId);
               sessionStorage.setItem('meraki_paymentAmount', totalAmount);
               sessionStorage.setItem('meraki_paymentMethod', 'Online');
@@ -544,6 +767,10 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
 
               sessionStorage.setItem('meraki_latest_booking', JSON.stringify(latestBookingObj));
               sessionStorage.setItem('meraki_show_floating_booking', 'true');
+              try {
+                localStorage.setItem('meraki_confirmed_booking', JSON.stringify(latestBookingObj));
+                localStorage.setItem('meraki_booking_updated_ts', Date.now().toString());
+              } catch (e) {}
               window.dispatchEvent(new Event('meraki_booking_updated'));
 
               // Display confirmation message immediately without any delay
@@ -604,6 +831,9 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
       paymentObject.on('payment.failed', function (response){
         alert("Payment Failed: " + response.error.description);
         setIsProcessing(false);
+        if (!paymentCompletedRef.current) {
+          savePendingBooking(formData);
+        }
       });
 
       paymentObject.open();
@@ -615,6 +845,9 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
   };
 
   const handleBackToBooking = () => {
+    if (hasReachedPaymentRef.current && !paymentCompletedRef.current) {
+      savePendingBooking(formData);
+    }
     if (goBack) {
       goBack('booking');
     } else if (setCurrentPage) {
@@ -987,7 +1220,7 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
                 {formData.agreeTerms && <TickIcon />}
               </span>
               <span className="gd-checkbox-text">
-                I agree to the <button type="button" className="gd-link-btn" onClick={() => setCurrentPage && setCurrentPage('terms-conditions')}>Terms & Conditions</button> and <button type="button" className="gd-link-btn" onClick={() => setCurrentPage && setCurrentPage('cancellation-policy')}>Cancellation Policy</button>
+                I agree to the <button type="button" className="gd-link-btn" onClick={() => openPolicyView('terms')}>Terms & Conditions</button> and <button type="button" className="gd-link-btn" onClick={() => openPolicyView('cancellation')}>Cancellation Policy</button>
               </span>
             </label>
             {errors.agreeTerms && <span className="gd-error-text">{errors.agreeTerms}</span>}
@@ -1006,7 +1239,7 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
                 {formData.agreePrivacy && <TickIcon />}
               </span>
               <span className="gd-checkbox-text">
-                I agree to the <button type="button" className="gd-link-btn" onClick={() => setCurrentPage && setCurrentPage('privacy-policy')}>Privacy Policy</button> and consent to receiving booking-related communications
+                I agree to the <button type="button" className="gd-link-btn" onClick={() => openPolicyView('privacy')}>Privacy Policy</button> and consent to receiving booking-related communications
               </span>
             </label>
             {errors.agreePrivacy && <span className="gd-error-text">{errors.agreePrivacy}</span>}
@@ -1222,6 +1455,95 @@ const GuestDetails = ({ setCurrentPage, goBack, selectedRoomId = 1 }) => {
           {renderHelpCard()}
           {renderSecurityNote()}
         </div>
+
+        {activePolicyModal && (
+          <div 
+            className="gd-policy-modal-overlay"
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(15, 23, 42, 0.65)',
+              backdropFilter: 'blur(3px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 99999,
+              padding: '20px'
+            }}
+            onClick={() => setActivePolicyModal(null)}
+          >
+            <div 
+              style={{
+                backgroundColor: '#ffffff',
+                borderRadius: '14px',
+                maxWidth: '640px',
+                width: '100%',
+                maxHeight: '85vh',
+                display: 'flex',
+                flexDirection: 'column',
+                boxShadow: '0 20px 45px rgba(0, 0, 0, 0.25)',
+                overflow: 'hidden'
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '16px 22px',
+                borderBottom: '1px solid #f1f5f9'
+              }}>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: '#1e293b' }}>
+                  {activePolicyModal.title}
+                </h3>
+                <button 
+                  type="button" 
+                  onClick={() => setActivePolicyModal(null)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '24px',
+                    cursor: 'pointer',
+                    color: '#64748b',
+                    lineHeight: 1,
+                    padding: '4px 8px'
+                  }}
+                  title="Close"
+                >
+                  &times;
+                </button>
+              </div>
+              <div 
+                style={{
+                  padding: '20px 22px',
+                  overflowY: 'auto',
+                  fontSize: '14px',
+                  lineHeight: '1.65',
+                  color: '#475569'
+                }}
+                dangerouslySetInnerHTML={{ __html: (activePolicyModal.content || '').replace(/className=/g, 'class=') }}
+              />
+              <div style={{
+                padding: '14px 22px',
+                borderTop: '1px solid #f1f5f9',
+                display: 'flex',
+                justifyContent: 'flex-end'
+              }}>
+                <button
+                  type="button"
+                  className="gd-btn-primary"
+                  style={{ padding: '8px 22px', fontSize: '13px' }}
+                  onClick={() => setActivePolicyModal(null)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     </section>

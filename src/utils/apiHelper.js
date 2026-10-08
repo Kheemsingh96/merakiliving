@@ -87,13 +87,33 @@ export async function safeParseResponse(response) {
 }
 
 /**
+ * Detects whether the current execution is within ReactSnap or prerendering.
+ * ReactSnap identifies itself via the userAgent (contains 'ReactSnap') or window.__REACT_SNAP__.
+ *
+ * @returns {boolean}
+ */
+export function isPrerendering() {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
+  return /ReactSnap/i.test(navigator.userAgent) || Boolean(window.__REACT_SNAP__);
+}
+
+/**
  * Performs a fetch request and safely parses the JSON response.
+ * Automatically bypasses non-critical network requests during prerendering.
  *
  * @param {string} url - Request URL
  * @param {RequestInit} [options] - Fetch options
  * @returns {Promise<{ ok: boolean, status: number, data: any, error: string|null }>}
  */
 export async function safeFetchJson(url, options = {}) {
+  if (isPrerendering()) {
+    return {
+      ok: false,
+      status: 0,
+      data: null,
+      error: 'Prerendering mode active: API calls bypassed for static generation.'
+    };
+  }
   try {
     const response = await fetch(url, options);
     return await safeParseResponse(response);

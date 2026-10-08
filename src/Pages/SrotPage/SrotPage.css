@@ -409,6 +409,7 @@
   border-color: var(--color-primary, #87008B);
 }
 
+.srot-feature-text h3,
 .srot-feature-text h4 {
   font-size: 15px;
   color: #242424;

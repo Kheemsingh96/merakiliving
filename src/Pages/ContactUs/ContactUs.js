@@ -164,26 +164,26 @@ function ContactUs({ setCurrentPage }) {
   return (
     <div className="contact-page">
       <Helmet>
-        <title>Contact Us | Meraki Living | Homestay in Mukteshwar</title>
+        <title>Contact Us | Meraki Living Peora Mukteshwar</title>
         <meta
           name="description"
-          content="Planning a mountain escape? Contact Meraki Living homestay in Peora, Mukteshwar, Uttarakhand. Call +91 94561 03445 or email info@merakiliving.in for room bookings and directions."
+          content="Get in touch with Meraki Living in Peora, Mukteshwar for homestay reservations, location details, and travel assistance. Call, email, or chat on WhatsApp."
         />
         <link rel="canonical" href="https://www.merakiliving.in/contact-us" />
         <meta name="robots" content="index, follow" />
         <meta property="og:type" content="website" />
-        <meta property="og:title" content="Contact Us | Meraki Living | Homestay in Mukteshwar" />
+        <meta property="og:title" content="Contact Us | Meraki Living Peora Mukteshwar" />
         <meta
           property="og:description"
-          content="Planning a mountain escape? Contact Meraki Living homestay in Peora, Mukteshwar, Uttarakhand. Call +91 94561 03445 or email info@merakiliving.in for room bookings and directions."
+          content="Get in touch with Meraki Living in Peora, Mukteshwar for homestay reservations, location details, and travel assistance. Call, email, or chat on WhatsApp."
         />
         <meta property="og:url" content="https://www.merakiliving.in/contact-us" />
         <meta property="og:image" content={heroBgImg} />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Contact Us | Meraki Living | Homestay in Mukteshwar" />
+        <meta name="twitter:title" content="Contact Us | Meraki Living Peora Mukteshwar" />
         <meta
           name="twitter:description"
-          content="Planning a mountain escape? Contact Meraki Living homestay in Peora, Mukteshwar, Uttarakhand."
+          content="Get in touch with Meraki Living in Peora, Mukteshwar for homestay reservations, location details, and travel assistance."
         />
         <meta name="twitter:image" content={heroBgImg} />
         <script type="application/ld+json">{JSON.stringify(contactSchema)}</script>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { API_CONFIG_URL } from '../../config/api';
-import { safeParseResponse } from '../../utils/apiHelper';
+import { safeParseResponse, isPrerendering } from '../../utils/apiHelper';
 import './TermsConditions.css';
 
 const DEFAULT_TERMS_CONDITIONS = `
@@ -60,6 +60,7 @@ const TermsConditions = () => {
   const [content, setContent] = useState(DEFAULT_TERMS_CONDITIONS);
 
   useEffect(() => {
+    if (isPrerendering()) return;
     let isMounted = true;
     fetch(`${API_CONFIG_URL}/api_settings.php`)
       .then(res => safeParseResponse(res))
@@ -87,7 +88,7 @@ const TermsConditions = () => {
         <title>Terms & Conditions | Meraki Living</title>
         <meta
           name="description"
-          content="Review the terms and conditions for booking and staying at Meraki Living Farmstay in Peora, Mukteshwar."
+          content="Review the terms and conditions for bookings, check-in, occupancy, and guest stays at Meraki Living luxury homestay and retreat in Peora, Mukteshwar."
         />
         <link rel="canonical" href="https://www.merakiliving.in/terms-conditions" />
         <meta name="robots" content="index, follow" />
@@ -95,14 +96,14 @@ const TermsConditions = () => {
         <meta property="og:title" content="Terms & Conditions | Meraki Living" />
         <meta
           property="og:description"
-          content="Review the terms and conditions for booking and staying at Meraki Living Farmstay in Peora, Mukteshwar."
+          content="Review the terms and conditions for bookings, check-in, occupancy, and guest stays at Meraki Living luxury homestay and retreat in Peora, Mukteshwar."
         />
         <meta property="og:url" content="https://www.merakiliving.in/terms-conditions" />
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:title" content="Terms & Conditions | Meraki Living" />
         <meta
           name="twitter:description"
-          content="Review the terms and conditions for booking and staying at Meraki Living Farmstay in Peora, Mukteshwar."
+          content="Review the terms and conditions for bookings, check-in, occupancy, and guest stays at Meraki Living luxury homestay and retreat in Peora, Mukteshwar."
         />
         <script type="application/ld+json">{JSON.stringify(termsSchema)}</script>
       </Helmet>

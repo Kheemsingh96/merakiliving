@@ -15,11 +15,19 @@ function Hero({ setCurrentPage }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [prevIndex, setPrevIndex] = useState(null);
   const [isLoaded, setIsLoaded] = useState(() => typeof navigator !== 'undefined' && /ReactSnap/i.test(navigator.userAgent));
-  const [mountedSlides] = useState([0, 1, 2]);
+  const [mountedSlides, setMountedSlides] = useState(() => {
+    if (typeof navigator !== 'undefined' && /ReactSnap/i.test(navigator.userAgent)) return [0, 1, 2];
+    return [0];
+  });
   const intervalRef = useRef(null);
 
   useEffect(() => {
     const loadTimer = setTimeout(() => setIsLoaded(true), 50);
+
+    // Defer loading background slides 1 and 2 until after the opening animation finishes
+    const deferTimer = setTimeout(() => {
+      setMountedSlides([0, 1, 2]);
+    }, 2200);
 
     intervalRef.current = setInterval(() => {
       setActiveIndex((current) => {
@@ -30,6 +38,7 @@ function Hero({ setCurrentPage }) {
 
     return () => {
       clearTimeout(loadTimer);
+      clearTimeout(deferTimer);
       clearInterval(intervalRef.current);
     };
   }, []);
@@ -50,7 +59,7 @@ function Hero({ setCurrentPage }) {
             <OptimizedImage
               key={index}
               src={slide}
-              alt={`Hero Background ${index + 1}`}
+              alt={`Meraki Living Homestay and Mountain Retreat in Peora - View ${index + 1}`}
               className={slideClass}
               width="1920"
               height="1080"

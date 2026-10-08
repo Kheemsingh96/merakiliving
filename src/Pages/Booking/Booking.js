@@ -3,7 +3,7 @@ import { useRooms } from '../../hooks/useRooms';
 import { parseRoomTitle } from '../../components/Rooms/Rooms';
 import OptimizedImage from '../../components/Common/OptimizedImage';
 import { API_CONFIG_URL } from '../../config/api';
-import { safeParseResponse } from '../../utils/apiHelper';
+import { safeParseResponse, isPrerendering } from '../../utils/apiHelper';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   Calendar01Icon,
@@ -133,7 +133,26 @@ const Booking = ({ setCurrentPage }) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (galleryRoomModal) {
+      document.body.style.overflow = 'hidden';
+      const handleKeyDown = (e) => {
+        if (e.key === 'Escape') setGalleryRoomModal(null);
+        if (e.key === 'ArrowRight') setGalleryImageIndex((prev) => (prev + 1) % galleryRoomModal.gallery.length);
+        if (e.key === 'ArrowLeft') setGalleryImageIndex((prev) => (prev === 0 ? galleryRoomModal.gallery.length - 1 : prev - 1));
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = '';
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    } else {
+      document.body.style.overflow = '';
+    }
+  }, [galleryRoomModal]);
+
   const fetchBookings = useCallback(async () => {
+    if (isPrerendering()) return;
     try {
       const res = await fetch(`${API_CONFIG_URL}/api_bookings.php`);
       const parsed = await safeParseResponse(res);
@@ -141,13 +160,14 @@ const Booking = ({ setCurrentPage }) => {
         setBackendBookings(parsed.data.data);
       }
     } catch (err) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error("Error fetching bookings:", err);
+      if (process.env.NODE_ENV === 'development' && !isPrerendering()) {
+        console.warn("Could not fetch bookings from backend, running with offline availability.");
       }
     }
   }, []);
 
   useEffect(() => {
+    if (isPrerendering()) return;
     fetchBookings();
 
     const handleBookingUpdate = () => {
@@ -808,9 +828,18 @@ const Booking = ({ setCurrentPage }) => {
 
       {galleryRoomModal && (
         <div className="rd-gallery-modal" onClick={() => setGalleryRoomModal(null)}>
-          <button className="rd-modal-close" onClick={() => setGalleryRoomModal(null)}>&times;</button>
+          <div className="rd-modal-header" onClick={(e) => e.stopPropagation()}>
+            <span className="rd-modal-counter">
+              {galleryImageIndex + 1} / {galleryRoomModal.gallery.length}
+            </span>
+            <button className="rd-modal-close" onClick={() => setGalleryRoomModal(null)} title="Close Gallery" aria-label="Close Gallery">
+              &times;
+            </button>
+          </div>
           <button
             className="rd-modal-nav rd-modal-prev"
+            title="Previous Image"
+            aria-label="Previous Image"
             onClick={(e) => {
               e.stopPropagation();
               setGalleryImageIndex((prev) => (prev === 0 ? galleryRoomModal.gallery.length - 1 : prev - 1));
@@ -820,18 +849,21 @@ const Booking = ({ setCurrentPage }) => {
           </button>
           <div className="rd-modal-content" onClick={(e) => e.stopPropagation()}>
             <OptimizedImage
+              key={galleryImageIndex}
               className="rd-modal-main-image"
               src={galleryRoomModal.gallery[galleryImageIndex]}
-              alt={`Gallery ${galleryImageIndex + 1}`}
-              width="800"
-              height="533"
-              loading="lazy"
+              alt={`${galleryRoomModal.title || 'Room'} Image ${galleryImageIndex + 1}`}
+              width="1200"
+              height="800"
+              loading="eager"
               decoding="async"
               noWrapper={true}
             />
           </div>
           <button
             className="rd-modal-nav rd-modal-next"
+            title="Next Image"
+            aria-label="Next Image"
             onClick={(e) => {
               e.stopPropagation();
               setGalleryImageIndex((prev) => (prev + 1) % galleryRoomModal.gallery.length);

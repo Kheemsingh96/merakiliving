@@ -306,6 +306,24 @@ function RoomDetails({ setCurrentPage, selectedRoomId }) {
     setIsGalleryOpen(false);
   }, [selectedRoomId]);
 
+  useEffect(() => {
+    if (isGalleryOpen) {
+      document.body.style.overflow = 'hidden';
+      const handleKeyDown = (e) => {
+        if (e.key === 'Escape') setIsGalleryOpen(false);
+        if (e.key === 'ArrowRight') setCurrentImageIndex((prev) => (prev + 1) % room.gallery.length);
+        if (e.key === 'ArrowLeft') setCurrentImageIndex((prev) => (prev === 0 ? room.gallery.length - 1 : prev - 1));
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = '';
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    } else {
+      document.body.style.overflow = '';
+    }
+  }, [isGalleryOpen, room.gallery.length]);
+
   const renderStars = (rating) => {
     const fullStars = Math.floor(rating);
     const hasHalf = rating % 1 >= 0.5;
@@ -360,10 +378,10 @@ function RoomDetails({ setCurrentPage, selectedRoomId }) {
                 </div>
                 <div className="rd-gallery-side">
                   <div className="rd-gallery-side-top" onClick={() => openGallery(1)}>
-                    <OptimizedImage src={room.gallery[1] || room.image} alt={`${room.title} 2`} width="400" height="260" loading="eager" fetchPriority="low" decoding="async" noWrapper={true} />
+                    <OptimizedImage src={room.gallery[1] || room.image} alt={`${room.title} Interior & Mountain View`} width="400" height="260" loading="eager" fetchPriority="low" decoding="async" noWrapper={true} />
                   </div>
                   <div className="rd-gallery-side-bottom" onClick={() => openGallery(2)}>
-                    <OptimizedImage src={room.gallery[2] || room.image} alt={`${room.title} 3`} width="400" height="260" loading="eager" fetchPriority="low" decoding="async" noWrapper={true} />
+                    <OptimizedImage src={room.gallery[2] || room.image} alt={`${room.title} Amenities & Balcony View`} width="400" height="260" loading="eager" fetchPriority="low" decoding="async" noWrapper={true} />
                     <div className="rd-gallery-overlay" onClick={(e) => { e.stopPropagation(); openGallery(0); }}>
                       <span>See All Photos</span>
                       <ArrowRightIcon size={14} />
@@ -704,23 +722,31 @@ function RoomDetails({ setCurrentPage, selectedRoomId }) {
 
       {isGalleryOpen && (
         <div className="rd-gallery-modal" onClick={closeGallery}>
-          <button className="rd-modal-close" onClick={closeGallery}>&times;</button>
-          <button className="rd-modal-nav rd-modal-prev" onClick={prevImage}>
+          <div className="rd-modal-header" onClick={(e) => e.stopPropagation()}>
+            <span className="rd-modal-counter">
+              {currentImageIndex + 1} / {room.gallery.length}
+            </span>
+            <button className="rd-modal-close" onClick={closeGallery} title="Close Gallery" aria-label="Close Gallery">
+              &times;
+            </button>
+          </div>
+          <button className="rd-modal-nav rd-modal-prev" onClick={prevImage} title="Previous Image" aria-label="Previous Image">
             <ArrowLeftIcon size={24} />
           </button>
           <div className="rd-modal-content" onClick={(e) => e.stopPropagation()}>
             <OptimizedImage
+              key={currentImageIndex}
               className="rd-modal-main-image" 
               src={room.gallery[currentImageIndex]} 
-              alt={`Gallery ${currentImageIndex + 1}`} 
-              width="800"
-              height="533"
-              loading="lazy"
+              alt={`${room.title} Image ${currentImageIndex + 1}`} 
+              width="1200"
+              height="800"
+              loading="eager"
               decoding="async"
               noWrapper={true}
             />
           </div>
-          <button className="rd-modal-nav rd-modal-next" onClick={nextImage}>
+          <button className="rd-modal-nav rd-modal-next" onClick={nextImage} title="Next Image" aria-label="Next Image">
             <ArrowRightIcon size={24} />
           </button>
           <div className="rd-modal-thumbs" onClick={(e) => e.stopPropagation()}>

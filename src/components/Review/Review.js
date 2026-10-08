@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { API_CONFIG_URL } from '../../config/api';
-import { safeParseResponse } from '../../utils/apiHelper';
+import { safeParseResponse, isPrerendering } from '../../utils/apiHelper';
 import './Review.css';
 
 const DEFAULT_REVIEW_DATA = [
@@ -57,6 +57,7 @@ const Review = () => {
   const [reviews, setReviews] = useState(DEFAULT_REVIEW_DATA);
 
   useEffect(() => {
+    if (isPrerendering()) return;
     let isMounted = true;
     fetch(`${API_CONFIG_URL}/api_reviews.php`)
       .then(res => safeParseResponse(res))
@@ -80,8 +81,8 @@ const Review = () => {
         }
       })
       .catch(e => {
-        if (process.env.NODE_ENV === 'development') {
-          console.error("Error fetching reviews:", e);
+        if (process.env.NODE_ENV === 'development' && !isPrerendering()) {
+          console.warn("Could not load backend reviews, maintaining default reviews.");
         }
       });
 

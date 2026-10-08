@@ -148,7 +148,7 @@ function Navbar({ setCurrentPage, currentPage }) {
         >
           <OptimizedImage
             src={logo}
-            alt="Meraki Living"
+            alt="Meraki Living Logo"
             className="logo-img"
             width="150"
             height="50"
@@ -221,7 +221,7 @@ function Navbar({ setCurrentPage, currentPage }) {
         <div className="mobile-menu-header">
           <OptimizedImage
             src={logo}
-            alt="Meraki Living"
+            alt="Meraki Living Logo"
             className="mobile-logo-img"
             width="120"
             height="40"

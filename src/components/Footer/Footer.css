@@ -258,6 +258,9 @@
   .footer-bottom-content {
     padding: 24px 40px;
   }
+  .footer-bottom {
+    padding-bottom: calc(59px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 @media (max-width: 768px) {
@@ -348,6 +351,9 @@
     gap: 10px;
     align-items: flex-start;
     text-align: left;
+  }
+  .footer-bottom {
+    padding-bottom: calc(57px + env(safe-area-inset-bottom, 0px));
   }
   .footer-copyright {
     text-align: left;

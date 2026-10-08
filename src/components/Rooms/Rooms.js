@@ -139,7 +139,7 @@ function Rooms({ setCurrentPage }) {
                 <div className="room-image-box">
                   <OptimizedImage
                     src={room.image}
-                    alt={titleData.mainName || room.title}
+                    alt={`${titleData.mainName || room.title} at Meraki Living Homestay Peora`}
                     width="640"
                     height="480"
                     loading="lazy"

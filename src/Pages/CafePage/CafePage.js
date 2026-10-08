@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { API_CONFIG_URL } from '../../config/api';
-import { safeParseResponse, formatImageUrl } from '../../utils/apiHelper';
+import { safeParseResponse, formatImageUrl, isPrerendering } from '../../utils/apiHelper';
 import { 
   FiArrowRight, 
   FiX, 
@@ -303,6 +303,7 @@ const CafePage = () => {
   const [reviews, setReviews] = useState(DEFAULT_REVIEW_DATA);
 
   useEffect(() => {
+    if (isPrerendering()) return;
     let isMounted = true;
     fetch(`${API_CONFIG_URL}/api_reviews.php`)
       .then(res => safeParseResponse(res))
@@ -327,8 +328,8 @@ const CafePage = () => {
         }
       })
       .catch(e => {
-        if (process.env.NODE_ENV === 'development') {
-          console.error("Error fetching cafe reviews:", e);
+        if (process.env.NODE_ENV === 'development' && !isPrerendering()) {
+          console.warn("Could not load backend cafe reviews, maintaining default reviews.");
         }
       });
 
@@ -372,6 +373,7 @@ const CafePage = () => {
   }, []);
 
   const fetchCafeGallery = useCallback((ts) => {
+    if (isPrerendering()) return;
     const currentTs = ts || Date.now();
     fetch(`${API_CONFIG_URL}/api_gallery.php?t=${Date.now()}`)
       .then(res => safeParseResponse(res))
@@ -392,13 +394,14 @@ const CafePage = () => {
            }
         }
       }).catch(e => {
-        if (process.env.NODE_ENV === 'development') {
-          console.error("Error fetching cafe gallery:", e);
+        if (process.env.NODE_ENV === 'development' && !isPrerendering()) {
+          console.warn("Could not load backend cafe gallery, maintaining default gallery.");
         }
       });
   }, [formatImageUrlWithBuster]);
 
   useEffect(() => {
+    if (isPrerendering()) return;
     const handleUpdate = (isEvent = false) => {
       let ts;
       try {
@@ -509,19 +512,19 @@ const CafePage = () => {
   return (
     <section className="mcf-section">
       <Helmet>
-        <title>Cafe Meraki | Meraki Living</title>
-        <meta name="description" content="Savor farm-to-table Himalayan cuisine, artisanal coffees, and organic teas at Meraki Living Cafe in Peora, Mukteshwar surrounded by panoramic valley views." />
+        <title>Cafe Meraki | Mountain Dining & Artisanal Coffee in Peora Mukteshwar</title>
+        <meta name="description" content="Savor farm-to-table Himalayan dining, authentic Kumaoni dishes, artisanal coffee, and herbal teas at Cafe Meraki in Peora, Mukteshwar with panoramic valley views." />
         <link rel="canonical" href="https://www.merakiliving.in/cafe" />
         <meta name="robots" content="index, follow" />
         <meta property="og:site_name" content="Meraki Living" />
-        <meta property="og:title" content="Cafe Meraki | Meraki Living" />
-        <meta property="og:description" content="Savor farm-to-table Himalayan cuisine, artisanal coffees, and organic teas at Meraki Living Cafe in Peora, Mukteshwar surrounded by panoramic valley views." />
+        <meta property="og:title" content="Cafe Meraki | Mountain Dining & Artisanal Coffee in Peora Mukteshwar" />
+        <meta property="og:description" content="Savor farm-to-table Himalayan dining, authentic Kumaoni dishes, artisanal coffee, and herbal teas at Cafe Meraki in Peora, Mukteshwar with panoramic valley views." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://www.merakiliving.in/cafe" />
         <meta property="og:image" content={cafeHeroImg1} />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Cafe Meraki | Meraki Living" />
-        <meta name="twitter:description" content="Savor farm-to-table Himalayan cuisine, artisanal coffees, and organic teas at Meraki Living Cafe in Peora, Mukteshwar surrounded by panoramic valley views." />
+        <meta name="twitter:title" content="Café Meraki | Mountain Dining & Artisanal Coffee in Peora Mukteshwar" />
+        <meta name="twitter:description" content="Savor farm-to-table Himalayan dining, authentic Kumaoni dishes, artisanal coffee, and herbal teas at Café Meraki in Peora, Mukteshwar with panoramic valley views." />
         <meta name="twitter:image" content={cafeHeroImg1} />
         <script type="application/ld+json">{JSON.stringify(CAFE_SCHEMA)}</script>
       </Helmet>
@@ -652,7 +655,7 @@ const CafePage = () => {
                   <div className="mcf-fc-content">
                     <div className="mcf-fc-title-row">
                       {item.isVeg ? <VegIcon /> : <NonVegIcon />}
-                      <h4 className="mcf-fc-title">{item.name}</h4>
+                      <h3 className="mcf-fc-title">{item.name}</h3>
                     </div>
                     <p className="mcf-fc-desc">{item.desc}</p>
                     <div className="mcf-fc-footer">
@@ -695,7 +698,7 @@ const CafePage = () => {
                     <HugeiconsIcon icon={PieIcon} size={22} color="#870097" strokeWidth={1.5} />
                   </div>
                   <div className="mcf-bf-text">
-                    <h5>Farm Fresh Ingredients</h5>
+                    <h3>Farm Fresh Ingredients</h3>
                     <p>Freshly sourced from local farms</p>
                   </div>
                 </div>
@@ -704,7 +707,7 @@ const CafePage = () => {
                     <HugeiconsIcon icon={HandPlatterIcon} size={22} color="#870097" strokeWidth={1.5} />
                   </div>
                   <div className="mcf-bf-text">
-                    <h5>Chef's Special Recipes</h5>
+                    <h3>Chef's Special Recipes</h3>
                     <p>Crafted with authentic flavors</p>
                   </div>
                 </div>
@@ -713,7 +716,7 @@ const CafePage = () => {
                     <HugeiconsIcon icon={TeaIcon} size={22} color="#870097" strokeWidth={1.5} />
                   </div>
                   <div className="mcf-bf-text">
-                    <h5>Herbal Mountain Tea</h5>
+                    <h3>Herbal Mountain Tea</h3>
                     <p>Refreshing Himalayan herbal blends</p>
                   </div>
                 </div>
@@ -762,7 +765,7 @@ const CafePage = () => {
       <div id="gallery" className="mcf-gallery">
         <div className="mcf-gallery-container mcf-animate">
           <div className="mcf-gallery-header">
-            <h2 className="mcf-gallery-title">Come for the View, Stay for the Moments</h2>
+            <h2 className="mcf-gallery-title">Moments at Café Meraki</h2>
           </div>
           <div className="mcf-gallery-grid mcf-stagger-children">
             {galleryImagesState.map((img, idx) => (
@@ -771,7 +774,7 @@ const CafePage = () => {
                 key={idx}
                 onClick={() => setSelectedImage(img)}
               >
-                <OptimizedImage src={img} alt={`Gallery ${idx + 1}`} loading="lazy" decoding="async" width="400" height="300" noWrapper={true} />
+                <OptimizedImage src={img} alt={`Café Meraki Ambiance & Dining Experience - Photo ${idx + 1}`} loading="lazy" decoding="async" width="400" height="300" noWrapper={true} />
                 <div className="mcf-gallery-overlay">
                   <FiImage size={24} color="#ffffff" />
                 </div>
@@ -871,7 +874,7 @@ const CafePage = () => {
           <button className="mcf-lightbox-close" onClick={() => setSelectedImage(null)}>
             <FiX size={28} />
           </button>
-          <OptimizedImage src={selectedImage} alt="Gallery preview" loading="lazy" decoding="async" objectFit="contain" noWrapper={true} />
+          <OptimizedImage src={selectedImage} alt="Café Meraki dining area and mountain view preview" loading="lazy" decoding="async" objectFit="contain" noWrapper={true} />
         </div>
       )}
 

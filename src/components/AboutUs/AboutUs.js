@@ -93,19 +93,19 @@ const AboutPage = () => {
   return (
     <div className="mcf-ab-page-wrapper">
       <Helmet>
-        <title>About Us | Meraki Living</title>
-        <meta name="description" content="Learn about Meraki Living in Peora, Mukteshwar—our story, vision, Himalayan hospitality, organic farm living, and sustainable mountain sanctuary." />
+        <title>About Us | Meraki Living — Story & Himalayan Hospitality</title>
+        <meta name="description" content="Discover the story behind Meraki Living in Peora, Mukteshwar. Learn about our philosophy of sustainable mountain living, organic farming, and Pahadi hospitality." />
         <link rel="canonical" href="https://www.merakiliving.in/about-us" />
         <meta name="robots" content="index, follow" />
         <meta property="og:site_name" content="Meraki Living" />
-        <meta property="og:title" content="About Us | Meraki Living" />
-        <meta property="og:description" content="Learn about Meraki Living in Peora, Mukteshwar—our story, vision, Himalayan hospitality, organic farm living, and sustainable mountain sanctuary." />
+        <meta property="og:title" content="About Us | Meraki Living — Story & Himalayan Hospitality" />
+        <meta property="og:description" content="Discover the story behind Meraki Living in Peora, Mukteshwar. Learn about our philosophy of sustainable mountain living, organic farming, and Pahadi hospitality." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://www.merakiliving.in/about-us" />
         <meta property="og:image" content={heroTopImg} />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="About Us | Meraki Living" />
-        <meta name="twitter:description" content="Learn about Meraki Living in Peora, Mukteshwar—our story, vision, Himalayan hospitality, organic farm living, and sustainable mountain sanctuary." />
+        <meta name="twitter:title" content="About Us | Meraki Living — Story & Himalayan Hospitality" />
+        <meta name="twitter:description" content="Discover the story behind Meraki Living in Peora, Mukteshwar. Learn about our philosophy of sustainable mountain living, organic farming, and Pahadi hospitality." />
         <meta name="twitter:image" content={heroTopImg} />
         <script type="application/ld+json">{JSON.stringify(ABOUT_PAGE_SCHEMA)}</script>
       </Helmet>
@@ -113,9 +113,9 @@ const AboutPage = () => {
       <section className="mcf-ab-story">
         <div className="mcf-ab-container mcf-animate">
           <div className="mcf-ab-story-card">
-            <h2 className="mcf-ab-story-title mcf-mobile-title">
+            <span className="mcf-ab-story-title mcf-mobile-title" aria-hidden="true">
               The Heart Behind Meraki Living
-            </h2>
+            </span>
             <div className="mcf-ab-story-split">
               <div className="mcf-ab-story-left">
                 <div className="mcf-ab-story-img-wrap">
@@ -142,9 +142,9 @@ const AboutPage = () => {
                 </div>
               </div>
               <div className="mcf-ab-story-text">
-                <h2 className="mcf-ab-story-title mcf-desktop-title">
+                <h1 className="mcf-ab-story-title mcf-desktop-title">
                   The Heart Behind Meraki Living
-                </h2>
+                </h1>
                 <div className="mcf-ab-story-body">
                   <p>Meraki, to me, means <strong>building something with your soul — putting a little piece of yourself into everything you create.</strong></p>
                   <p>That is how Meraki Living began.</p>
@@ -170,9 +170,9 @@ const AboutPage = () => {
           <div className="mcf-ab-hero-content">
             <div className="mcf-ab-hero-text-wrap">
               <p className="mcf-ab-hero-pre-title">Meraki Living - Our Philosophy</p>
-              <h1 className="mcf-ab-hero-title">
+              <h2 className="mcf-ab-hero-title">
                 More Than a Stay. A Way of Life.
-              </h1>
+              </h2>
               <p className="mcf-ab-hero-desc">
                 At Meraki Living, we want you to experience the mountains as we experience them — through our food, traditions, people, craftsmanship and a way of life deeply connected to nature.
               </p>

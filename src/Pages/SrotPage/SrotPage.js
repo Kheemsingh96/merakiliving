@@ -111,19 +111,19 @@ function SrotPage({ setCurrentPage }) {
   return (
     <div className="srot-page">
       <Helmet>
-        <title>Srot | Meraki Living</title>
-        <meta name="description" content="Discover SROT at Meraki Living—a natural mountain spring water sanctuary surrounded by pine forests, organic orchards, and tranquil streams in Peora, Mukteshwar." />
+        <title>SROT | Natural Mountain Water Spring at Meraki Living</title>
+        <meta name="description" content="Discover SROT at Meraki Living - a natural Himalayan freshwater spring sanctuary surrounded by oak and pine forests, fruit orchards, and mountain streams in Peora." />
         <link rel="canonical" href="https://www.merakiliving.in/srot" />
         <meta name="robots" content="index, follow" />
         <meta property="og:site_name" content="Meraki Living" />
-        <meta property="og:title" content="Srot | Meraki Living" />
-        <meta property="og:description" content="Discover SROT at Meraki Living—a natural mountain spring water sanctuary surrounded by pine forests, organic orchards, and tranquil streams in Peora, Mukteshwar." />
+        <meta property="og:title" content="SROT | Natural Mountain Water Spring at Meraki Living" />
+        <meta property="og:description" content="Discover SROT at Meraki Living - a natural Himalayan freshwater spring sanctuary surrounded by oak and pine forests, fruit orchards, and mountain streams in Peora." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://www.merakiliving.in/srot" />
         <meta property="og:image" content={srotHeroImg} />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Srot | Meraki Living" />
-        <meta name="twitter:description" content="Discover SROT at Meraki Living—a natural mountain spring water sanctuary surrounded by pine forests, organic orchards, and tranquil streams in Peora, Mukteshwar." />
+        <meta name="twitter:title" content="SROT | Natural Mountain Water Spring at Meraki Living" />
+        <meta name="twitter:description" content="Discover SROT at Meraki Living - a natural Himalayan freshwater spring sanctuary surrounded by oak and pine forests, fruit orchards, and mountain streams in Peora." />
         <meta name="twitter:image" content={srotHeroImg} />
         <script type="application/ld+json">{JSON.stringify(SROT_SCHEMA)}</script>
       </Helmet>
@@ -235,7 +235,7 @@ function SrotPage({ setCurrentPage }) {
                         <IconComp size={22} variant="stroke" />
                       </div>
                       <div className="srot-feature-text">
-                        <h4>{item.title}</h4>
+                        <h3>{item.title}</h3>
                         <p>{item.desc}</p>
                       </div>
                     </div>
